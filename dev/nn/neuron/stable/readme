@@ -1,0 +1,13 @@
+Important!! I only check the functionality of the modules in simple tests
+For ex the macc has an error approx 0.002 but i didnt check if its the 
+intermediate resizing, the mult or addition or if 
+the error is consistent with the quantization.
+I do not recommend using this modules in a system that requires a high
+precission without re-checking them.
+
+
+
+to do:
+fix de inlcudes of each file
+
+

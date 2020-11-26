@@ -1,0 +1,6 @@
+<testsuites name="results">
+  <testsuite name="all" package="all">
+    <property name="random_seed" value="1605403820" />
+    <testcase classname="acc_tb" name="acc_tb" ratio_time="37631.62788401577" sim_time_ns="12040.001" time="0.3199436664581299" />
+  </testsuite>
+</testsuites>

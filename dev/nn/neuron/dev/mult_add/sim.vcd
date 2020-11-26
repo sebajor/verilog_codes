@@ -1,0 +1,257 @@
+$date
+	Sun Nov 15 18:58:22 2020
+$end
+$version
+	Icarus Verilog
+$end
+$timescale
+	1ns
+$end
+$scope module mult_add_tb $end
+$scope module mult_add_inst $end
+$scope module parallel_mult_inst $end
+$var wire 1 ! clk $end
+$var wire 64 " din1 [63:0] $end
+$var wire 64 # din2 [63:0] $end
+$var wire 32 $ dout_t [31:0] $end
+$var wire 128 % dout [127:0] $end
+$var wire 16 & d2 [15:0] $end
+$var wire 16 ' d1 [15:0] $end
+$upscope $end
+$upscope $end
+$upscope $end
+$scope module mult_add_tb $end
+$var wire 1 ! clk $end
+$var wire 64 ( din1 [63:0] $end
+$var wire 64 ) din2 [63:0] $end
+$var wire 1 * rst $end
+$var wire 32 + dout [31:0] $end
+$scope module mult_add_inst $end
+$var wire 1 ! clk $end
+$var wire 64 , din1 [63:0] $end
+$var wire 64 - din2 [63:0] $end
+$var wire 1 * rst $end
+$var wire 120 . mult_sized [119:0] $end
+$var wire 128 / mult_out [127:0] $end
+$var wire 32 0 dout [31:0] $end
+$scope module adder_tree_inst $end
+$var wire 1 ! clk $end
+$var wire 32 1 dout [31:0] $end
+$var wire 120 2 din [119:0] $end
+$scope begin genblk2 $end
+$var wire 62 3 result [61:0] $end
+$scope module add_pairs_inst $end
+$var wire 1 ! clk $end
+$var wire 62 4 dout [61:0] $end
+$var wire 120 5 din [119:0] $end
+$scope begin genblk1[0] $end
+$scope module add_inst $end
+$var wire 1 ! clk $end
+$var wire 30 6 din_a [29:0] $end
+$var wire 30 7 din_b [29:0] $end
+$var wire 31 8 dout [30:0] $end
+$var reg 31 9 dout_r [30:0] $end
+$upscope $end
+$upscope $end
+$scope begin genblk1[1] $end
+$scope module add_inst $end
+$var wire 1 ! clk $end
+$var wire 30 : din_a [29:0] $end
+$var wire 30 ; din_b [29:0] $end
+$var wire 31 < dout [30:0] $end
+$var reg 31 = dout_r [30:0] $end
+$upscope $end
+$upscope $end
+$upscope $end
+$scope module adder_tree_inst $end
+$var wire 1 ! clk $end
+$var wire 62 > din [61:0] $end
+$var wire 32 ? dout [31:0] $end
+$scope begin genblk1 $end
+$scope module add_inst $end
+$var wire 1 ! clk $end
+$var wire 31 @ din_a [30:0] $end
+$var wire 31 A din_b [30:0] $end
+$var wire 32 B dout [31:0] $end
+$var reg 32 C dout_r [31:0] $end
+$upscope $end
+$upscope $end
+$upscope $end
+$upscope $end
+$upscope $end
+$scope module downsize_inst $end
+$var wire 1 ! clk $end
+$var wire 120 D dout [119:0] $end
+$var wire 128 E din [127:0] $end
+$var reg 120 F r_dout [119:0] $end
+$var integer 32 G i [31:0] $end
+$upscope $end
+$scope module parallel_mult_inst $end
+$scope begin genblk1[0] $end
+$scope module sing_mult $end
+$var wire 1 ! clk $end
+$var wire 16 H din1 [15:0] $end
+$var wire 16 I din2 [15:0] $end
+$var wire 32 J dout [31:0] $end
+$var reg 32 K full_mult [31:0] $end
+$upscope $end
+$upscope $end
+$scope begin genblk1[1] $end
+$scope module sing_mult $end
+$var wire 1 ! clk $end
+$var wire 16 L din1 [15:0] $end
+$var wire 16 M din2 [15:0] $end
+$var wire 32 N dout [31:0] $end
+$var reg 32 O full_mult [31:0] $end
+$upscope $end
+$upscope $end
+$scope begin genblk1[2] $end
+$scope module sing_mult $end
+$var wire 1 ! clk $end
+$var wire 16 P din1 [15:0] $end
+$var wire 16 Q din2 [15:0] $end
+$var wire 32 R dout [31:0] $end
+$var reg 32 S full_mult [31:0] $end
+$upscope $end
+$upscope $end
+$scope begin genblk1[3] $end
+$scope module sing_mult $end
+$var wire 1 ! clk $end
+$var wire 16 T din1 [15:0] $end
+$var wire 16 U din2 [15:0] $end
+$var wire 32 V dout [31:0] $end
+$var reg 32 W full_mult [31:0] $end
+$upscope $end
+$upscope $end
+$upscope $end
+$upscope $end
+$upscope $end
+$enddefinitions $end
+#0
+$dumpvars
+b11111111111100000000000000000000 W
+b11111111111100000000000000000000 V
+b10000000000 U
+b1111110000000000 T
+b11111111111101011100001111010111 S
+b11111111111101011100001111010111 R
+b1100110011 Q
+b1111110011001101 P
+b11111111111101011100001111010111 O
+b11111111111101011100001111010111 N
+b1111110011001101 M
+b1100110011 L
+b11111111111100000000000000000000 K
+b11111111111100000000000000000000 J
+b1111110000000000 I
+b10000000000 H
+b100 G
+b0 F
+b11111111111100000000000000000000111111111111010111000011110101111111111111110101110000111101011111111111111100000000000000000000 E
+b0 D
+b0 C
+b0 B
+b0 A
+b0 @
+b0 ?
+b0 >
+b0 =
+b0 <
+b0 ;
+b0 :
+b0 9
+b0 8
+b0 7
+b0 6
+b0 5
+b0 4
+b0 3
+b0 2
+b0 1
+b0 0
+b11111111111100000000000000000000111111111111010111000011110101111111111111110101110000111101011111111111111100000000000000000000 /
+b0 .
+b10000000000000000110011001111111100110011011111110000000000 -
+b1111110000000000111111001100110100000011001100110000010000000000 ,
+b0 +
+z*
+b10000000000000000110011001111111100110011011111110000000000 )
+b1111110000000000111111001100110100000011001100110000010000000000 (
+b1100110011 '
+b1111110011001101 &
+b11111111111100000000000000000000111111111111010111000011110101111111111111110101110000111101011111111111111100000000000000000000 %
+b11111111111101011100001111010111 $
+b10000000000000000110011001111111100110011011111110000000000 #
+b1111110000000000111111001100110100000011001100110000010000000000 "
+1!
+$end
+#5
+0!
+#10
+b111111111111000000000000000000 ;
+b111111111111010111000011110101 :
+b111111111111010111000011110101 7
+b111111111111000000000000000000 6
+b111111111111000000000000000000111111111111010111000011110101111111111111010111000011110101111111111111000000000000000000 .
+b111111111111000000000000000000111111111111010111000011110101111111111111010111000011110101111111111111000000000000000000 2
+b111111111111000000000000000000111111111111010111000011110101111111111111010111000011110101111111111111000000000000000000 5
+b111111111111000000000000000000111111111111010111000011110101111111111111010111000011110101111111111111000000000000000000 D
+b111111111111000000000000000000111111111111010111000011110101111111111111010111000011110101111111111111000000000000000000 F
+b100 G
+1!
+#15
+0!
+#20
+b1111111111110010111000011110101 @
+b1111111111110010111000011110101 A
+b1111111111110010111000011110101 8
+b1111111111110010111000011110101 9
+b11111111111100101110000111101011111111111110010111000011110101 3
+b11111111111100101110000111101011111111111110010111000011110101 4
+b11111111111100101110000111101011111111111110010111000011110101 >
+b1111111111110010111000011110101 <
+b1111111111110010111000011110101 =
+b100 G
+1!
+#25
+0!
+#30
+b11111111111100101110000111101010 +
+b11111111111100101110000111101010 0
+b11111111111100101110000111101010 1
+b11111111111100101110000111101010 ?
+b11111111111100101110000111101010 B
+b11111111111100101110000111101010 C
+b100 G
+1!
+#35
+0!
+#40
+b100 G
+1!
+#45
+0!
+#50
+b100 G
+1!
+#55
+0!
+#60
+b100 G
+1!
+#65
+0!
+#70
+b100 G
+1!
+#75
+0!
+#80
+b100 G
+1!
+#85
+0!
+#90
+b100 G
+1!
+#91

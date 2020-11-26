@@ -1,0 +1,6 @@
+<testsuites name="results">
+  <testsuite name="all" package="all">
+    <property name="random_seed" value="1605753885" />
+    <testcase classname="mult_acc" name="macc_test" ratio_time="11642.066452905343" sim_time_ns="1901.0" time="0.16328716278076172" />
+  </testsuite>
+</testsuites>
