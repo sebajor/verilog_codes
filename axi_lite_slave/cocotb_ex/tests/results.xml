@@ -1,0 +1,10 @@
+<testsuites name="results">
+  <testsuite name="all" package="all">
+    <property name="random_seed" value="1607802898" />
+    <testcase classname="test_axi_lite_slave" name="write_address_0" ratio_time="42492.33300748129" sim_time_ns="260.001" time="0.0061187744140625" />
+    <testcase classname="test_axi_lite_slave" name="read_address_4" ratio_time="59476.47972240063" sim_time_ns="340.001" time="0.005716562271118164" />
+    <testcase classname="test_axi_lite_slave" name="write_and_read" ratio_time="59036.47878966365" sim_time_ns="390.0010000000001" time="0.006606101989746094" />
+    <testcase classname="test_axi_lite_slave" name="write_fail" ratio_time="29747.022797163096" sim_time_ns="160.00099999999986" time="0.00537872314453125" />
+    <testcase classname="test_axi_lite_slave" name="read_fail" ratio_time="45459.99491398938" sim_time_ns="140.0010000000002" time="0.003079652786254883" />
+  </testsuite>
+</testsuites>

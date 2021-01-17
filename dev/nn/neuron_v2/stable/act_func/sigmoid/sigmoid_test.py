@@ -3,8 +3,6 @@ from cocotb.clock import Clock
 from cocotb.triggers import RisingEdge,FallingEdge, ClockCycles
 from cocotb.binary import BinaryValue
 import numpy as np
-from scipy.special import expit
-
 
 def int2bin(in_data, bin_pt):
     dat = int(in_data*2**bin_pt)
@@ -48,8 +46,6 @@ async def sigmoid_test(dut):
     out_val_int = bin2int(dut.dout.value.buff, out_pt)
     print(out_val_int)
     """
-
-    """
     ##start testing, for simplcity i take 2**8 addresses
     data = np.zeros(2**8)
     ##negative values
@@ -69,22 +65,8 @@ async def sigmoid_test(dut):
         data[2**7+i] = out_val_int
     
     np.savetxt('data', data)
-    """
 
-    np.random.seed(231)
-    test_data = (np.random.random(10)-0.5)*4
-    dut.din_valid <= 1
-    gold_dat = 0
-    out_val_int = 0
-    for i in range(len(test_data)):
-        din_b = int2bin(test_data[i], din_pt)
-        di.set_buff(din_b)
-        dut.din <= di
-        await ClockCycles(dut.clk, 1)
-        out_val_int = bin2int(dut.dout.value.buff, out_pt)
-        #print("%.6f \t %.6f"%(gold_dat, out_val_int))
-        print(gold_dat-out_val_int)
-        gold_dat = expit(test_data[i]) 
+
 
 
 
