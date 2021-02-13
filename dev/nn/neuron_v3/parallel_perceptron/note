@@ -1,0 +1,4 @@
+Here we only check the relu activation function, the error is less than 0.1
+but it depends on the bit size of the model
+
+TODO: check the sigmoid activation function

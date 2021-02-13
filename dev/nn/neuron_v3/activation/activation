@@ -1,0 +1,108 @@
+#! /usr/bin/vvp
+:ivl_version "10.1 (stable)";
+:ivl_delay_selection "TYPICAL";
+:vpi_time_precision + 0;
+:vpi_module "system";
+:vpi_module "vhdl_sys";
+:vpi_module "v2005_math";
+:vpi_module "va_math";
+S_0x55927af13eb0 .scope module, "activation_function" "activation_function" 2 5;
+ .timescale 0 0;
+    .port_info 0 /INPUT 1 "clk"
+    .port_info 1 /INPUT 16 "din"
+    .port_info 2 /INPUT 1 "din_valid"
+    .port_info 3 /OUTPUT 8 "dout"
+    .port_info 4 /OUTPUT 1 "dout_valid"
+P_0x55927af14030 .param/str "ACTIVATION_TYPE" 0 2 10, "relu";
+P_0x55927af14070 .param/l "DIN_INT" 0 2 7, +C4<00000000000000000000000000000010>;
+P_0x55927af140b0 .param/l "DIN_WIDTH" 0 2 6, +C4<00000000000000000000000000010000>;
+P_0x55927af140f0 .param/l "DOUT_INT" 0 2 9, +C4<00000000000000000000000000000100>;
+P_0x55927af14130 .param/l "DOUT_WIDTH" 0 2 8, +C4<00000000000000000000000000001000>;
+P_0x55927af14170 .param/str "FILENAME" 0 2 11, "/home/seba/Workspace/verilog_codes/dev/nn/neuron_v3/activation/sigmoid_hex.mem";
+o0x7f7a13faa018 .functor BUFZ 1, C4<z>; HiZ drive
+v0x55927af34a60_0 .net "clk", 0 0, o0x7f7a13faa018;  0 drivers
+o0x7f7a13faa048 .functor BUFZ 16, C4<zzzzzzzzzzzzzzzz>; HiZ drive
+v0x55927af34b20_0 .net "din", 15 0, o0x7f7a13faa048;  0 drivers
+o0x7f7a13faa078 .functor BUFZ 1, C4<z>; HiZ drive
+v0x55927af34bf0_0 .net "din_valid", 0 0, o0x7f7a13faa078;  0 drivers
+v0x55927af34cf0_0 .net "dout", 7 0, L_0x55927af0af10;  1 drivers
+v0x55927af34dc0_0 .net "dout_valid", 0 0, L_0x55927af0ade0;  1 drivers
+S_0x55927af14380 .scope generate, "genblk3" "genblk3" 2 36, 2 36 0, S_0x55927af13eb0;
+ .timescale 0 0;
+S_0x55927af14500 .scope module, "relu_inst" "relu" 2 42, 3 3 0, S_0x55927af14380;
+ .timescale 0 0;
+    .port_info 0 /INPUT 1 "clk"
+    .port_info 1 /INPUT 16 "din"
+    .port_info 2 /INPUT 1 "din_valid"
+    .port_info 3 /OUTPUT 8 "dout"
+    .port_info 4 /OUTPUT 1 "dout_valid"
+P_0x55927af14680 .param/l "DIN_INT" 0 3 5, +C4<00000000000000000000000000000010>;
+P_0x55927af146c0 .param/l "DIN_POINT" 1 3 15, +C4<000000000000000000000000000001110>;
+P_0x55927af14700 .param/l "DIN_WIDTH" 0 3 4, +C4<00000000000000000000000000010000>;
+P_0x55927af14740 .param/l "DOUT_INT" 0 3 7, +C4<00000000000000000000000000000100>;
+P_0x55927af14780 .param/l "DOUT_POINT" 1 3 16, +C4<000000000000000000000000000000100>;
+P_0x55927af147c0 .param/l "DOUT_WIDTH" 0 3 6, +C4<00000000000000000000000000001000>;
+L_0x55927af0ade0 .functor BUFZ 1, v0x55927af34900_0, C4<0>, C4<0>, C4<0>;
+L_0x55927af0af10 .functor BUFZ 8, v0x55927af34710_0, C4<00000000>, C4<00000000>, C4<00000000>;
+v0x55927af142e0_0 .net "clk", 0 0, o0x7f7a13faa018;  alias, 0 drivers
+v0x55927af14240_0 .net/s "din", 15 0, o0x7f7a13faa048;  alias, 0 drivers
+v0x55927af34560_0 .net "din_valid", 0 0, o0x7f7a13faa078;  alias, 0 drivers
+v0x55927af34630_0 .net/s "dout", 7 0, L_0x55927af0af10;  alias, 1 drivers
+v0x55927af34710_0 .var/s "dout_r", 7 0;
+v0x55927af34840_0 .net "dout_valid", 0 0, L_0x55927af0ade0;  alias, 1 drivers
+v0x55927af34900_0 .var "valid_r", 0 0;
+S_0x55927af149d0 .scope generate, "genblk2" "genblk2" 3 25, 3 25 0, S_0x55927af14500;
+ .timescale 0 0;
+E_0x55927af07a10 .event posedge, v0x55927af142e0_0;
+    .scope S_0x55927af149d0;
+T_0 ;
+    %wait E_0x55927af07a10;
+    %load/vec4 v0x55927af34560_0;
+    %flag_set/vec4 8;
+    %jmp/0xz  T_0.0, 8;
+    %pushi/vec4 1, 0, 1;
+    %assign/vec4 v0x55927af34900_0, 0;
+    %load/vec4 v0x55927af14240_0;
+    %parti/s 1, 15, 5;
+    %flag_set/vec4 8;
+    %jmp/0xz  T_0.2, 8;
+    %pushi/vec4 0, 0, 8;
+    %assign/vec4 v0x55927af34710_0, 0;
+    %jmp T_0.3;
+T_0.2 ;
+    %pushi/vec4 0, 0, 2;
+    %load/vec4 v0x55927af14240_0;
+    %parti/s 2, 14, 5;
+    %concat/vec4; draw_concat_vec4
+    %load/vec4 v0x55927af14240_0;
+    %parti/s 4, 11, 5;
+    %concat/vec4; draw_concat_vec4
+    %assign/vec4 v0x55927af34710_0, 0;
+T_0.3 ;
+    %jmp T_0.1;
+T_0.0 ;
+    %load/vec4 v0x55927af34710_0;
+    %assign/vec4 v0x55927af34710_0, 0;
+    %pushi/vec4 0, 0, 1;
+    %assign/vec4 v0x55927af34900_0, 0;
+T_0.1 ;
+    %jmp T_0;
+    .thread T_0;
+    .scope S_0x55927af14500;
+T_1 ;
+    %pushi/vec4 0, 0, 8;
+    %store/vec4 v0x55927af34710_0, 0, 8;
+    %end;
+    .thread T_1;
+    .scope S_0x55927af14500;
+T_2 ;
+    %pushi/vec4 0, 0, 1;
+    %store/vec4 v0x55927af34900_0, 0, 1;
+    %end;
+    .thread T_2;
+# The file index is used to find the file name in the following table.
+:file_names 4;
+    "N/A";
+    "<interactive>";
+    "activation.v";
+    "/home/seba/Workspace/verilog_codes/dev/nn/neuron_v3/activation/relu/relu.v";

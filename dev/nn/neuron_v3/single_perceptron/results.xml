@@ -1,0 +1,6 @@
+<testsuites name="results">
+  <testsuite name="all" package="all">
+    <property name="random_seed" value="1613182234" />
+    <testcase classname="single_perceptron_test" name="single_perceptron_test" ratio_time="42074.07193690384" sim_time_ns="655650.001" time="15.583231449127197" />
+  </testsuite>
+</testsuites>

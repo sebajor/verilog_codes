@@ -1,0 +1,4 @@
+This is a simple test, we configure the cam, feed the data taken 
+into a big bram, then attempt to read it using axi-lite protocol
+(i dont know if I have enough memories to do it..)
+to do: test it !!!
