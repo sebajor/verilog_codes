@@ -51,7 +51,7 @@ end
 //clock generators
 //the right thing to do is to use a oddr for the output mclk
 //but i want to test it in the go board, when moving to the
-// xilinx board fix this
+// xilinx board fix this or not
 
 assign dac_mclk = clk;
 assign dac_lrck = counter[DIVIDER_FACTOR-1];
