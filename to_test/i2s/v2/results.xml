@@ -1,6 +1,0 @@
-<testsuites name="results">
-  <testsuite name="all" package="all">
-    <property name="random_seed" value="1613590526" />
-    <testcase classname="i2s_pmod_test" name="i2s_pmod_test" ratio_time="40592.60886677556" sim_time_ns="11530.001" time="0.2840418815612793" />
-  </testsuite>
-</testsuites>

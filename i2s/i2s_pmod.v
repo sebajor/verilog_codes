@@ -16,7 +16,7 @@
   tree).
 */
 
-module i2s_pmod_v2 #(
+module i2s_pmod #(
     parameter CLK_FREQ = 25_000_000,
     parameter MCLK_DEC = 1,         //2**MCLK_DEC decimation factor of mclk
     parameter LRCK_DEC = 8,         //2**LRCK_DEC decimation factor of lrck
