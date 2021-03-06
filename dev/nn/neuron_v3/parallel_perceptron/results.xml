@@ -1,6 +1,6 @@
 <testsuites name="results">
   <testsuite name="all" package="all">
-    <property name="random_seed" value="1613256391" />
-    <testcase classname="parallel_perceptron_test" name="parallel_perceptron_test" ratio_time="10015.266458193142" sim_time_ns="82210.001" time="8.208468675613403" />
+    <property name="random_seed" value="1614361883" />
+    <testcase classname="parallel_perceptron_test" name="parallel_perceptron_test" ratio_time="13997.436072030341" sim_time_ns="82210.001" time="5.873218536376953" />
   </testsuite>
 </testsuites>

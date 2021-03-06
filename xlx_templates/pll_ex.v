@@ -26,7 +26,7 @@ wire pll_rst = 1'b0;
 
 /*counter divider D = 1
     fractional divide M = 8
-    kintex vco range: (600-1440) mhz
+    kintex vco range: (600-1440) mhz (this number comes from the datasheet)
     fvco = fin*M/D; fout=fin*M/(D*O)
     fin=100mhz, M=8, D=1 -> fvco=800
     O = 4 for clk1 and clk2
