@@ -1,6 +1,0 @@
-<testsuites name="results">
-  <testsuite name="all" package="all">
-    <property name="random_seed" value="1609119420" />
-    <testcase classname="cic_test" name="cic_test" ratio_time="40419.03982267244" sim_time_ns="23360.001" time="0.5779454708099365" />
-  </testsuite>
-</testsuites>

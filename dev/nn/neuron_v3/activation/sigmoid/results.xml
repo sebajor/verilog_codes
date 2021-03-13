@@ -1,6 +1,0 @@
-<testsuites name="results">
-  <testsuite name="all" package="all">
-    <property name="random_seed" value="1612478270" />
-    <testcase classname="sigmoid_test" name="sigmoid_test" ratio_time="20041.85634586549" sim_time_ns="655350.001" time="32.69906687736511" />
-  </testsuite>
-</testsuites>

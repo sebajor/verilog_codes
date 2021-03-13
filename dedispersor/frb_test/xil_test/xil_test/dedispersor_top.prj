@@ -1,0 +1,4 @@
+verilog work "../../hdl/bram_infer.v"
+verilog work "../../hdl/dedispersor_block.v"
+verilog work "../../hdl/dedispersor.v"
+verilog work "../../hdl/dedispersor_top.v"

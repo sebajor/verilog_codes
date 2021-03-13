@@ -1,0 +1,128 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no" ?>
+<generated_project xmlns="http://www.xilinx.com/XMLSchema" xmlns:xil_pn="http://www.xilinx.com/XMLSchema">
+
+  <!--                                                          -->
+
+  <!--             For tool use only. Do not edit.              -->
+
+  <!--                                                          -->
+
+  <!-- ProjectNavigator created generated project file.         -->
+
+  <!-- For use in tracking generated file and other information -->
+
+  <!-- allowing preservation of process status.                 -->
+
+  <!--                                                          -->
+
+  <!-- Copyright (c) 1995-2013 Xilinx, Inc.  All rights reserved. -->
+
+  <version xmlns="http://www.xilinx.com/XMLSchema">11.1</version>
+
+  <sourceproject xmlns="http://www.xilinx.com/XMLSchema" xil_pn:fileType="FILE_XISE" xil_pn:name="xil_test.xise"/>
+
+  <files xmlns="http://www.xilinx.com/XMLSchema">
+    <file xil_pn:fileType="FILE_DIRECTORY" xil_pn:name="_ngo"/>
+    <file xil_pn:fileType="FILE_XMSGS" xil_pn:name="_xmsgs/map.xmsgs"/>
+    <file xil_pn:fileType="FILE_XMSGS" xil_pn:name="_xmsgs/ngdbuild.xmsgs"/>
+    <file xil_pn:fileType="FILE_XMSGS" xil_pn:name="_xmsgs/xst.xmsgs"/>
+    <file xil_pn:branch="Implementation" xil_pn:fileType="FILE_NGDBUILD_LOG" xil_pn:name="dedispersor_top.bld"/>
+    <file xil_pn:fileType="FILE_CMD_LOG" xil_pn:name="dedispersor_top.cmd_log"/>
+    <file xil_pn:branch="Implementation" xil_pn:fileType="FILE_LSO" xil_pn:name="dedispersor_top.lso"/>
+    <file xil_pn:branch="Implementation" xil_pn:fileType="FILE_NGC" xil_pn:name="dedispersor_top.ngc"/>
+    <file xil_pn:branch="Implementation" xil_pn:fileType="FILE_NGD" xil_pn:name="dedispersor_top.ngd"/>
+    <file xil_pn:branch="Implementation" xil_pn:fileType="FILE_NGR" xil_pn:name="dedispersor_top.ngr"/>
+    <file xil_pn:branch="Implementation" xil_pn:fileType="FILE_PCF" xil_pn:name="dedispersor_top.pcf" xil_pn:subbranch="Map"/>
+    <file xil_pn:branch="Implementation" xil_pn:fileType="FILE_XST_PROJECT" xil_pn:name="dedispersor_top.prj"/>
+    <file xil_pn:branch="Implementation" xil_pn:fileType="FILE_XST_STX" xil_pn:name="dedispersor_top.stx"/>
+    <file xil_pn:branch="Implementation" xil_pn:fileType="FILE_XST_REPORT" xil_pn:name="dedispersor_top.syr"/>
+    <file xil_pn:branch="Implementation" xil_pn:fileType="FILE_XST" xil_pn:name="dedispersor_top.xst"/>
+    <file xil_pn:branch="Implementation" xil_pn:fileType="FILE_MAP_REPORT" xil_pn:name="dedispersor_top_map.map" xil_pn:subbranch="Map"/>
+    <file xil_pn:branch="Implementation" xil_pn:fileType="FILE_MAP_REPORT" xil_pn:name="dedispersor_top_map.mrp" xil_pn:subbranch="Map"/>
+    <file xil_pn:branch="Implementation" xil_pn:fileType="FILE_NCD" xil_pn:name="dedispersor_top_map.ncd" xil_pn:subbranch="Map"/>
+    <file xil_pn:branch="Implementation" xil_pn:fileType="FILE_NGM" xil_pn:name="dedispersor_top_map.ngm" xil_pn:subbranch="Map"/>
+    <file xil_pn:fileType="FILE_XRPT" xil_pn:name="dedispersor_top_map.xrpt"/>
+    <file xil_pn:fileType="FILE_XRPT" xil_pn:name="dedispersor_top_ngdbuild.xrpt"/>
+    <file xil_pn:fileType="FILE_HTML" xil_pn:name="dedispersor_top_summary.html"/>
+    <file xil_pn:fileType="FILE_FITTER_REPORT" xil_pn:name="dedispersor_top_summary.xml"/>
+    <file xil_pn:fileType="FILE_WEBTALK" xil_pn:name="dedispersor_top_usage.xml"/>
+    <file xil_pn:fileType="FILE_XRPT" xil_pn:name="dedispersor_top_xst.xrpt"/>
+    <file xil_pn:fileType="FILE_FITTER_REPORT" xil_pn:name="webtalk_pn.xml"/>
+    <file xil_pn:fileType="FILE_DIRECTORY" xil_pn:name="xlnx_auto_0_xdb"/>
+    <file xil_pn:fileType="FILE_DIRECTORY" xil_pn:name="xst"/>
+  </files>
+
+  <transforms xmlns="http://www.xilinx.com/XMLSchema">
+    <transform xil_pn:end_ts="1615562335" xil_pn:name="TRAN_copyInitialToXSTAbstractSynthesis" xil_pn:start_ts="1615562335">
+      <status xil_pn:value="SuccessfullyRun"/>
+      <status xil_pn:value="ReadyToRun"/>
+    </transform>
+    <transform xil_pn:end_ts="1615562335" xil_pn:name="TRAN_schematicsToHdl" xil_pn:prop_ck="2811512052674131421" xil_pn:start_ts="1615562335">
+      <status xil_pn:value="SuccessfullyRun"/>
+      <status xil_pn:value="ReadyToRun"/>
+    </transform>
+    <transform xil_pn:end_ts="1615562335" xil_pn:name="TRAN_regenerateCores" xil_pn:prop_ck="1612279513868080636" xil_pn:start_ts="1615562335">
+      <status xil_pn:value="SuccessfullyRun"/>
+      <status xil_pn:value="ReadyToRun"/>
+    </transform>
+    <transform xil_pn:end_ts="1615562335" xil_pn:name="TRAN_SubProjectAbstractToPreProxy" xil_pn:start_ts="1615562335">
+      <status xil_pn:value="SuccessfullyRun"/>
+      <status xil_pn:value="ReadyToRun"/>
+    </transform>
+    <transform xil_pn:end_ts="1615562335" xil_pn:name="TRAN_xawsTohdl" xil_pn:prop_ck="3388605249532377485" xil_pn:start_ts="1615562335">
+      <status xil_pn:value="SuccessfullyRun"/>
+      <status xil_pn:value="ReadyToRun"/>
+    </transform>
+    <transform xil_pn:end_ts="1615562335" xil_pn:name="TRAN_SubProjectPreToStructuralProxy" xil_pn:prop_ck="19321607563202583" xil_pn:start_ts="1615562335">
+      <status xil_pn:value="SuccessfullyRun"/>
+      <status xil_pn:value="ReadyToRun"/>
+    </transform>
+    <transform xil_pn:end_ts="1615562335" xil_pn:name="TRAN_platgen" xil_pn:prop_ck="-7583662713177727738" xil_pn:start_ts="1615562335">
+      <status xil_pn:value="SuccessfullyRun"/>
+      <status xil_pn:value="ReadyToRun"/>
+    </transform>
+    <transform xil_pn:end_ts="1615562387" xil_pn:in_ck="1762231758945815521" xil_pn:name="TRANEXT_xstsynthesize_virtex6" xil_pn:prop_ck="-1787740780781295630" xil_pn:start_ts="1615562335">
+      <status xil_pn:value="SuccessfullyRun"/>
+      <status xil_pn:value="WarningsGenerated"/>
+      <status xil_pn:value="ReadyToRun"/>
+      <outfile xil_pn:name="_xmsgs/xst.xmsgs"/>
+      <outfile xil_pn:name="dedispersor_top.lso"/>
+      <outfile xil_pn:name="dedispersor_top.ngc"/>
+      <outfile xil_pn:name="dedispersor_top.ngr"/>
+      <outfile xil_pn:name="dedispersor_top.prj"/>
+      <outfile xil_pn:name="dedispersor_top.stx"/>
+      <outfile xil_pn:name="dedispersor_top.syr"/>
+      <outfile xil_pn:name="dedispersor_top.xst"/>
+      <outfile xil_pn:name="dedispersor_top_xst.xrpt"/>
+      <outfile xil_pn:name="webtalk_pn.xml"/>
+      <outfile xil_pn:name="xst"/>
+    </transform>
+    <transform xil_pn:end_ts="1615562519" xil_pn:name="TRAN_compileBCD2" xil_pn:prop_ck="5574674037052056760" xil_pn:start_ts="1615562519">
+      <status xil_pn:value="SuccessfullyRun"/>
+      <status xil_pn:value="ReadyToRun"/>
+    </transform>
+    <transform xil_pn:end_ts="1615562531" xil_pn:in_ck="8031266797852997500" xil_pn:name="TRANEXT_ngdbuild_FPGA" xil_pn:prop_ck="5728565329779370406" xil_pn:start_ts="1615562519">
+      <status xil_pn:value="SuccessfullyRun"/>
+      <status xil_pn:value="ReadyToRun"/>
+      <outfile xil_pn:name="_ngo"/>
+      <outfile xil_pn:name="_xmsgs/ngdbuild.xmsgs"/>
+      <outfile xil_pn:name="dedispersor_top.bld"/>
+      <outfile xil_pn:name="dedispersor_top.ngd"/>
+      <outfile xil_pn:name="dedispersor_top_ngdbuild.xrpt"/>
+    </transform>
+    <transform xil_pn:end_ts="1615562795" xil_pn:in_ck="8031266797852997501" xil_pn:name="TRANEXT_map_virtex6" xil_pn:prop_ck="5905178286671296472" xil_pn:start_ts="1615562636">
+      <status xil_pn:value="SuccessfullyRun"/>
+      <status xil_pn:value="ReadyToRun"/>
+      <outfile xil_pn:name="_xmsgs/map.xmsgs"/>
+      <outfile xil_pn:name="dedispersor_top.pcf"/>
+      <outfile xil_pn:name="dedispersor_top_map.map"/>
+      <outfile xil_pn:name="dedispersor_top_map.mrp"/>
+      <outfile xil_pn:name="dedispersor_top_map.ncd"/>
+      <outfile xil_pn:name="dedispersor_top_map.ngm"/>
+      <outfile xil_pn:name="dedispersor_top_map.xrpt"/>
+      <outfile xil_pn:name="dedispersor_top_summary.xml"/>
+      <outfile xil_pn:name="dedispersor_top_usage.xml"/>
+    </transform>
+  </transforms>
+
+</generated_project>
