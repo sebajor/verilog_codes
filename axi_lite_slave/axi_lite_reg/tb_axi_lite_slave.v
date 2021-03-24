@@ -88,7 +88,7 @@ s_axi_lite_reg#(
 
 `ifndef VERILATOR // traced differently
   initial begin
-    $dumpfile ("design.vcd");
+    $dumpfile ("traces.vcd");
     $dumpvars(0, tb_axi_lite_slave);
   end
 `endif

@@ -1,5 +1,5 @@
-//`default_nettype none
-//`include "dedispersor_block.v"
+`default_nettype none
+`include "dedispersor_block.v"
 
 //this is serial dedispersor ie it gets the FFT channels 
 //sequentially
@@ -45,10 +45,19 @@ genvar i;
 wire [N_CHANNELS*DIN_WIDTH-1:0] dout_block;
 wire [N_CHANNELS-1:0] dout_block_valid;
 generate
-for(i=0; i<N_CHANNELS; i=i+1)begin
-    wire valid_block;
-    assign valid_block = ((addr_counter==i) && din_valid);
+for(i=0; i<N_CHANNELS; i=i+1)begin: dedispersor_loop
+    //wire valid_block;
+    //assign valid_block = ((addr_counter==i) && din_valid);
+    reg valid_block=0;
+    reg [DIN_WIDTH-1:0] din_block=0;
+    always@(posedge clk)begin
+        valid_block <= (addr_counter==i) && din_valid;
+        din_block <= din;
+    end
     
+    wire [DIN_WIDTH-1:0] dout_block_stage;
+    wire dout_block_stage_val; 
+
     dedispersor_block #(
         .DELAY_LINE(DELAY_ARRAY[32*i+:32]),
         .DIN_WIDTH(DIN_WIDTH)
@@ -56,11 +65,23 @@ for(i=0; i<N_CHANNELS; i=i+1)begin
         .clk(clk),
         .ce(ce),
         .rst(rst),
-        .din(din),
+        .din(din_block),
         .din_valid(valid_block),
-        .dout(dout_block[DIN_WIDTH*i+:DIN_WIDTH]),
-        .dout_valid(dout_block_valid[i])
+        .dout(dout_block_stage),//dout_block[DIN_WIDTH*i+:DIN_WIDTH]),
+        .dout_valid(dout_block_stage_val)//dout_block_valid[i])
     );
+    
+    //pipelined the output
+        
+    reg [DIN_WIDTH-1:0] dout_block_stage_r=0;
+    reg dout_block_val_r=0;
+    always@(posedge clk)begin
+        dout_block_stage_r <= dout_block_stage;
+        dout_block_val_r <= dout_block_stage_val;
+    end
+    assign dout_block[DIN_WIDTH*i+:DIN_WIDTH]= dout_block_stage_r;
+    assign dout_block_valid[i]=dout_block_val_r;
+
 end
 
 endgenerate 

@@ -1,5 +1,5 @@
 `timescale 1ns/1ps 
-`default_nettype none
+//`default_nettype none
 //`define _init_mem_
 
 
@@ -8,12 +8,12 @@ module bram_infer #(
     parameter DATA_WIDTH = 16,
     parameter INIT_VALS = "w_1_15.mif"
 ) (
-    input clk,
-    input wen,
-    input ren,
-    input [$clog2(N_ADDR)-1:0] wadd,
-    input [$clog2(N_ADDR)-1:0] radd,
-    input [DATA_WIDTH-1:0]       win,
+    input wire clk,
+    input wire wen,
+    input wire ren,
+    input wire [$clog2(N_ADDR)-1:0] wadd,
+    input wire [$clog2(N_ADDR)-1:0] radd,
+    input wire [DATA_WIDTH-1:0]       win,
     output reg [DATA_WIDTH-1:0]  wout
 );
     reg [DATA_WIDTH-1:0] mem [N_ADDR-1:0];

@@ -1,7 +1,7 @@
 <?xml version='1.0' encoding='UTF-8'?>
 <report-views version="2.0" >
  <header>
-  <DateModified>2021-03-12T12:33:07</DateModified>
+  <DateModified>2021-03-23T23:39:35</DateModified>
   <ModuleName>dedispersor_top</ModuleName>
   <SummaryTimeStamp>2021-03-12T12:26:35</SummaryTimeStamp>
   <SavedFilePath>/home/seba/Workspace/verilog_codes/dedispersor/frb_test/xil_test/xil_test/iseconfig/dedispersor_top.xreport</SavedFilePath>

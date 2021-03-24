@@ -73,9 +73,9 @@ async def mov_test(dut, dat, win_len=16, din_width=32, din_int=31, thresh=0.05):
             out = two_comp_unpack(out, 2*din_width, 2*din_int)
             out_var.append(out)
     for i in range(len(out_avg)-4):
-        #print("gold avg: %0.5f \t out avg: %0.5f"%(avg_gold[i], out_avg[i+4]))
-        #print("gold var: %0.5f \t out var: %0.5f"%(var_gold[i], out_var[i+4]))
-        #print("")
+        print("gold avg: %0.5f \t out avg: %0.5f"%(avg_gold[i], out_avg[i+4]))
+        print("gold var: %0.5f \t out var: %0.5f"%(var_gold[i], out_var[i+4]))
+        print("")
         assert (np.abs(avg_gold[i]-out_avg[i+4])<thresh), "fail in avg {}".format(i)
         assert (np.abs(var_gold[i]-out_var[i+4])<thresh), "fail in var {}".format(i)
 

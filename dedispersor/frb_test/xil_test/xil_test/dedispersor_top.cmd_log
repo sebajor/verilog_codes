@@ -2,3 +2,9 @@ xst -intstyle ise -ifn "/home/seba/Workspace/verilog_codes/dedispersor/frb_test/
 ngdbuild -intstyle ise -dd _ngo -nt timestamp -i -p xc6vsx475t-ff1156-2 dedispersor_top.ngc dedispersor_top.ngd  
 map -intstyle ise -p xc6vsx475t-ff1156-2 -w -logic_opt off -ol high -t 1 -xt 0 -register_duplication off -r 4 -global_opt off -mt off -ir off -pr off -lc off -power off -o dedispersor_top_map.ncd dedispersor_top.ngd dedispersor_top.pcf 
 map -intstyle ise -p xc6vsx475t-ff1156-2 -w -logic_opt off -ol high -t 1 -xt 0 -register_duplication off -r 4 -global_opt off -mt off -ir off -pr off -lc off -power off -o dedispersor_top_map.ncd dedispersor_top.ngd dedispersor_top.pcf 
+xst -intstyle ise -ifn "/home/seba/Workspace/verilog_codes/dedispersor/frb_test/xil_test/xil_test/dedispersor_top.xst" -ofn "/home/seba/Workspace/verilog_codes/dedispersor/frb_test/xil_test/xil_test/dedispersor_top.syr" 
+xst -intstyle ise -ifn "/home/seba/Workspace/verilog_codes/dedispersor/frb_test/xil_test/xil_test/dedispersor_top.xst" -ofn "/home/seba/Workspace/verilog_codes/dedispersor/frb_test/xil_test/xil_test/dedispersor_top.syr" 
+xst -intstyle ise -ifn "/home/seba/Workspace/verilog_codes/dedispersor/frb_test/xil_test/xil_test/dedispersor_top.xst" -ofn "/home/seba/Workspace/verilog_codes/dedispersor/frb_test/xil_test/xil_test/dedispersor_top.syr" 
+xst -intstyle ise -ifn "/home/seba/Workspace/verilog_codes/dedispersor/frb_test/xil_test/xil_test/dedispersor_top.xst" -ofn "/home/seba/Workspace/verilog_codes/dedispersor/frb_test/xil_test/xil_test/dedispersor_top.syr" 
+ngdbuild -intstyle ise -dd _ngo -nt timestamp -i -p xc6vsx475t-ff1156-2 dedispersor_top.ngc dedispersor_top.ngd  
+map -intstyle ise -p xc6vsx475t-ff1156-2 -w -logic_opt off -ol high -t 1 -xt 0 -register_duplication off -r 4 -global_opt off -mt off -ir off -pr off -lc off -power off -o dedispersor_top_map.ncd dedispersor_top.ngd dedispersor_top.pcf 

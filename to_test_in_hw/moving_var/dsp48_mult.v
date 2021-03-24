@@ -1,4 +1,4 @@
-`default_nettype none
+//`default_nettype none
 
 module dsp48_mult #(
     parameter integer DIN1_WIDTH = 16,

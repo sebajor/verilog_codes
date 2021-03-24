@@ -1,5 +1,5 @@
-//`default_nettype none 
-//`include "bram_infer.v"
+`default_nettype none 
+`include "bram_infer.v"
 
 module dedispersor_block #(
     parameter DELAY_LINE = 32,

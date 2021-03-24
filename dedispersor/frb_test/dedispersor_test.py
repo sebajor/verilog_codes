@@ -129,13 +129,17 @@ async def frb_test2(dut, n_chann=64, acc=2):
                
             for j in range(acc*n_chann):
                 dut.din_valid <=0
+                dut.din <= 0
                 await ClockCycles(dut.clk,1)
                 valid = dut.dout_valid.value
                 if(valid):
                     out_vals.append(int(dut.dout.value))
+        dut.din_valid <=1
+        dut.din <=0
+        await ClockCycles(dut.clk, 64)
     dut.din_valid <=1;
     dut.din <= 0
-    for i in range(40*n_chann):
+    for i in range(2400*n_chann):
         await ClockCycles(dut.clk,1)
         valid = dut.dout_valid.value
         if(valid):
