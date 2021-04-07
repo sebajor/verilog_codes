@@ -1,0 +1,21 @@
+
+- The SDA only changes when scl is low
+- start condition: h-l transition on sda while scl is high
+- stop condition: l-h transition on sda while scl is high
+- if instead stop you issue start again is a repeated start condition
+- data is 8 bits long
+- after each byte it has to be followed by an ack bit
+- to ack the master should drive scl and free sda, to ack the slave has to
+    pull down sda
+- if the slave doesnt ack the master could issue stop condition to abort 
+    or a repeted start condition
+    
+-after the start condition, the master send a 7bit address+ rw process 
+    (0:write, 1:read) 
+
+- the usual write packet should be:
+    start-dev addr-w - ack - reg addr - ack -data -ack ...-data-ack-stop 
+
+-the usual read packet:
+    start-dev addr-w - ack - reg addr - ack -start - reg addr-r -ack- data-nack-stop
+
