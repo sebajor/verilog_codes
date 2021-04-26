@@ -41,8 +41,10 @@ async def quad_root_test(dut,iters=128, din_width=8, din_pt=7, dout_width=8, dou
     din_int = din_width-din_pt
     dout_int = dout_width-dout_pt 
     np.random.seed(10)
-    b = np.random.randn(iters)-0.5
-    c = np.random.randn(iters)-0.5
+    #b = np.random.randn(iters)-0.5
+    #c = np.random.randn(iters)-0.5
+    b = np.ones(iters)*(-0.4)
+    c = np.ones(iters)*0.0115 
     
     b_bin = two_comp_pack(b, din_width, din_int)
     c_bin = two_comp_pack(c, din_width, din_int)

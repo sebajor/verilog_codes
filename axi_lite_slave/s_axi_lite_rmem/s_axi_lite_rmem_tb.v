@@ -1,4 +1,4 @@
-`include "s_axi_lite_mem.v"
+`include "s_axi_lite_rmem.v"
 
 
 module s_axi_lite_rmem_tb #(

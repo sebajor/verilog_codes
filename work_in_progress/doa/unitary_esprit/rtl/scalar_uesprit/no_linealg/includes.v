@@ -1,0 +1,8 @@
+`include "rtl/centrosym_matrix.v"
+`include "rtl/correlation_mults.v"
+`include "rtl/dsp48_mult.v"
+`include "rtl/complex_power.v"
+`include "rtl/complex_mult.v"
+`include "rtl/signed_cast.v"
+`include "rtl/signed_acc.v"
+`include "rtl/unsig_acc.v"

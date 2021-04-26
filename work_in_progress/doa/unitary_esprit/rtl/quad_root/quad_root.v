@@ -29,7 +29,7 @@ module quad_root #(
     output wire dout_valid
 );
 
-wire [2*DIN_WIDTH-1:0] b2;
+wire signed [2*DIN_WIDTH-1:0] b2;
 wire b2_valid;
 dsp48_mult #(
     .DIN1_WIDTH(DIN_WIDTH),
@@ -48,8 +48,8 @@ dsp48_mult #(
 localparam SQUARE_POINT = 2*DIN_POINT;
 
 //sync everything
-reg [DIN_WIDTH-1:0] c_r=0, c_rr=0, c_rrr=0;
-reg [DIN_WIDTH-1:0] b_r=0, b_rr=0, b_rrr=0;
+reg signed [DIN_WIDTH-1:0] c_r=0, c_rr=0, c_rrr=0;
+reg signed [DIN_WIDTH-1:0] b_r=0, b_rr=0, b_rrr=0;
 always@(posedge clk)begin
     c_r <= c;   c_rr<=c_r;  c_rrr<=c_rr;
     b_r <= b;   b_rr<=b_r;  b_rrr<=b_rr;
@@ -57,6 +57,9 @@ end
 
 reg signed [2*DIN_WIDTH-1:0] c4=0;
 always@(posedge clk)begin
+    //if we have normalized b and c, ie we use just one int bit then 
+    //if c>0.25 there is no chance that the solution were real..
+    //also the shift could make an overflow! Review!!!!
     c4 <= c_rrr<<<(DIN_POINT+2);    //align points with b2 and shift it two to multiply by 4
 end
 
@@ -66,11 +69,13 @@ reg signed [2*DIN_WIDTH-1:0] diff=0;
 always@(posedge clk)begin
     diff_valid <= b2_valid;
     if(b2_valid)begin
-        diff <= b2-c4;
+        diff <= $signed(b2)-$signed(c4);
     end
 end
 
-wire [DOUT_WIDTH-1:0] sqrt_dout;
+wire det = diff_valid & ~diff[2*DIN_WIDTH-1];   //its valid when the determinant is non neg
+
+wire signed [DOUT_WIDTH-1:0] sqrt_dout;
 wire sqrt_dout_valid;
 //square root
 generate 
@@ -86,7 +91,7 @@ generate
     ) sqrt_inst (
         .clk(clk),
         .din(diff),
-        .din_valid(diff_valid),
+        .din_valid(det),
         .dout(sqrt_dout),
         .dout_valid(sqrt_dout_valid)
     );
@@ -101,7 +106,7 @@ generate
     ) sqrt_inst (
         .clk(clk),
         .din(diff),
-        .din_valid(diff_valid),
+        .din_valid(det),
         .dout(sqrt_dout),
         .dout_valid(sqrt_dout_valid)
     );
@@ -120,16 +125,19 @@ localparam DOUT_INT = DOUT_WIDTH-DOUT_POINT;
 
 
 
-wire [DOUT_WIDTH-1:0] b_align;
+wire signed [DOUT_WIDTH-1:0] b_align;
 generate
 if((DOUT_WIDTH==DIN_WIDTH))begin
     if(DOUT_POINT==DIN_POINT)
-        assign b_align = b_shift[DIN_WIDTH+:DIN_WIDTH];     
+        assign b_align = b_shift[DIN_WIDTH+:DIN_WIDTH];
     else if(DOUT_POINT>DIN_POINT)begin
-        assign b_align = b_shift[DIN_WIDTH+:DIN_WIDTH] >>>(DOUT_POINT-DIN_POINT);
+        //assign b_align = b_shift[DIN_WIDTH+:DIN_WIDTH] >>>(DOUT_POINT-DIN_POINT);
+        assign b_align = $signed(b_shift[DIN_WIDTH+:DIN_WIDTH]) <<<(DOUT_POINT-DIN_POINT);
     end
-    else
-        assign b_align = b_shift[DIN_WIDTH+:DIN_WIDTH] <<<(DIN_POINT-DOUT_POINT);
+    else begin
+        //assign b_align = b_shift[DIN_WIDTH+:DIN_WIDTH] <<<(DIN_POINT-DOUT_POINT);
+        assign b_align = $signed(b_shift[DIN_WIDTH+:DIN_WIDTH]) >>>(DIN_POINT-DOUT_POINT);
+    end
 end
 else begin
     signed_cast #(

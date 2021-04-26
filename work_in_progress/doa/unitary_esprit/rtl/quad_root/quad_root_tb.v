@@ -5,7 +5,7 @@ module quad_root_tb #(
     parameter DIN_WIDTH = 8,
     parameter DIN_POINT = 7,
     parameter DOUT_WIDTH = 8,
-    parameter DOUT_POINT = 6,
+    parameter DOUT_POINT = 7,
     parameter SQUARE_ALGO = "lut"   //type of implementation of the algorithm
 ) (
     input wire clk,

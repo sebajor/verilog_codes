@@ -28,6 +28,9 @@ async def signed_cast_test(dut, parallel=8 ,din_width=8, din_int=4, dout_width=1
     clk = Clock(dut.clk, 10, 'ns')
     cocotb.fork(clk.start())
     np.random.seed(10)
+    dut.din <=0
+    dut.din_valid<=0
+    await ClockCycles(dut.clk, 10)
     ###
     din_pt = din_width-din_int
     dout_pt = dout_width-dout_int
