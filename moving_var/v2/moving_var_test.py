@@ -41,8 +41,10 @@ async def moving_average_test(dut, iters=128, win_len=16, din_width=16, din_poin
     din_int = din_width-din_point
     #test1 = await cte_test(dut, 50, 10)
     np.random.seed(10)
-    dat = np.random.random(90)-0.5
-    #dat = np.ones(90)*0.5
+    dat = np.random.normal(0, 0.5,size=90)#np.random.random(90)-0.5
+    dat = dat/np.max(np.abs(dat)+0.01)
+    #dat = 0.9*np.sin(2*np.pi*np.arange(90)*5./90)
+    print(dat)
     test2 = await mov_test(dut,dat,win_len,din_width, din_int, thresh=0.05)
 
 
@@ -67,7 +69,7 @@ async def mov_test(dut, dat, win_len=16, din_width=32, din_int=1, thresh=0.05):
     pow_ma_gold = []
     for i in range(len(dat)):
         if((i%3)==0):
-            for i in range(3):
+            for j in range(3):
                 dut.din_valid <= 0
                 await ClockCycles(dut.clk, 1)
                 valid = int(dut.dout_valid.value)
@@ -106,10 +108,10 @@ async def mov_test(dut, dat, win_len=16, din_width=32, din_int=1, thresh=0.05):
             out_var.append(out)
 
     for i in range(len(out_avg)):
-        #print(i)
-        #print("gold avg: %0.5f \t out avg: %0.5f"%(avg_gold[i], out_avg[i]))
-        #print("gold var: %0.5f \t out var: %0.5f"%(var_gold[i], out_var[i]))
-        #print("")
+        print(i)
+        print("gold avg: %0.5f \t out avg: %0.5f"%(avg_gold[i], out_avg[i]))
+        print("gold var: %0.5f \t out var: %0.5f"%(var_gold[i], out_var[i]))
+        print("")
         assert (np.abs(avg_gold[i]-out_avg[i])<thresh), "fail in avg {}".format(i)
         assert (np.abs(var_gold[i]-out_var[i])<thresh), "fail in var {}".format(i)
 

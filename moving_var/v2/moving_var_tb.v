@@ -38,6 +38,11 @@ initial begin
     $dumpfile("traces.vcd");
     $dumpvars();
 end
+reg [31:0] counter=0;
+always@(posedge clk)begin
+    if(dout_valid)
+        counter <= counter+1;
 
+end
 
 endmodule

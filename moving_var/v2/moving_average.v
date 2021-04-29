@@ -51,7 +51,7 @@ bram_infer #(
 );
 
 
-reg signed [DIN_WIDTH-1:0] comb_reg=0;
+reg signed [DIN_WIDTH+1:0] comb_reg=0;
 /*
 always@(posedge clk)begin
     if(din_valid)begin

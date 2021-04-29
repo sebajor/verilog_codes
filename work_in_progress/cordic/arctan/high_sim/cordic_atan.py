@@ -143,6 +143,7 @@ def cordic_bin_quant_atan(y,x, iters=16):
         x_new = x_i-y_i*d_i*2.**(-i)
         y_new = y_i+x_i*d_i*2.**(-i)
         z_new = z_i-d_i*(int(np.arctan(2**(-i))*1./np.pi*2**15)/2.**15)
+        print("di:%i \t z_new:%.4f \t y_new:%.4f \t x_new:%.4f"%(d_i,z_new,y_new, x_new))
         if(y_new==0):
             break
         if(y_new>0):
