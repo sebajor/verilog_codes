@@ -1,4 +1,4 @@
-dut=arctan2
+dut=arctan
 SIM=icarus
 TOPLEVEL_LANG = verilog
 VERILOG_SOURCES = $(shell pwd)/$(dut)_tb.v
