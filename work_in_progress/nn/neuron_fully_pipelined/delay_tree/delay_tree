@@ -1,0 +1,117 @@
+#! /usr/bin/vvp
+:ivl_version "10.1 (stable)";
+:ivl_delay_selection "TYPICAL";
+:vpi_time_precision + 0;
+:vpi_module "system";
+:vpi_module "vhdl_sys";
+:vpi_module "v2005_math";
+:vpi_module "va_math";
+S_0x556820f1b8b0 .scope module, "delay_tree" "delay_tree" 2 3;
+ .timescale 0 0;
+    .port_info 0 /INPUT 1 "clk"
+    .port_info 1 /INPUT 8 "din"
+    .port_info 2 /INPUT 1 "din_valid"
+    .port_info 3 /OUTPUT 32 "dout"
+    .port_info 4 /OUTPUT 1 "dout_valid"
+P_0x556820f1ae90 .param/l "DIN_WIDTH" 0 2 4, +C4<00000000000000000000000000001000>;
+P_0x556820f1aed0 .param/l "STAGES" 0 2 5, +C4<00000000000000000000000000000011>;
+L_0x556820edb780 .functor BUFZ 32, v0x556820f193e0_0, C4<00000000000000000000000000000000>, C4<00000000000000000000000000000000>, C4<00000000000000000000000000000000>;
+o0x7f3c7bcf70a8 .functor BUFZ 1, C4<z>; HiZ drive
+v0x556820f191b0_0 .net "clk", 0 0, o0x7f3c7bcf70a8;  0 drivers
+o0x7f3c7bcf70d8 .functor BUFZ 8, C4<zzzzzzzz>; HiZ drive
+v0x556820f19a40_0 .net "din", 7 0, o0x7f3c7bcf70d8;  0 drivers
+o0x7f3c7bcf7108 .functor BUFZ 1, C4<z>; HiZ drive
+v0x556820f19110_0 .net "din_valid", 0 0, o0x7f3c7bcf7108;  0 drivers
+v0x556820f19480_0 .net "dout", 31 0, L_0x556820edb780;  1 drivers
+v0x556820f3d0a0_0 .net "dout_valid", 0 0, L_0x556820f3d330;  1 drivers
+v0x556820f3d1b0_0 .var "valid", 2 0;
+L_0x556820f3d330 .part v0x556820f3d1b0_0, 2, 1;
+S_0x556820f1bb50 .scope generate, "outer[0]" "outer[0]" 2 24, 2 24 0, S_0x556820f1b8b0;
+ .timescale 0 0;
+P_0x556820f1bd20 .param/l "i" 0 2 24, +C4<00>;
+v0x556820f19250_0 .var "din_r", 7 0;
+S_0x556820f1bdc0 .scope generate, "genblk2" "genblk2" 2 26, 2 26 0, S_0x556820f1bb50;
+ .timescale 0 0;
+E_0x556820f11820 .event posedge, v0x556820f191b0_0;
+S_0x556820f3bdb0 .scope generate, "outer[1]" "outer[1]" 2 24, 2 24 0, S_0x556820f1b8b0;
+ .timescale 0 0;
+P_0x556820f3bfc0 .param/l "i" 0 2 24, +C4<01>;
+v0x556820f192f0_0 .var "din_r", 15 0;
+S_0x556820f3c080 .scope generate, "genblk3" "genblk3" 2 26, 2 26 0, S_0x556820f3bdb0;
+ .timescale 0 0;
+S_0x556820f3c250 .scope generate, "inner[0]" "inner[0]" 2 31, 2 31 0, S_0x556820f3c080;
+ .timescale 0 0;
+P_0x556820f3c460 .param/l "j" 0 2 31, +C4<00>;
+S_0x556820f3c580 .scope generate, "outer[2]" "outer[2]" 2 24, 2 24 0, S_0x556820f1b8b0;
+ .timescale 0 0;
+P_0x556820f3c770 .param/l "i" 0 2 24, +C4<010>;
+v0x556820f193e0_0 .var "din_r", 31 0;
+S_0x556820f3c830 .scope generate, "genblk3" "genblk3" 2 26, 2 26 0, S_0x556820f3c580;
+ .timescale 0 0;
+S_0x556820f3ca00 .scope generate, "inner[0]" "inner[0]" 2 31, 2 31 0, S_0x556820f3c830;
+ .timescale 0 0;
+P_0x556820f3cc10 .param/l "j" 0 2 31, +C4<00>;
+S_0x556820f3ccf0 .scope generate, "inner[1]" "inner[1]" 2 31, 2 31 0, S_0x556820f3c830;
+ .timescale 0 0;
+P_0x556820f3cee0 .param/l "j" 0 2 31, +C4<01>;
+    .scope S_0x556820f1bdc0;
+T_0 ;
+    %wait E_0x556820f11820;
+    %load/vec4 v0x556820f19a40_0;
+    %assign/vec4 v0x556820f19250_0, 0;
+    %jmp T_0;
+    .thread T_0;
+    .scope S_0x556820f3c250;
+T_1 ;
+    %wait E_0x556820f11820;
+    %load/vec4 v0x556820f19250_0;
+    %parti/s 8, 8, 5;
+    %replicate 2;
+    %assign/vec4 v0x556820f192f0_0, 0;
+    %jmp T_1;
+    .thread T_1;
+    .scope S_0x556820f3ca00;
+T_2 ;
+    %wait E_0x556820f11820;
+    %load/vec4 v0x556820f192f0_0;
+    %parti/s 8, 16, 6;
+    %replicate 2;
+    %ix/load 4, 0, 0;
+    %ix/load 5, 0, 0;
+    %flag_set/imm 4, 0;
+    %assign/vec4/off/d v0x556820f193e0_0, 4, 5;
+    %jmp T_2;
+    .thread T_2;
+    .scope S_0x556820f3ccf0;
+T_3 ;
+    %wait E_0x556820f11820;
+    %load/vec4 v0x556820f192f0_0;
+    %parti/s 8, 16, 6;
+    %replicate 2;
+    %ix/load 4, 16, 0;
+    %ix/load 5, 0, 0;
+    %flag_set/imm 4, 0;
+    %assign/vec4/off/d v0x556820f193e0_0, 4, 5;
+    %jmp T_3;
+    .thread T_3;
+    .scope S_0x556820f1b8b0;
+T_4 ;
+    %pushi/vec4 0, 0, 3;
+    %store/vec4 v0x556820f3d1b0_0, 0, 3;
+    %end;
+    .thread T_4;
+    .scope S_0x556820f1b8b0;
+T_5 ;
+    %wait E_0x556820f11820;
+    %load/vec4 v0x556820f3d1b0_0;
+    %parti/s 2, 0, 2;
+    %load/vec4 v0x556820f19110_0;
+    %concat/vec4; draw_concat_vec4
+    %assign/vec4 v0x556820f3d1b0_0, 0;
+    %jmp T_5;
+    .thread T_5;
+# The file index is used to find the file name in the following table.
+:file_names 3;
+    "N/A";
+    "<interactive>";
+    "delay_tree.v";
