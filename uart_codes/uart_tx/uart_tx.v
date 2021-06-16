@@ -4,12 +4,12 @@ module uart_tx #(
     parameter CLK_FREQ = 25_000_000,
     parameter BAUD_RATE = 115200
 ) (
-    input [7:0] axis_tdata,
-    input axis_tvalid,
-    output axis_tready,
+    input wire [7:0] axis_tdata,
+    input wire axis_tvalid,
+    output wire axis_tready,
 
-    input clk,
-    output tx_data
+    input wire clk,
+    output wire tx_data
 );
     localparam N_TICKS = CLK_FREQ/BAUD_RATE;
     
