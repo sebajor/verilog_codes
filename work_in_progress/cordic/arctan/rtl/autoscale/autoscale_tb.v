@@ -9,7 +9,8 @@ module autoscale_tb #(
     input wire [DIN_WIDTH-1:0] din1, din2,
     input wire din_valid,
     output wire [DIN_WIDTH-1:0] dout1, dout2,
-    output wire dout_valid
+    output wire dout_valid,
+    output wire [$clog2(DIN_WIDTH)-1:0] shift_value
 );
 
 
@@ -24,7 +25,8 @@ autoscale #(
     .din_valid(din_valid),
     .dout1(dout1),
     .dout2(dout2),
-    .dout_valid(dout_valid)
+    .dout_valid(dout_valid),
+    .shift_value(shift_value)
 );
 
 initial begin

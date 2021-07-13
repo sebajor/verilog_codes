@@ -32,5 +32,24 @@ async def write_read(dut):
     for i in range(32):
         value = await axim.read(4*i)
         assert value == i, ("Register at addr %i is 0x%08X" %(i, int(value)))
+    await backpreassure(dut)
+
+async def backpreassure(dut):
+    dut.AXIML_ARADDR <= 4*10
+    dut.AXIML_ARVALID <= 1
+    await Timer(CLK_PERIOD, units='ns')
+    dut.AXIML_ARADDR <= 4*11
+    dut.AXIML_ARVALID <= 1
+    dut.AXIML_RREADY <= 0
+    await Timer(CLK_PERIOD, units='ns')
+    dut.AXIML_ARADDR <= 4*12
+    dut.AXIML_ARVALID <= 1
+    await Timer(CLK_PERIOD, units='ns')
+    dut.AXIML_ARVALID <= 0
+    dut.AXIML_RREADY <= 0
+    await Timer(10*CLK_PERIOD, units='ns')
+    dut.AXIML_RREADY <= 1
+    await Timer(10*CLK_PERIOD, units='ns')
+
 
 

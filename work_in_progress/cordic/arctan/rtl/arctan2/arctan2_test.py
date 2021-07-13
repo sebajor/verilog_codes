@@ -41,8 +41,8 @@ async def arctan2_test(dut, din_width=16, dout_width=16, iters=32):
     np.random.seed(10)
     din1 = np.random.random(iters)-0.5
     din2 = np.random.random(iters)-0.5
-    #din1 = np.ones(iters)*0.4178 
-    #din2 = np.ones(iters)*0.4531
+    #din1 = np.ones(iters)*0.959 
+    #din2 = np.ones(iters)*0.0305
     
     dut.y <=0
     dut.x <=0
@@ -68,9 +68,10 @@ async def arctan2_test(dut, din_width=16, dout_width=16, iters=32):
                 out = two_comp_unpack(out, dout_width, 1)
                 out_vals.append(out)
             if(sys_rdy):
+                await ClockCycles(dut.clk, 3)
                 break
 
     for i in range(len(out_vals)):
-        #print("x: %.4f \n y: %.4f" %(din1[i], din2[i]))
+        print("x: %.4f \n y: %.4f" %(din1[i], din2[i]))
         print("gold: %.4f \t out:%.4f"%(gold_vals[i], out_vals[i]))
-        #print("")
+        print("")
