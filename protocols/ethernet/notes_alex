@@ -1,0 +1,153 @@
+MII:
+eth_mac_mii_fifo:
+    -fifos to cross clock domains
+    -instantiate eth_mac_mii
+
+eth_mac_mii:
+    -instantiate mii_phy_if: interface with the mii, it uses ssio_sdr_in who gets the
+    input buffer primitive for the pin
+    -instantiate eth_mac_1g
+
+eth_mac_1g:
+    -instantiate axis_gmii_rx and axis_gmii_tx
+
+axis_gmii_rx:
+    ***axis_gmii has an mii_select input, which uses 2 of the 5 delay registers
+    to generate the 8 bit words. Also like we would need 2 cycles to have a new
+    word he generate an enable signal (mii_odd) to have a valid word.
+    -First he pass the input rxd, rx_dv, rx_err for a 5 regs synchronizer
+    -Instantiate a LFSR galois to calculate the FCS. The lfsr has as input a
+    state, so when there is no package you have to give the state 0xFFFFFFFF
+    -There is state machine with 3 states:
+        1) IDLE: waits until rx_dv & ~rx_err & (rxd ==SFD), and also could check
+        if the previous values are a premable
+        2) PAYLOAD: Now he let the lfsr to update its state with the previous
+        state calculated from the prev word. If there is an error (rx_er) go to 
+        wait the LAST WORD. 
+        If the !rx_dv, like we have 5 delays we could check the last 4bytes which
+        are the FCS received anc compare it we the current state of the lfsr.
+        {rx_d0, rx_d1, rx_d2, rxd3} == ~crc_state   //we have to negate the lfsr state
+        if its rigth 
+        3)WAIT_LAST: wait until ~rx_dv to start again
+    
+axis_gmii_tx:
+    -It uses the axi-stream signals to create the control signals.
+    -FSM:
+        -IDLE: idem, rst_crc to 0xFF...F, wait until tvalid signal to go the PREAMBLE state
+        -PREAMBLE: for 6 cycles send the preamble signal, for the seventh it send SFD and
+        go to the PAYLOAD state, also when changing to the PAYLOAD state he rise the
+        tready signal, so then allows the transactions between the modules.
+        -PAYLOAD: start to update the crc lfsr, nd count the size of the packet 
+        with counter frame_ptr_count. if tlast we have two options if tuser[0] 
+        -> go to IFG, else go to LAST state; 
+        if ~tvalid there was an error and we go to WAIT_END
+        -LAST: send the last word. If the length is less than the minimum 
+        we need to add bytes go to PAD, else go to FCS
+        -PAD: add zeros until the packet, when the pkt size is minimum go to 
+        FCS. When moving to FCS, reset the frame_ptr_reg (the counter)
+        -FCS: stop to add data to the lfsr, in each cycle add 1 to frame_ptr_counter
+        and set the txd with ~crc_state (it uses 4 bytes, so we need 4 cycles).
+        When the counter>3 we go to the IFG state.
+        -WAIT_END: wait until tvalid & tlast to go to IDLE, if the frame_ptr_reg<ifg_delay
+        we go to the IFG
+
+        -IFG:send the IFG
+
+##check, like the PREAMBLE start with tvalid we lost 8 bytes of tdata?? check with the sim..    
+## Nop, when the fifo is ready it pulls the tvalid signal but is only after the SFD 
+## he rise the tready signal
+
+
+
+GMII: Uses the same principle of the mii 
+-eth_mac_1g_gmii_fifo: eth_mac_1g_gmii+fifos 
+
+-eth_mac_1g_gmii: instantiate gmi_phy_if_inst and the eth_mac_1g.
+    Also this module control the autonegotatiaon of speed, for that at reset start
+    2 counters using the different clocks and compare them.
+    The register speed_reg encode the speed:
+        00 = 100mbps
+        01 = 1000mbps
+        10 = 10000mbps
+    With this he select the mii_select for the mac
+
+-gmii_phy_if: uses the sdr_in using the typical BUFG for the clock input and register
+    the signals. The main difference with the mii is that uses a ODDR for the output
+    and invert the clock ouptut.
+    it also has the BUFGMUX to select if use the gtx_clk or the tx_clk
+
+-gmi_phy_inst: in this case we use IODDR for the io, and bufr (or bufg) for the clocks
+
+
+--------------------------------------------------------------------------------------
+You have to cascade the mac output with this modules
+
+-eth_axis_rx: receive the axi stream data from eth_mac_** and separate the fields
+-eth_axis_tx: idem
+
+-------------------------------------------------------------------------------------
+Now after the data is separated by field you could take the payload and use it
+
+-udp_complete: udp with ipv4 and arp.. Top level for udp stack.
+    for the rx, first check the protocol: 0x11-> udp, if not is clasified as ipv4.
+    instantiate ip_arb_mux, ip_complete and udp modules.
+
+-ip_arb_mux: Decides between the ip_complete and the udp output signals
+    ie which one the system has to transmit.
+
+
+***from here pure ipv4 protocol
+-ip_complete: integrate IP and arp modules to have a complete IP stack..
+    take the eth_frames generated, and create the ip fields.
+    first check the type of packet, if eth_type=0x0800->ip, if 0x0806->arp
+    Then instantiate eth_arb_mux.
+    Next instantiate the ip module and the arp module
+
+-eth_arb_mux: decides between the arp and ip payload output. (needs the priority encoder module!!)
+
+-ip: ipv4 for 8 bit width, has an interface to communicate with the arp module
+    to make MAC address lookup.
+    First instantiate ip_eth_rx and ip_eth_tx.. 
+    (Seems like that for each outgoing message the ip ask to the arp module for the
+    mac address)
+
+-ip_eth_rx: receive ethernet frame and output ip fieds.
+
+-ip_eth_tx: receive ip frame and output eth frame
+
+***from here arp
+-arp: have as input and output ethernet fields, but also has a arp request inputs
+    to talk with the ip module.
+    Instantiate the arp_eth_rx and arp_eth_tx. 
+    But also instantiate the arp_cach, there the system store the ip address-mac
+    relationship.
+    He also makes a fsm to respond the arp request from the outside.
+
+-arp_eth_rx: get the eth frame and takes generate the arp fields.
+
+-arp_eth_tx: get arp frame and generate eth fields
+
+-arp_cache: save mac addresses in a memory, he make a hash for each value
+    using a lfsr... so to save it you use the lfsr and to read it too (why?)
+    
+
+***from here there are just udp protocol
+-udp: it accepts ip fields and generate the udp fields  
+    instantiate udp_ip_rx, (optionally udp_checksum_gen) and udp_ip_tx
+
+-udp_checksum_gen: generate the checksum, receive the udp fields inputs and calculate
+    the checksum, packet lenght, etc, and output other udp fields.. 
+    usefull if you are sending data (CHECK THIS!,..yes is for that)
+
+-udp_ip_rx: receive an ip frame and output a udp frame in axi stream like signals
+    ie it receive the data from the ip and obtain the fields of the udp
+
+-udp_ip_tx: receive the udp fields, build the ip frame.
+
+
+
+
+
+
+
+

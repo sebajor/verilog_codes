@@ -20,5 +20,5 @@ async def sqrt_fix_test(dut, din_width=8, din_pt=6, iters=255, thresh=0.01):
         dut.din_valid <=0
         await ClockCycles(dut.clk, cycles+1)
         out = int(dut.dout.value)
-        #print("gold: %.2f \t rtl: %f" %(np.sqrt(din/(2**din_pt)), out/2.**din_pt))
+        print("gold: %.2f \t rtl: %f" %(np.sqrt(din/(2**din_pt)), out/2.**din_pt))
         assert ((np.sqrt(din)-out)<thresh), "Error"

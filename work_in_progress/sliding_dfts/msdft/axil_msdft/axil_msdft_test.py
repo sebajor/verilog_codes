@@ -98,11 +98,16 @@ async def axil_msdft_test(dut, iters=180, dft_len=128, k=55, din_width=8, din_pt
     #dat_re = np.zeros(iters)
     #dat_im = np.ones(iters)*0.5
     n = np.arange(iters)
-    dat_re = 0.9*np.sin(2*np.pi*k*n/dft_len)
-    dat_im = 0.1*np.sin(2*np.pi*k*n/dft_len)#np.zeros(iters)
+    #dat_re = 0.9*np.sin(2*np.pi*k*n/dft_len)
+    #dat_im = 0.1*np.sin(2*np.pi*k*n/dft_len)#np.zeros(iters)
+    angle = 0
+    dat = 0.9*np.exp(1j*(2*np.pi*k*n/dft_len+np.deg2rad(angle)))
+    dat_re = dat.real
+    dat_im = dat.imag
     ###
     test = await write_data(dut, dat_re, dat_im, dft_len, k, din_width, 
             din_pt, dout_width, dout_pt)
+    """
     k = 20
     test_twidd = await write_twiddle_factors(dut, axil_master, dft_len, k)
     
@@ -114,9 +119,9 @@ async def axil_msdft_test(dut, iters=180, dft_len=128, k=55, din_width=8, din_pt
     await ClockCycles(dut.clk, 1)
     test = await write_data(dut, dat_re, dat_im, dft_len, k, din_width, 
             din_pt, dout_width, dout_pt)
+    """
     
-
-
+        
 
 
 
