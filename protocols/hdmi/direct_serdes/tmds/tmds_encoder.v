@@ -19,12 +19,12 @@ wire [9:0] video_coding;
 assign video_coding = q_out;
 
 reg [3:0] N1=0;
-reg [4:0] N1_q=0, N0_q=0;
+reg signed [4:0] N1_q=0, N0_q=0;
 
 always@(*)begin
     N1 = video_data[0]+video_data[1]+video_data[2]+video_data[3]+
         video_data[4]+video_data[5]+video_data[6]+video_data[7];
-    N1_q = q_m[0]+q_m[1]+q_m[2]+q_m[3]+q_m[4]+q_m[7];
+    N1_q = q_m[0]+q_m[1]+q_m[2]+q_m[3]+q_m[4]+q_m[5]+q_m[6]+q_m[7];
     N0_q = 8-N1_q;
 end
 
@@ -32,6 +32,7 @@ reg signed [4:0] acc_add=0;
 reg signed [4:0] acc=0;
 
 integer i;
+reg [1:0] debug=0;
 always@(*)begin
     //intermediate encoding
     q_m[0] = video_data[0];
@@ -45,27 +46,31 @@ always@(*)begin
         for(i=0; i<7; i=i+1)begin
             q_m[1+i] = q_m[i] ^ video_data[i+1];
         end
-        q_m[8] = 1'b0;
+        q_m[8] = 1'b1;
     end
     //second encoding (could be synchronous, and pipeline the other fields too?)
     if(acc==0 |  (N1_q == N0_q))begin
         if(q_m[8])begin
+            debug <=0;
             q_out = {~q_m[8], q_m};
             acc_add = N1_q-N0_q;
         end
         else begin
+            debug <= 1;
             q_out = {~q_m[8], q_m[8], ~q_m[7:0]};
             acc_add = N0_q-N1_q;
         end
     end
     else begin
         if(acc>0 & (N1_q>N0_q) | (acc<0 & (N1_q <N0_q)))begin
+            debug <=2;
             q_out = {1'b1, q_m[8], ~q_m[7:0]};
-            acc_add = (N0_q-N1_q)+(q_m[8]<<1);
+            acc_add = $signed(N0_q-N1_q)+({3'b0,q_m[8],1'b0});  //thats qm[8]<<1
         end 
         else begin 
+            debug <= 3;
             q_out = {1'b0, q_m[8:0]};
-            acc_add = (N1_q-N0_q)-((~q_m[8])<<1);
+            acc_add = $signed(N1_q-N0_q)-$signed({3'd0,~q_m[8],1'b0});
         end
     end
 end
@@ -73,9 +78,9 @@ end
 
 always@(posedge pxl_clk)begin
     if(mode==1)
-        acc <= 0;
-    else
         acc <= $signed(acc)+$signed(acc_add);
+    else
+        acc <= 0;
 end
 
 
