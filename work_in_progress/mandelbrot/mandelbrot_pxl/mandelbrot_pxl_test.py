@@ -1,0 +1,63 @@
+import cocotb
+import numpy as np
+from cocotb.clock import Clock
+from cocotb.triggers import ClockCycles, RisingEdge
+import two_comp
+
+def gold_pxl(val, c, pxl_iters, din_int):
+    max_val = 2**din_int-1
+    counter =0
+    tmp = np.copy(val)
+    for i in range(pxl_iters):
+        if((tmp.real>max_val) or (tmp.imag>max_val)):
+            break
+        else:
+            tmp = tmp**2+c
+            counter +=1
+    return counter
+        
+
+@cocotb.test()
+async def mandelbrot_pxl_test(dut, iters=50, pxl_iters=128, din_pt=12):
+    c = 0.5+0.2j
+    din_int = 32-din_pt
+    cocotb.fork(Clock(dut.clk, 10, units='ns').start())
+    dut.x_init<=0; dut.y_init <=0;
+    c_re = two_comp.two_comp_pack(np.array([c.real]), 32, din_pt)
+    c_im = two_comp.two_comp_pack(np.array([c.imag]), 32, din_pt)
+    dut.c_re <=int(c_re);  
+    dut.c_im <=int(c_im);
+    dut.iters <= pxl_iters
+    dut.din_valid <=0;
+    await ClockCycles(dut.clk, 1)
+    np.random.seed(30)
+    #din_val_re = 2*(np.random.random(iters)-0.5)
+    #din_val_im = 2*(np.random.random(iters)-0.5)
+    #din_val_re = np.linspace(-1, 1, iters)
+    #din_val_im = np.linspace(-1, 1, iters)
+    din_val_re = np.ones(iters)*-0.15
+    din_val_im = np.ones(iters)*-0.6
+    din_re = two_comp.two_comp_pack(din_val_re, 32, din_pt)
+    din_im = two_comp.two_comp_pack(din_val_im, 32, din_pt)
+    for i in range(iters):
+        dut.din_valid <=1
+        dut.x_init <= int(din_re[i])
+        dut.y_init <= int(din_im[i])
+        #dut.c_re <= int(din_re[i])
+        #dut.c_im <= int(din_im[i])
+        dut.c_im <= int(c_im)
+        dut.c_re <= int(c_re)
+        await ClockCycles(dut.clk,1)
+        dut.din_valid <=0;
+        await RisingEdge(dut.dout_valid)
+        gold = gold_pxl(din_val_re[i]+1j*din_val_im[i], c,pxl_iters, din_int)
+        #gold = gold_pxl(din_val_re[i]+1j*din_val_im[i], din_val_re[i]+1j*din_val_im[i],pxl_iters, din_int)
+        rtl_out = int(dut.dout.value)
+        print("%.4f, %.4f"%(din_val_re[i], din_val_im[i]))
+        print('gold:%i \t rtl:%i' %(gold, rtl_out))
+
+
+
+
+    
+
