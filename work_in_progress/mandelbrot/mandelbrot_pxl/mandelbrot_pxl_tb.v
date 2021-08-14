@@ -39,10 +39,10 @@ always@(posedge clk)begin
     else
         time_count <= time_count+1;
 end
-
+/*
 initial begin
     $dumpfile("traces.vcd");
     $dumpvars();
 end
-
+*/
 endmodule

@@ -1,11 +1,11 @@
-dut=mandelbrot_top
+dut=dram2tge
 SIM=icarus
 
 WAVES ?= 0
 
 TOPLEVEL_LANG = verilog
-VERILOG_SOURCES = $(shell pwd)/$(dut).v
-TOPLEVEL = $(dut)
+VERILOG_SOURCES = $(shell pwd)/$(dut)_tb.v
+TOPLEVEL = $(dut)_tb
 MODULE = $(dut)_test 
 
 ifeq ($(WAVES), 1)

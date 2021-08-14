@@ -7,8 +7,7 @@ module mandelbrot_line_tb #(
     parameter DIN_WIDTH = 32,
     parameter DIN_POINT = 12,
     parameter N_COMP = 4,
-    parameter LINE_INDEX =0,
-    parameter TYPE = "CUSTOM"    //"BASIC" or "CUSTOM"
+    parameter LINE_INDEX =0
 ) (
     input wire clk,
     input wire rst,
@@ -27,16 +26,14 @@ module mandelbrot_line_tb #(
     output wire line_rdy
 );
 
-
 mandelbrot_line #(
     .BIT_WIDTH(BIT_WIDTH),
     .BIT_HEIGHT(BIT_HEIGHT),
     .DIN_WIDTH(DIN_WIDTH),
     .DIN_POINT(DIN_POINT),
     .N_COMP(N_COMP),
-    .LINE_INDEX(LINE_INDEX),
-    .TYPE(TYPE)
-) line_inst (
+    .LINE_INDEX(LINE_INDEX)
+) mandelbrot_line_inst (
     .clk(clk),
     .rst(rst),
     .x_i(x_i),
@@ -51,10 +48,5 @@ mandelbrot_line #(
     .cy(cy),
     .line_rdy(line_rdy)
 );
-
-initial begin
-    $dumpfile("traces.fst");
-    $dumpvars();
-end
 
 endmodule

@@ -5,8 +5,8 @@ module mandelbrot_top #(
     parameter BIT_WIDTH = 200,//640,
     parameter BIT_HEIGHT = 200,//480,
     parameter DIN_WIDTH = 32,
-    parameter DIN_POINT = 12,
-    parameter N_COMP = 8,
+    parameter DIN_POINT = 20,
+    parameter N_COMP = 4,
     parameter TYPE = "BASIC"    //"BASIC" or "CUSTOM"
 
 ) (

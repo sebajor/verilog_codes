@@ -55,8 +55,30 @@ async def mandelbrot_pxl_test(dut, iters=50, pxl_iters=128, din_pt=12):
         rtl_out = int(dut.dout.value)
         print("%.4f, %.4f"%(din_val_re[i], din_val_im[i]))
         print('gold:%i \t rtl:%i' %(gold, rtl_out))
+    """
+    x0=-2; y0=-2; x_size=200; y_size=200; step=4./x_size
+    await mandelbrot_image(dut, x0,y0,step,x_size, y_size, din_pt)
+    """
 
-
+async def mandelbrot_image(dut,x0, y0, step, x_size=200, y_size=200, din_pt=12):
+    x_i, y_i, step_b = two_comp.two_comp_pack(np.array([x0,y0,step]), 32, din_pt)
+    data = np.zeros([x_size, y_size])
+    for i in range(y_size):
+        y_pos = y_i+i*step_b
+        for j in range(x_size):
+            x_pos = x_i+j*step_b
+            dut.x_init <= int(x_pos)
+            dut.y_init <= int(y_pos)
+            dut.c_re <= int(x_pos)
+            dut.c_im <= int(y_pos)
+            dut.din_valid <= 1
+            await ClockCycles(dut.clk,1)
+            dut.din_valid <=0
+            await RisingEdge(dut.dout_valid)
+            rtl_out = int(dut.dout.value)
+            data[j,i] = rtl_out
+    np.savetxt('data',data)
+    return 1
 
 
     

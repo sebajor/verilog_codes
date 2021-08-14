@@ -28,83 +28,76 @@ module mandelbrot_line #(
 
 localparam RAM_ADDR = $clog2(BIT_WIDTH*BIT_HEIGHT/N_COMP);
 
-reg [DIN_WIDTH-1:0] x0=0, x_actual=0, x_next=0;
-reg [DIN_WIDTH-1:0] y0=0, y_actual=0, y_next=0;
+reg [DIN_WIDTH-1:0] x0=0, y0=0;
+reg [DIN_WIDTH-1:0] x_actual=0, y_actual=0;
+
+
+reg [$clog2(BIT_WIDTH)-1:0] x_counter=0;
+reg [$clog2(BIT_HEIGHT)-1:0] y_counter=0;
 reg [31:0] x_step_r=0, y_step_r=0;
+reg [31:0] ram_counter=0;
 
-reg [31:0] x_counter=0, y_counter=0;
-reg [RAM_ADDR-1:0] ram_counter=0;
-reg pxl_calc_finish=0, pxl_calc_in_valid=0;
-
-wire pxl_calc_busy;
-wire pxl_calc_dout_valid;
+//mandelbrot pixel signals
+reg pxl_finish=0, pxl_din_valid=0;
+wire pxl_busy;
+wire pxl_dout_valid;
 
 
 always@(posedge clk)begin
     if(rst)begin
-        x0 <= x_i;  y0 <= y_i+LINE_INDEX;
-        x_step_r <= x_step; y_step_r <= y_step;
-        x_actual <= x_i; y_actual<=y_i;
-        x_counter<=0; y_counter <=0;
-        pxl_calc_in_valid <=1;
+        pxl_din_valid <=1; 
+        x_counter <= 0; y_counter <=0;
     end
     else begin
-        x_actual <= x_next;
-        y_actual <= y_next;
-        if(~pxl_calc_busy)begin
-            pxl_calc_in_valid <=0;
-        end
-        if(pxl_calc_dout_valid)begin
+        if(pxl_dout_valid)begin
+            pxl_din_valid <= ~pxl_finish;
             if(x_counter==(BIT_WIDTH-1))begin
                 x_counter <= 0;
                 y_counter <= y_counter+1;
-            end
-            else begin
+            end 
+            else
                 x_counter <= x_counter+1;
-            end
         end
-        else begin
-            //check!!!
-            pxl_calc_in_valid <= ~pxl_calc_finish;
-        end
+        else
+            pxl_din_valid <= 0;
     end
 end
 
-//ram 
 always@(posedge clk)begin
     if(rst)begin
-        ram_counter <=0;
-        pxl_calc_finish <= 0;
+        ram_counter <= 0;
+        pxl_finish <=0;
     end
-    else if(pxl_calc_dout_valid)begin
-        //ram counter index
-        if(ram_counter==(BIT_WIDTH*BIT_HEIGHT/N_COMP-1))
-            pxl_calc_finish <= 1;
+    else if(pxl_dout_valid)begin
+        if(ram_counter == (BIT_WIDTH*BIT_HEIGHT/N_COMP-1))
+            pxl_finish <=1;
         else
             ram_counter <= ram_counter+1;
     end
 end
 
-//next pxl position calculation
+
+
 always@(posedge clk)begin
     if(rst)begin
-        x_next <= x_i+x_step;
-        y_next <= y_i+LINE_INDEX;
+        x0 <= x_i; y0<=y_i+y_step*LINE_INDEX;
+        x_actual <= x_i; y_actual <= y_i+y_step*LINE_INDEX;
+        x_step_r <= x_step; y_step_r <= y_step;
     end
-    else if(pxl_calc_dout_valid)begin
-        if(x_counter==(BIT_WIDTH-1))begin
-            //check the condition!
-            y_next <= y_next+y_step*N_COMP;
-            x_next <= x0;
-        end
-        else begin
-            x_next <= x_next+x_step;
+    else begin
+        if(pxl_dout_valid)begin
+            if(x_counter==(BIT_WIDTH-1))begin
+                x_actual <= x0;
+                y_actual <= y_actual+y_step_r*(N_COMP);
+            end
+            else
+                x_actual <= x_actual+x_step_r;
         end
     end
 end
 
-wire [31:0] pxl_calc; 
-
+//madelbrot pxl
+wire [31:0] pxl_calc;
 generate
 if(TYPE=="CUSTOM")begin
 mandelbrot_pxl #(
@@ -117,10 +110,10 @@ mandelbrot_pxl #(
     .c_re(c_re),    //if I want the typical mandelbrot plot this is x_actual
     .c_im(c_im),    //and this one y_actual
     .iters(iters),
-    .din_valid(pxl_calc_in_valid),
-    .busy(pxl_calc_busy),
+    .din_valid(pxl_din_valid),
+    .busy(pxl_busy),
     .dout(pxl_calc),
-    .dout_valid(pxl_calc_dout_valid)
+    .dout_valid(pxl_dout_valid)
 );
 end
 else begin
@@ -131,29 +124,27 @@ mandelbrot_pxl #(
     .clk(clk),
     .x_init(x_actual),
     .y_init(y_actual),
-    .c_re(x_actual),    //if I want the typical mandelbrot plot this is x_actual
-    .c_im(y_actual),    //and this one y_actual
+    .c_re(x_actual), 
+    .c_im(y_actual),
     .iters(iters),
-    .din_valid(pxl_calc_in_valid),
-    .busy(pxl_calc_busy),
+    .din_valid(pxl_din_valid),
+    .busy(pxl_busy),
     .dout(pxl_calc),
-    .dout_valid(pxl_calc_dout_valid)
+    .dout_valid(pxl_dout_valid)
 );
-
-
 end
 endgenerate
 
+//ram address multiplex
 reg [RAM_ADDR-1:0] ram_addr;
 always@(*)begin
-    if(pxl_calc_finish)begin
+    if(pxl_finish)begin
         ram_addr = cx+cy[$clog2(BIT_HEIGHT)-1:$clog2(N_COMP)]*BIT_WIDTH;
     end
     else begin
         ram_addr = ram_counter;
     end
 end
-
 
 single_port_ram #(
     .RAM_WIDTH(32),
@@ -164,13 +155,13 @@ single_port_ram #(
     .addra(ram_addr),
     .dina(pxl_calc),
     .clka(clk),
-    .wea(pxl_calc_dout_valid & ~pxl_calc_finish),
+    .wea(pxl_dout_valid),
     .ena(1'b1),
     .rsta(1'b0),
     .regcea(),
     .douta(dout)
 );
 
-assign line_rdy = pxl_calc_finish;
+assign line_rdy = pxl_finish;
 
 endmodule

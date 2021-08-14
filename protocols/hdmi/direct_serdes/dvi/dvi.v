@@ -134,10 +134,12 @@ always@(posedge pxl_clk)begin
 end
 
 always@(posedge pxl_clk)begin
-    if(cy_r == (frame_height-1))
-        cy_r <=0;
-    else
-        cy_r <= cy_r+1;
+    if(cx_r==(frame_width-1))begin
+        if(cy_r == (frame_height-1))
+            cy_r <=0;
+        else
+            cy_r <= cy_r+1;
+    end
 end
 
 
@@ -155,7 +157,7 @@ always@(posedge pxl_clk)
 always@(pxl_clk)begin
     mode <= video_data_period;
     video_data <= rgb;
-    control_data <= {4'b0, {vsync, hsync}}; 
+    control_data <= {4'd0, {vsync, hsync}}; 
 end
 
 genvar i;
@@ -167,7 +169,7 @@ tmds_encoder #(
     .CHANNEL(i)  
 ) tmds_encoder_inst(
     .pxl_clk(pxl_clk),
-    .video_data(video_data[8*i+:8],
+    .video_data(video_data[8*i+:8]),
     .data_island(data_island[4*i+:4]),
     .control_data(control_data[i*2+:2]),
     .mode(mode), 
@@ -177,16 +179,17 @@ end
 
 endgenerate
 
-
 hdmi_phy_intf #(
     .CHANNELS(3)
-) hdmi_phy_intf_inst (
+) hdmi_phy_inst (
     .rst(1'b0),
     .pxl_clk(pxl_clk),
-    .pxl_clk_x5(pxl_clk_x5)  
+    .pxl_clk_x5(pxl_clk_x5), 
     .tmds_internal(tmds_internal),
     .phy_tmds_lane(phy_tmds_lanes),
     .phy_tmds_clk(phy_tmds_clk)
 );
 
 endmodule
+
+`default_nettype wire

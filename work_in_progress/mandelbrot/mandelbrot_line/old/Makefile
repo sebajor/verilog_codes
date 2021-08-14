@@ -1,11 +1,11 @@
-dut=mandelbrot_top
+dut=mandelbrot_line
 SIM=icarus
 
 WAVES ?= 0
 
 TOPLEVEL_LANG = verilog
-VERILOG_SOURCES = $(shell pwd)/$(dut).v
-TOPLEVEL = $(dut)
+VERILOG_SOURCES = $(shell pwd)/$(dut)_tb.v
+TOPLEVEL = $(dut)_tb
 MODULE = $(dut)_test 
 
 ifeq ($(WAVES), 1)
@@ -24,9 +24,9 @@ iverilog_dump.v:
 	echo 'endmodule' >> $@
 
 clean::
-	@rm -rf traces.vcd traces.fst
+	@rm -rf traces.vcd
 	@rm -rf results.xml
 	@rm -rf sim_build
 	@rm -rf __pycache__
-	@rm -rf *.del 
+	@rm -rf *.del
 	@rm -rf iverilog_dump.v
