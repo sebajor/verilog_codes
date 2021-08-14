@@ -1,0 +1,6 @@
+`include "rtl/dsp48_mult.v"
+`include "rtl/quad_root.v"
+`include "rtl/rom.v"
+`include "rtl/signed_cast.v"
+`include "rtl/unsign_cast.v"
+`include "rtl/sqrt_lut.v"
