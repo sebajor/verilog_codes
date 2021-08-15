@@ -1,28 +1,22 @@
 `default_nettype none
 `include "includes.v"
 
-//Direct form 1 biquad
-//H(z) = (b0+b1z+b2z**2)/(a0+a1z+a2z**2)    #we take a0=1
-
-module biaqud #(
+module biquad #(
     parameter DIN_WIDTH = 16,
     parameter DIN_POINT = 14,
-
     parameter COEF_WIDTH = 16,
     parameter COEF_POINT = 14,
-    
-    parameter ACC1_WIDTH = 32,  //first acc width (zeros)
+    parameter ACC1_WIDTH = 32,
     parameter ACC1_POINT = 14,
-    parameter ACC2_WIDTH = 32,  //second acc width (poles)
-    parameter ACC2_POINT = 14,  
+    parameter ACC2_WIDTH = 32,
+    parameter ACC2_POINT = 14
 ) (
-    input wire clk,
+    input wire clk, 
     input wire rst,
 
     input wire signed [DIN_WIDTH-1:0] din,
     input wire din_valid,
-
-    input wire signed [COEF_WIDTH-1:0] b0, b1, b2, a0, a1,
+    input wire signed [COEF_WIDTH-1:0] b0, b1,b2,a0,a1,
 
     output wire signed [ACC2_WIDTH-1:0] dout,
     output wire dout_valid
@@ -34,8 +28,8 @@ always@(posedge clk)begin
     din_dly2<= din;
 end
 
+//the mults add 3 delay
 localparam MUL1_POINT = DIN_POINT+COEF_POINT;
-
 wire signed [DIN_WIDTH+COEF_WIDTH-1:0] b0_mul, b1_mul, b2_mul;
 wire b0_mul_valid;
 dsp48_mult #(
@@ -44,7 +38,7 @@ dsp48_mult #(
     .DOUT_WIDTH(DIN_WIDTH+COEF_WIDTH)
 ) b0_mult (
     .clk(clk),
-    .rst(1'b0),
+    .rst(rst),
     .din1(din),
     .din2(b0),
     .din_valid(din_valid),
@@ -57,9 +51,9 @@ dsp48_mult #(
     .DIN1_WIDTH(DIN_WIDTH), 
     .DIN2_WIDTH(COEF_WIDTH),
     .DOUT_WIDTH(DIN_WIDTH+COEF_WIDTH)
-) b0_mult (
+) b1_mult (
     .clk(clk),
-    .rst(1'b0),
+    .rst(rst),
     .din1(din_dly),
     .din2(b1),
     .din_valid(din_valid),
@@ -71,9 +65,9 @@ dsp48_mult #(
     .DIN1_WIDTH(DIN_WIDTH), 
     .DIN2_WIDTH(COEF_WIDTH),
     .DOUT_WIDTH(DIN_WIDTH+COEF_WIDTH)
-) b0_mult (
+) b2_mult (
     .clk(clk),
-    .rst(1'b0),
+    .rst(rst),
     .din1(din_dly2),
     .din2(b2),
     .din_valid(din_valid),
@@ -81,37 +75,65 @@ dsp48_mult #(
     .dout_valid()
 );
 
-//add the zeros mult
-reg signed [DIN_WIDTH+COEF_WIDTH:0] add_b1=0, add_b0=0, b0_mul_dly=0;
-reg b0_mul_val_dly =0, b0_mul_val_dly2 =0
-always@(posedge clk)begin
-    b0_mul_dly <= $signed(b0_mul);
-    add_b1 <= $signed(b2_mul)+$signed(b1_mul);
-    add_b0 <= $signed(add_b1)+$signed(b0_mul_dly);
-    b0_mul_val_dly <= b0_mul_valid;
-    b0_mul_val_dly2 <= b0_mul_dly;
-end
-
-//convert 
-wire signed [ACC1_WIDTH-1:0] zeros;
-wire zeros_valid;
-
+//cast data into the ACC1 format
+wire signed [ACC1_WIDTH-1:0] b0mul_cast, b1mul_cast, b2mul_cast;
+wire b0mul_cast_valid;
 signed_cast #(
-    .DIN_WIDTH(DIN_WIDTH+COEF_WIDTH+1),
+    .DIN_WIDTH(DIN_WIDTH+COEF_WIDTH),
     .DIN_POINT(MUL1_POINT),
     .DOUT_WIDTH(ACC1_WIDTH),
     .DOUT_POINT(ACC1_POINT)
-) zeros_convert (
+) mul0_cast(
     .clk(clk), 
-    .din(add_b1),
-    .din_valid(b0_mul_val_dly2),
-    .dout(zeros),
-    .dout_valid(zeros_valid)
+    .din(b0_mul),
+    .din_valid(b0_mul_valid),
+    .dout(b0mul_cast),
+    .dout_valid(b0mul_cast_valid)
 );
 
+signed_cast #(
+    .DIN_WIDTH(DIN_WIDTH+COEF_WIDTH),
+    .DIN_POINT(MUL1_POINT),
+    .DOUT_WIDTH(ACC1_WIDTH),
+    .DOUT_POINT(ACC1_POINT)
+) mul1_cast(
+    .clk(clk), 
+    .din(b1_mul),
+    .din_valid(b0_mul_valid),
+    .dout(b1mul_cast),
+    .dout_valid()
+);
+signed_cast #(
+    .DIN_WIDTH(DIN_WIDTH+COEF_WIDTH),
+    .DIN_POINT(MUL1_POINT),
+    .DOUT_WIDTH(ACC1_WIDTH),
+    .DOUT_POINT(ACC1_POINT)
+) mul2_cast(
+    .clk(clk), 
+    .din(b2_mul),
+    .din_valid(b0_mul_valid),
+    .dout(b2mul_cast),
+    .dout_valid()
+);
 
-//poles
-reg signed [ACC2_WIDTH-1:0] pole=0, pole_dly=0, pole_dly2=0;
+//adders
+reg signed [ACC1_WIDTH-1:0] sum_b2_b1=0, delay_b0, acc1=0;
+reg acc1_valid=0, acc1_valid_pre=0;
+always@(posedge clk)begin
+    if(rst)begin
+        acc1_valid <=0;
+        sum_b2_b1 <=0;
+        delay_b0<=0;
+        acc1 <=0;
+    end
+    else if(b0mul_cast_valid)begin
+        sum_b2_b1 <= $signed(b2mul_cast)+$signed(b1mul_cast);
+        delay_b0 <= $signed(b0mul_cast);
+        acc1_valid_pre <=0;
+        acc1_valid <= acc1_valid_pre;
+        acc1 <=$signed(delay_b0)+$signed(sum_b2_b1);
+    end
+end
 
 
 endmodule
