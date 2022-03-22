@@ -1,0 +1,2 @@
+This implementation supouse that after one cycle of the request the dram
+respond.. the idea was to use it with a fifo that makes the interface
