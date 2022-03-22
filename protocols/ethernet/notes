@@ -1,0 +1,241 @@
+
+Basic ethernet frame:
+
+sw pov:
+
+dest addr | source addr| type | payload | CRC
+
+hw pov:
+IFG |preamble | sfd | data frame | CRC| IFG
+
+IFG= interframe gap
+
+-----Task of MAC
+-Enforce interframe GAP
+-Issue preamble and start frame delimiter (SFD or SOF)
+-Calculate/check CRC
+
+-------OSI-------
+MAC --> PCS (physical coding sublayer) ---> PMA 
+
+PCS: to mantain sync and DC balance 
+10Gbe 64b/66b encoding 
+
+
+PMA: physical medium access 
+    How we interface the phy (serdes, GTH, etc)
+
+
+
+-------Ethernet Frame (Wikipedia)---------
+
+-lsb is transmitted first
+
+-Preamble: 7byte of alternating 1-0
+-Start Frame delimiter: 10101011
+
+The connection of the PHY with the fabric have several implementations
+like MII, GMII, RGMII, XGMII, etc
+Each one of them have a different line numbers, so the preamble appears in different
+formats
+For ex in GMII: 0x55 0x55 0x55 0x55 0x55 0x55 0x55 0xD5
+
+DATA LINK LAYER:
+-Dest Mac address
+-Source Mac address
+-Ethernet type
+-Payload
+-FCS: frame checksum, CRC32 (its calculated in all the previous data link fields)
+
+
+PHYSICAL LAYER:
+-end of frame
+-Interpacket gap: after each packet the transmitter have to 
+transmit at least 12 bytes of idle line before send the next packet
+
+
+
+---------------------------------------------------------------
+
+Like we need the MAC address when we want to transmit a packet we
+use ARP (Address resolution protocol), where we set a broadcast mac and ask to the
+net devices to report their MACs.
+
+ICMP (Internet Control Message Protocol): there are tons, but the typical is ping
+
+Each of this protocols are defined in the Ethernet Type field of the packet.
+
+
+As stated:
+Preamble-SFD-MAC dest-MAC source-EthType-Payload - FCS - IGP
+    7   | 1 |   6    |    6     |   2   | 46-1500|  4  | 12  (bytes)
+
+
+ARP type: 0x0806
+
+**All this Fields are inside the payload of the Eth package**
+
+ARP: Hw type-protocol-HLEN-PLEN-Operation-hw addr sender- sender ip- hw addr recv- rev ip
+       2    |   2    | 1  |  1 |    2    |    6         |      4    |       6    |    4
+       
+hw type = 0x01
+protocol type= 0x80
+Hlen = 0x06
+Plen= 0x04
+operation: request--> 0x01; response-->0x02
+       
+**When make an arp request the target hw address is all zeros and
+the target MAC in the ethernet frame is 0xFFFFFFFFFFFF.
+This is broadcasting
+
+
+IP type: 0x0800
+
+**All this Fields are inside the payload of the Eth package**
+
+IP: Version|type|length|ID|flag|TTL|Protocol|Chks|source ip|dest ip| data
+        1  | 1  |  2   |2 |  2 | 1 |   1    |  2 |   4     |    4  |  --
+             
+Version: 0x4 (IPv4)
+type: 0x0
+len:  min 20bytes (header without data)-max 65535bytes
+ID: id of the group (dont care i think)
+
+flag: bit0: reserved; bit1:dont fragmented; bit2:more fragmented
+    I would said is zero
+
+TTL: time to live, if the transaction is not completed in the time set
+the packet is drop (is set in seconds), put 64
+
+ 
+protocol:  ICMP-->0x01      UDP-->0x11  TCP-->0x06
+
+Checksum: arrange all the bytes of the payload in 2 bytes pieces
+            add them, if the 32bit result has a carry in in the 
+            upper 16 bits add the 16 to the lower 16 (?)
+            Take one complement ( bitwise not)
+
+
+ICMP: Msg type| code | Chks| Quench | Data
+         1    |  1   |  2  |   4    |   -
+
+msg type: ping request-->0x8    ping response-->0x0
+quench: ?
+
+
+
+UDP: source port | dest port | pkt length | chks| data
+         2       |     2     |      2     |  2  |  -
+
+
+
+
+
+----------------ADITIONAL CONCEPTS---------------
+-Autonegotatiation: The sender and receiver adjust its clocks
+-Carrier Sense multiple access and collision detection (CSMA/CD):
+    When you have a shared medium you have to check if the medium is free,
+    and if there is a collision you have to handle it.
+    When you have full-duplex the collision cannot occur, because the
+    connection is point2point and have a tx and rx line.
+
+-Media independent interface: This is the connection between the phy and the mac
+
+MII: (100Mb/s) TXD and RXD are 4 bit wide synchronized by TX_CLK and RX_CLK.
+        TX_clk and  RX_clk are given by the phy.
+
+    At 100Mbps the clks are 25MHz.
+    The control signals are TX_ER, RX_ER which are errors signals, 
+    TX_EN, RX_DV which show the validity of the data send/recv.
+
+    For the configuration there is a MII management interface (MIIM), it has
+    2 wires MDC which is a clock given by the MAC and the MDIO which is the data signal
+    -->There is a set of registers with is correspondant numbers that the phy 
+    vendor has to implement.
+    
+GMII: (1000Mbps) Here the data bus RXD and TXD are 8 bit, the clock now goes up
+      to 125MHz.
+      
+      There are new signals: GTX_CLK which is the clock for the TX side is given by the
+      MAC   
+
+    Diagram:
+         |---->TX_EN------>| 
+         |---->TXD[7:0]--->|
+         |---->TX_ER------>|
+         |<----TX_CLK<-----|
+         |---->GTX_CLK---->|
+   FPGA  |<----RX_DV<------|  PHY
+         |<----RXD[7:0]<---|
+         |<----RX_ER<------|
+         |<----RX_CLK<-----|
+         |---->MDC-------->|
+         |<--->MDIO<------>|
+    
+
+
+
+------------------FPGA things------------------------------------
+
+Functions to implement:
+
+The TX data will be 8 bits followed by a fifo who cross the clock domains,
+the length of the package must be known and given to the core.
+
+We will need a warning signal and one of the clock that we are using
+Also, how to handle the 4 bits in MII? discard the 4 upper bits or detect the
+speed and have two ways to work with the module?
+
+-Clocking:
+    We will accept the TX_CLK from the PHY using an IBUFG.
+    Generate the GTX_CLK using a PLL or MCMME and output them usign a ODDR, which
+    will be enabled in the reset task.
+    The GTX and TX clk will be feed into a BUFGMUX.
+    When you reset the system we are going to start two counters, one will run 
+    with the GTX and other with the TX, comparting them we could decide which one
+    we need to use, and set it into the BUFGMUX which feed all the TX logic.
+	
+	##THIS WOULD BE A TRI-MODE MAC, BECAUSE WORKS IN 10/100/1000; WE COULD START SIMPLER
+	##JUST TARGETING ONE OF THE MODES
+    
+    Note that this should be made with async resets!
+    Also only when the 1000mbps is being used the GTX_CLK is needed so otherwise
+    the ODDR could remain not enabled.
+
+    To achieve the 2.5ns of setup and 0.5ns of hold of the GMII we could use
+    an OLOGIC2 output flipflop (FDRE) with the clock inverted.. so the changes
+    are in the falling edge on the TX side. To make that we could change the 
+    C0 and C1 in the ODDR to output the clock inverted to the rest of the net.
+    If the speed is slow than the 1000Mbps we dont care, is to slow to be a problem.
+
+
+    For the recv side the RX_CLK will be used. We need to sample in a 2ns window
+    To make that we have the following options:
+        1) Time contraint the fpga pin to meet the time req.
+        2) Use a Pll to induce a phase shift in the clock (but you shoud check the
+        minimum PLL freq, and if it will allow the 2.5MHz of the 10Mbps)
+        3)Using dedicated IO clock BUFIO2, insert a IODELAY in each line and 
+        measuring the skeew and compensate each line.
+        4) Use a PLL to set the phase shift, and also use a BUFGMUX to select the
+        frequencies that cant generate if the clock is slower than the required by
+        the PLL. 
+
+
+
+-We will need to configure the MIIM to support the full-duplex comm.
+
+MAC: 
+Framing:
+    TX: -Insert preamble+start frame
+        -Pad bytes if needed (We are not going to make this)
+        -FCS
+        -Enforce IPG
+    RX: -Verify start frame
+        -verify FCS
+        -verify packet lenght
+
+
+
+
+
+
