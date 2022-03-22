@@ -1,0 +1,62 @@
+Reading FPGA design i got some tips:
+
+--------------------------------------------------------
+-Read new data when writing 
+
+always@(posedge clk)begin
+    if(we)  ram[addr] = data; //blocking write
+    q<= ram[addr]               //reads new data
+end
+
+-Read old data
+always@(posedge clk)begin
+    if(we)  ram[addr] <= data; //non-blocking write
+    q<= ram[addr]               //reads old data
+end
+
+-------------------------------------------------------
+he said that when coding fsm the reset must be async or the compiler
+could detect the reset as state and could give some problems ie could get trap 
+in the reset state 
+
+localparam S0 = 0, S1 = 1, S2 = 2, S3 = 3;
+reg [2:0] state_reg;
+always@(posedge clk or negedge reset)
+    If (~reset)
+        state_reg <= S0;
+    else
+    case(state_reg)
+        S0: state_reg <= S1;
+        S1: state_reg <= S2;
+        S2: state_reg <= S3;
+        S3: state_reg <= S3;
+Endcase
+
+
+---------------------------------------------------------
+if(cond1)                           c   b
+    o<=a;                           |   |
+else if(cond2)          ----->   a   MUX -cond2
+    o<=b;                        |    |
+else                               MUX -cond1
+    o<=c                            |
+
+ie if-elseif-else uses cascaded muxes
+
+When there are to many branches is best to use case, that give us 
+an N mux
+
+------------------------------------------------------------
+timing:
+multicycle_path: the signal require more than one cycle to update its status
+        it has to be tell by the user to relax the timing analysis and 
+        the designer has to set the number of clks until the value gets update
+
+false_path: path that the analyzer shouldnt analyze. Are used commonly in the 
+        cross-clock paths
+
+input_delay: required time for the data to arrive related to the clock
+
+output_delay: idem
+
+
