@@ -76,39 +76,6 @@ signed_cast #(
     .dout_valid()
 );
 
-//unsigned cast
-//this is far from good.. but is logical that the ACC_INT > 2*DIN_INT, so 
-//if the user is logical chosing the parameters it should work 
-/*
-localparam ACC_INT = ACC_WIDTH-ACC_POINT;
-localparam CORR_POINT = 2*(DIN_WIDTH-DIN_POINT)+1; //check!
-
-reg [ACC_WIDTH-1:0] acc_pow1=0, acc_pow2=0;
-reg acc_pow_valid=0;
-generate
-    if(ACC_WIDTH<(2*DIN_WIDTH))begin
-        always@(posedge clk) begin
-            acc_pow1 <= din1_pow[CORR_POINT+ACC_INT-1-:ACC_WIDTH];
-            acc_pow2 <= din2_pow[CORR_POINT+ACC_INT-1-:ACC_WIDTH];
-            acc_pow_valid <= corr_valid;
-        end
-    end
-    else if(ACC_WIDTH == 2*DIN_WIDTH)begin
-        always@(posedge clk)begin
-            acc_pow1 <= din1_pow;
-            acc_pow2 <= din2_pow;
-            acc_pow_valid <= corr_valid;
-        end
-    end
-    else begin
-        always@(posedge clk)begin
-            acc_pow1 <= {{(2*DIN_WIDTH-CORR_POINT){1'b0}}, din1_pow};
-            acc_pow2 <= {{(2*DIN_WIDTH-CORR_POINT){1'b0}}, din2_pow};
-            acc_pow_valid <= corr_valid; 
-        end
-    end
-endgenerate
-*/
 
 wire [ACC_WIDTH-1:0] acc_pow1, acc_pow2;
 wire acc_pow_valid;
@@ -151,10 +118,12 @@ wire new_acc_vec = new_acc_r[7];
 wire signed [DOUT_WIDTH-1:0] corr_re_out, corr_im_out;
 wire corr_out_valid;
 
-signed_vacc #(
+
+vector_accumulator #(
     .DIN_WIDTH(ACC_WIDTH),
     .VECTOR_LEN(VECTOR_LEN),
-    .DOUT_WIDTH(DOUT_WIDTH)
+    .DOUT_WIDTH(DOUT_WIDTH),
+    .DATA_TYPE("signed")
 ) re_corr_vacc (
     .clk(clk),
     .new_acc(new_acc_vec),
@@ -165,10 +134,11 @@ signed_vacc #(
 );
 
 
-signed_vacc #(
+vector_accumulator #(
     .DIN_WIDTH(ACC_WIDTH),
     .VECTOR_LEN(VECTOR_LEN),
-    .DOUT_WIDTH(DOUT_WIDTH)
+    .DOUT_WIDTH(DOUT_WIDTH),
+    .DATA_TYPE("signed")
 ) im_corr_vacc (
     .clk(clk),
     .new_acc(new_acc_vec),
@@ -180,10 +150,11 @@ signed_vacc #(
 
 wire [DOUT_WIDTH-1:0] pow1_out, pow2_out;
 
-unsign_vacc #(
+vector_accumulator #(
     .DIN_WIDTH(ACC_WIDTH),
     .DOUT_WIDTH(DOUT_WIDTH),
-    .VECTOR_LEN(VECTOR_LEN)
+    .VECTOR_LEN(VECTOR_LEN),
+    .DATA_TYPE("unsigned")
 ) pow1_vacc (
     .clk(clk),
     .new_acc(new_acc_vec),
@@ -193,10 +164,11 @@ unsign_vacc #(
     .dout_valid()
 );
 
-unsign_vacc #(
+vector_accumulator #(
     .DIN_WIDTH(ACC_WIDTH),
     .DOUT_WIDTH(DOUT_WIDTH),
-    .VECTOR_LEN(VECTOR_LEN)
+    .VECTOR_LEN(VECTOR_LEN),
+    .DATA_TYPE("unsigned")
 ) pow2_vacc (
     .clk(clk),
     .new_acc(new_acc_vec),

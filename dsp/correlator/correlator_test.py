@@ -3,12 +3,12 @@ import cocotb
 from cocotb.triggers import ClockCycles, RisingEdge, FallingEdge
 from cocotb.clock import Clock
 import sys
-sys.path.append('../')
+sys.path.append('../../cocotb_python')
 from two_comp import two_comp_pack, two_comp_unpack
 
 @cocotb.test()
 async def correlator_test(dut, vec_len=64, iters=10, din_width=16, din_pt=14,
-        dout_width=32, dout_pt=16, thresh=0.01):
+        dout_width=32, dout_pt=16, thresh=0.01, cont=1, burst_len=10):
 
     cont_frames = 1
     back = 0
