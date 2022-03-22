@@ -1,8 +1,9 @@
 `default_nettype none
 
 /*
-2x2 auto correlation and cross correlation in the frequency
-in the frequency domain
+*   Author: Sebastian Jorquera
+*   2x2 auto correlation and cross correlation in the frequency
+*   in the frequency domain
 */
 
 module correlation_mults #(

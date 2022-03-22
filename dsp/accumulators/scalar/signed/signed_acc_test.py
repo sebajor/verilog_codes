@@ -6,6 +6,9 @@ import sys
 sys.path.append('../../../../cocotb_python/')
 from two_comp import two_comp_pack, two_comp_unpack
 
+###
+###     Author: Sebastian Jorquera
+###
 
 @cocotb.test()
 async def signed_acc_test(dut, iters=128, din_width=16, dout_width=32, acc_len=10,

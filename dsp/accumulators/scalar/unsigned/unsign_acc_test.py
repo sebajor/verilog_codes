@@ -4,6 +4,9 @@ from cocotb.triggers import ClockCycles, RisingEdge, FallingEdge
 from cocotb.clock import Clock
 import sys
 
+###
+###     Author: Sebastian Jorquera
+###
 
 @cocotb.test()
 async def unsigned_acc_test(dut, iters=128, din_width=16, dout_width=32, acc_len=10,

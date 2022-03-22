@@ -6,6 +6,10 @@ import sys
 sys.path.append('../../cocotb_python')
 from two_comp import two_comp_pack, two_comp_unpack
 
+###
+###     Author: Sebastian Jorquera
+###
+
 @cocotb.test()
 async def correlator_test(dut, vec_len=64, iters=10, din_width=16, din_pt=14,
         dout_width=32, dout_pt=16, thresh=0.01, cont=1, burst_len=10):

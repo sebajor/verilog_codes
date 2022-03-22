@@ -1,7 +1,8 @@
 `default_nettype none
 
 /*
-    accumulator, doesnt handle overflow! check your bitwidth
+*   Author: Sebastian Jorquera
+*   Accumulator, doesnt handle overflow! check your bitwidth
 */
 
 module unsign_acc #(

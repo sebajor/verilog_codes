@@ -2,7 +2,10 @@
 `include "correlation_mults.v"
 `include "includes.v"
 
-/* 2x2 correlator in the freq domain
+/*
+*   Author: Sebastian Jorquera
+*   2x2 correlator in the freq domain
+*
 */
 
 module correlator #(

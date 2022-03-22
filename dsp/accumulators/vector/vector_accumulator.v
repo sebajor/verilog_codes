@@ -1,5 +1,13 @@
 `default_nettype none
 
+
+/*
+*   Author: Sebastian Jorquera
+*   Vector accumulator, meant to accumulate FFT channels (like an integrator)
+*
+*/
+
+
 module vector_accumulator #(
     parameter DIN_WIDTH = 32,
     parameter VECTOR_LEN = 64,

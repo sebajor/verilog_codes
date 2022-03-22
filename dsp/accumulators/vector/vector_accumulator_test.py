@@ -5,6 +5,11 @@ from cocotb.clock import Clock
 from cocotb.triggers import ClockCycles, FallingEdge
 from two_comp import two_comp_pack, two_comp_unpack
 
+###
+### Author: Sebastian Jorquera
+###
+
+
 @cocotb.test()
 async def vector_accumulator_test(dut, din_width=16, dout_width=32, vec_len=64, iters=30,
         cont=0, back=3):
