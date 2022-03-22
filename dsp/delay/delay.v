@@ -1,6 +1,11 @@
 `default_nettype none
 
-// parametrizable delay using a shift register
+/*
+*   Author: Sebastian Jorquera
+*   Parametrizable delay using a shift register
+*
+*/
+
 
 module delay #(
     parameter DATA_WIDTH = 8,

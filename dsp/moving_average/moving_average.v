@@ -1,5 +1,10 @@
 `default_nettype none
-`include "includes.v"
+
+/*
+*   Author: Sebastian Jorquera
+*
+*
+*/
 
 
 module moving_average #(

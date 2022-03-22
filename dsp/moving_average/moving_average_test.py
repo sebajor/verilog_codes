@@ -6,6 +6,10 @@ import sys
 sys.path.append('../../cocotb_python')
 from two_comp import two_comp_pack, two_comp_unpack
 
+###
+###     Author: Sebastian Jorquera
+###
+
 def moving_average(data, win_len):
     ret = np.cumsum(data, dtype=float)
     ret[win_len:] = ret[win_len:] - ret[:-win_len]

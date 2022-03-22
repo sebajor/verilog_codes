@@ -1,4 +1,5 @@
 `default_nettype none
+`include "includes.v"
 `include "moving_average.v"
 
 module moving_average_tb #(
