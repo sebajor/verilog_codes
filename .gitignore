@@ -1,0 +1,7 @@
+*__pycache__*
+results.xml
+traces.vcd
+*xil_test*
+*sim_build*
+*.pdf
+*.del
