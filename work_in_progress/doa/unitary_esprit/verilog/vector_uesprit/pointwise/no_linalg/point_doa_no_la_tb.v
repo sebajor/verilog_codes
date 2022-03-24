@@ -8,7 +8,7 @@ module point_doa_no_la_tb #(
     //correlator parameters
     parameter VECTOR_LEN = 64,
     parameter ACC_WIDTH = 20,
-    parameter ACC_POINT = 16,
+    parameter ACC_POINT = 10,
     parameter DOUT_WIDTH = 32
 ) (
     input wire clk,
@@ -42,5 +42,14 @@ point_doa_no_la #(
     .r12_im(r12_im),
     .dout_valid(dout_valid)
 );
+
+reg [31:0] counter =0;
+always@(posedge clk)begin
+    if(new_acc)
+        counter <=0;
+    else
+        counter <= counter+1;
+end
+
 
 endmodule

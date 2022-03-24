@@ -1,13 +1,11 @@
 import cocotb, sys
 from scipy.fftpack import fft
 sys.path.append('../../../../')
-sys.path.append('../../../../high_level_sim')
 import numpy as np
 from itertools import cycle
 from cocotb.clock import Clock
 from cocotb.triggers import ClockCycles, FallingEdge
 from two_comp import two_comp_pack, two_comp_unpack
-import uesprit
 
 
 ###
@@ -52,16 +50,38 @@ class gen_data():
         return spec0, spec1
 
 
+def uesprit_matrix(antenna0, antenna1, acc_len):
+    """
+        antenna:    [vect_len, iters] 
+                    and iters = acc_len*n_outputs
+    """
+    vec_len, iters = antenna0.shape
+    y1 = antenna0+antenna1
+    y2 = antenna0-antenna1
+    y2 = y2.imag -1j*y2.real
+    r11 = np.zeros([vec_len, iters//acc_len])
+    r22 = np.zeros([vec_len, iters//acc_len])
+    r12 = np.zeros([vec_len, iters//acc_len], dtype=complex)
+    for i in range(iters//acc_len):
+        sample0 = y1[:,i*acc_len:(i+1)*acc_len]
+        sample1 = y2[:,i*acc_len:(i+1)*acc_len]
+        r11[:, i] = np.sum(sample0*np.conj(sample0), axis=1).real
+        r22[:, i] = np.sum(sample1*np.conj(sample1), axis=1).real
+        r12[:, i] = np.sum(sample0*np.conj(sample1), axis=1)
+    return r11, r22, r12
+
+
+
 @cocotb.test()
 async def point_doa_no_la(dut, iters=10, acc_len=10, vec_len=64,din_width=16, din_pt=14, 
-        dout_width=32, dout_pt=16, cont=1, burst_len=10):
+        dout_width=32, dout_pt=10, cont=1, burst_len=10, thresh=0.5):
     ##hyper params for the data generation
     freqs = [20, 33]
     phases = [70, 33]
     amps = [0.8, 0.2]
     
     ##
-    clk = Clock(dut.clk, 1)
+    clk = Clock(dut.clk, 10, units='ns')
     cocotb.fork(clk.start())
     
     #setup the dut 
@@ -74,66 +94,83 @@ async def point_doa_no_la(dut, iters=10, acc_len=10, vec_len=64,din_width=16, di
     
     await ClockCycles(dut.clk, 5)
 
+    generator = gen_data(dft_len=vec_len,iters=iters*acc_len, freqs=freqs, phases=phases, 
+            amplitude=amps, noise_std=10**-3)
 
-async def write_data(dut, generator, acc_cycles, iters, din_width, din_pt,cont, burst_len):
-    """ Generator   :   class that generate the inputs
-        acc_cycles  :   is the number of cycles between two new acc signal
-        cont        :   to have a continous stream, otherwise is a burst
-        burst_len   :   if the data is not continous, the burst lenght of data,
-                        followed by a 
-    """
+    dat0, dat1 = (generator.antenna0, generator.antenna1)
+    print(dat0.shape) 
+    norm = np.max(np.array([dat0.real, dat0.imag, dat1.real, dat1.imag]))
+    dat0 = dat0/norm
+    dat1 = dat1/norm
+
+    r11,r22,r12 = uesprit_matrix(dat0.T, dat1.T, acc_len)
+    print(r11.shape)
+    print(r11[20,0])
+    gold = [r11.T.flatten(), r22.T.flatten(), r12.T.flatten()]
+
+    din0_re = two_comp_pack(dat0.flatten().real, din_width, din_pt)
+    din0_im = two_comp_pack(dat0.flatten().imag, din_width, din_pt)
+    din1_re = two_comp_pack(dat1.flatten().real, din_width, din_pt)
+    din1_im = two_comp_pack(dat1.flatten().imag, din_width, din_pt)
+
+    data = [din0_re+1j*din0_im, din1_re+1j*din1_im]
+
+    cocotb.fork(read_data(dut, gold, vec_len, dout_width, dout_pt, thresh))
+    await write_data(dut,data, acc_len,vec_len, cont, burst_len)
+    
+
+async def write_data(dut, data, acc_len,vec_len, cont, burst_len):
+    dut.new_acc.value=1
+    await ClockCycles(dut.clk, 1)
+    dut.new_acc.value =0
+    count = 1
+    if(cont):
+       for i in range(len(data[0])):
+           dut.din_valid.value = 1
+           dut.din1_re.value = int(data[0][i].real)
+           dut.din1_im.value = int(data[0][i].imag)
+           dut.din2_re.value = int(data[1][i].real)
+           dut.din2_im.value = int(data[1][i].imag)
+           await ClockCycles(dut.clk,1)
+           count +=1
+           if(count == (acc_len*vec_len)):
+               dut.new_acc.value = 1
+               count =0
+           else:
+               dut.new_acc.value = 0
+    else:
+        #TODO
+        return 1
+
+
+async def read_data(dut, gold, vec_len, dout_width, dout_pt, thresh):
     count = 0
-    dut.new_acc.value = 1
-    await ClockCycles(dut.clk,1)
-    for i in range(iters):
-        dat0, dat1 = generator.get_sample()
-        dat0, dat1 = two_comp_pack(np.array([dat0, dat1]), din_width, din_pt)
-        dut.din1_re.value = dat0.real
-        dut.din1_im.value = dat0.imag
-        dut.din2_re.value = dat1.real
-        dut.din2_re.value = dat1.imag
-        dut.din_valid.value = 1;
-        count +=1
-        await ClockCycles(dut.clk,1)
-        if(count == (acc_cycles)):
-            count = 0
-            dut.new_acc.value = 1
-        else:
-            dut.new_acc.value = 0
-
-async def read_data(dut, dout_width, dout_pt, iters):
-    count =0 
-    while(count<iters):
+    while(count < vec_len):
+        valid = int(dut.dout_valid.value)
+        if(valid):
+            count += 1
+        await ClockCycles(dut.clk, 1)
+    count = 0
+    while(count<len(gold[0])):
         valid = int(dut.dout_valid.value)
         if(valid):
             r11 = int(dut.r11.value)
             r22 = int(dut.r22.value)
             r12_re = int(dut.r12_re.value)
             r12_im = int(dut.r12_im.value)
-            r11, r22, r12_im, r12_re = two_comp_pack(np.array([r11,r22,r12_im, r12_re]),
-                dout_width, dout_pt)
+            r11,r22,r12_re,r12_im = two_comp_unpack(np.array([r11,r22,r12_re,r12_im]),
+                    dout_width, dout_pt)
             
-
-
-
-    
-    
-    
-
-
-        
-
-
-         
-
+            print("%i"%(count%vec_len))
+            print("r11    \t rtl:%.3f \t gold:%.3f" %(r11,gold[0][count]))
+            print("r22    \t rtl:%.3f \t gold:%.3f" %(r22,gold[1][count]))
+            print("r12_re \t rtl:%.3f \t gold:%.3f" %(r12_re,gold[2][count].real))
+            print("r12_im \t rtl:%.3f \t gold:%.3f" %(r12_im,gold[2][count].imag))
             
-            
+            assert (np.abs(r11-gold[0][count])<thresh), "Error R11"
+            assert (np.abs(r22-gold[1][count])<thresh), "Error R22"
+            assert (np.abs(r12_re-gold[2][count].real)<thresh), "Error R12_re"
+            assert (np.abs(r12_im-gold[2][count].imag)<thresh), "Error R12_im"
 
-            
-
-
-
-
-
-
-
+            count += 1
+        await ClockCycles(dut.clk, 1)
