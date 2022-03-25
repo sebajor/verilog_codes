@@ -1,0 +1,18 @@
+`include "../../../centrosym/centrosym_matrix.v"
+`include "../../dsp/xlx_bram/bram_infer.v"
+`include "../../dsp/data_cast/signed_cast/signed_cast.v"
+`include "../../dsp/data_cast/unsign_cast/unsign_cast.v"
+`include "../../dsp/accumulators/vector/rtl/sync_simple_dual_ram.v"
+`include "../../dsp/accumulators/vector/vector_accumulator.v"
+`include "../../dsp/dsp48_mult/dsp48_mult.v"
+`include "../../dsp/complex_mult/complex_mult.v"
+`include "../../dsp/complex_power/complex_power.v"
+`include "../../dsp/correlator/correlation_mults.v"
+`include "../../dsp/correlator/correlator.v"
+`include "../no_linalg/point_doa_no_la.v"
+`include "../../../linear_algebra/eigen_problem/rtl/quad_root.v"
+`include "../../../linear_algebra/eigen_problem/rtl/rom.v"
+`include "../../../linear_algebra/eigen_problem/rtl/sqrt_lut.v"
+`include "../../../linear_algebra/eigen_problem/quad_eigen.v"
+
+
