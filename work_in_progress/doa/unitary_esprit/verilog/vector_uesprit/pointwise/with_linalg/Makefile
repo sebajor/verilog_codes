@@ -10,9 +10,9 @@ MODULE = $(dut)_test
 
 #weight rom file
 SQRT_IN_WIDTH = 12
-SQRT_IN_POINT = 7
+SQRT_IN_POINT = 6
 SQRT_OUT_WIDTH = 16
-SQRT_OUT_POINT = 13
+SQRT_OUT_POINT = 10
 FILENAME = "sqrt.mem"
 
 ifeq ($(WAVES), 1)
@@ -25,7 +25,7 @@ endif
 include $(shell cocotb-config --makefiles)/Makefile.sim
 
 gen_rom:
-	python2 sqrt_gen.py --din_width $(SQRT_IN_WIDTH) --din_pt $(SQRT_IN_POINT)\
+	python sqrt_gen.py --din_width $(SQRT_IN_WIDTH) --din_pt $(SQRT_IN_POINT)\
 	   					--dout_width $(SQRT_OUT_WIDTH) --dout_pt $(SQRT_OUT_POINT)\
 					   	--filename sqrt.mem --plot 1
 

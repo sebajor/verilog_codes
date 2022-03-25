@@ -12,16 +12,16 @@ module pointwise_vector_doa_tb #(
     parameter ACC_POINT = 16,
     parameter ACC_DOUT_WIDTH = 32,
     //linear algebra parameters
-    parameter ACC_SHIFT = 2,    //positive <<, negative >>
+    parameter ACC_SHIFT = -4,    //positive <<, negative >>
     parameter EIGEN_IN_WIDTH = 16,
-    parameter EIGEN_IN_POINT = 15,
+    parameter EIGEN_IN_POINT = 10,
     parameter SQRT_IN_WIDTH = 12,
-    parameter SQRT_IN_POINT = 7,
+    parameter SQRT_IN_POINT = 6,
     parameter SQRT_OUT_WIDTH = 16,
-    parameter SQRT_OUT_POINT = 13,
+    parameter SQRT_OUT_POINT = 10,
     parameter SQRT_MEM_FILE = "sqrt.mem",
     parameter DOUT_WIDTH = 16,
-    parameter DOUT_POINT = 13
+    parameter DOUT_POINT = 10
 ) (
     input wire clk,
     input wire new_acc, 
