@@ -47,13 +47,23 @@ generate
     end
 endgenerate
 
-//valid signal delay
-reg [$clog2(PARALLEL)+PARALLEL%2-1:0] delay_valid=0;
-always@(posedge clk)begin
-    delay_valid <= {delay_valid[$clog2(PARALLEL)+PARALLEL%2:0], in_valid}; 
-end
 
-assign out_valid = delay_valid[$clog2(PARALLEL)+PARALLEL%2-1];
+
+delay #(
+    .DATA_WIDTH(1),
+    .DELAY_VALUE($clog2(PARALLEL))
+) delay_inst (
+    .clk(clk),
+    .din(in_valid),
+    .dout(out_valid)
+);
+
+//valid signal delay
+//reg [$clog2(PARALLEL)+PARALLEL%2-1:0] delay_valid=0;
+//always@(posedge clk)begin
+//    delay_valid <= {delay_valid[$clog2(PARALLEL)+PARALLEL%2-1:0], in_valid}; 
+//end
+//assign out_valid = delay_valid[$clog2(PARALLEL)+PARALLEL%2-1];
 
 
 endmodule
