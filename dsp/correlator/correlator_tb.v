@@ -1,5 +1,7 @@
 `default_nettype none
 `include "correlator.v"
+`include "correlation_mults.v"
+`include "includes.v"
 
 module correlator_tb #(
     parameter DIN_WIDTH = 16,

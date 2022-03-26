@@ -1,4 +1,4 @@
-dut=delay
+dut=shift
 SIM=icarus
 
 WAVES ?= 0

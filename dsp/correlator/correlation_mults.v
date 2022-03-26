@@ -62,7 +62,7 @@ complex_power #(
 
 
 //correlation
-//complex mult has 5 delay cycles
+//complex mult has 6 delay cycles
 wire signed [2*DIN_WIDTH:0] corr_re_r, corr_im_r;
 wire corr_valid;
 complex_mult #(

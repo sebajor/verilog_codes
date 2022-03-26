@@ -1,6 +1,4 @@
 `default_nettype none
-`include "correlation_mults.v"
-`include "includes.v"
 
 /*
 *   Author: Sebastian Jorquera
