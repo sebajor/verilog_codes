@@ -1,5 +1,4 @@
 `default_nettype none
-`include "includes.v"
 
 /*
     Author: Sebastian Jorquera
@@ -42,7 +41,7 @@ wire [PARALLEL-1:0] corr_valid;
 
 genvar i;
 generate
-    for(i=0; i<PARALLEL; i=i+1)begin
+    for(i=0; i<PARALLEL; i=i+1)begin: centrosym_loop
         wire [DIN_WIDTH:0] y1_re, y1_im, y2_re, y2_im;
         wire centrosym_valid;
 
@@ -107,7 +106,7 @@ adder_tree #(
 wire new_acc_mult;  
 delay #(
     .DATA_WIDTH(1),
-    .DELAY_VALUE(8+$clog2(PARALLEL))
+    .DELAY_VALUE(9+$clog2(PARALLEL))
 ) delay_mult_corrs (
     .clk(clk),
     .din(new_acc),
@@ -206,9 +205,9 @@ localparam BAND_STEP = VECTOR_LEN/PARALLEL/BANDS;
 
 genvar j;
 generate 
-for (i=0; i<BANDS; i=i+1)begin
+for (i=0; i<BANDS; i=i+1)begin  :acc_loop
     wire valid_band;
-    assign valid_band = delay_valid &(band_count>i*BAND_STEP) & (band_count<(i+1)*BAND_STEP);
+    assign valid_band = delay_valid &(band_count>=i*BAND_STEP) & (band_count<(i+1)*BAND_STEP);
     
     //take care here!!! super double check!
     reg band_new_acc=0;
@@ -268,7 +267,7 @@ always@(posedge clk)begin
             inner_band_count <= 0;
         end
         else begin
-            if(inner_band_count==(BAND_STEP))begin
+            if(inner_band_count==(BAND_STEP-1))begin
                 inner_band_count <= 0;
                 if(band_number_r==(BANDS-1))
                     band_number_r <=0;
@@ -285,7 +284,7 @@ end
 reg signed [DOUT_WIDTH-1:0] r11_r=0, r22_r=0, r12_r=0;
 reg dout_valid_r=0;
 always@(posedge clk)begin
-    dout_valid_r <= acc_valid[0];
+    dout_valid_r <= |acc_valid;//acc_valid[0];
     r11_r <= r11_out[band_number_r*DOUT_WIDTH+:DOUT_WIDTH];
     r22_r <= r22_out[band_number_r*DOUT_WIDTH+:DOUT_WIDTH];
     r12_r <= r12_out[band_number_r*DOUT_WIDTH+:DOUT_WIDTH];
