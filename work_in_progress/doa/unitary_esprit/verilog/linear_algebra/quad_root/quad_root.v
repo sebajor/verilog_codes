@@ -1,15 +1,18 @@
 `default_nettype none
 
 /*
-    typical solution of the quadratic equation
-    x1 = (-b +sqrt(b**2-4ac))/2a
-    x2 = (-b- sqrt(b**2-4ac))/2a
-    
-    for 2 antenna doa we have a =1 so we just have as input b,c 
-    also we normalize the input ie c,b have ine int bit
-    
-    Look out the sqrt_in_width and sqrt_out_width.. the square root
-    is calculated using a rom, so the size matter!
+*   Author: Sebastian Jorquera
+*
+*    typical solution of the quadratic equation
+*    x1 = (-b +sqrt(b**2-4ac))/2a
+*    x2 = (-b- sqrt(b**2-4ac))/2a
+*    
+*    for 2 antenna doa we have a =1 so we just have as input b,c 
+*    also we normalize the input ie c,b have ine int bit
+*    
+*    Look out the sqrt_in_width and sqrt_out_width.. the square root
+*    is calculated using a rom, so the size matter!
+*
 */
 
 module quad_root #(

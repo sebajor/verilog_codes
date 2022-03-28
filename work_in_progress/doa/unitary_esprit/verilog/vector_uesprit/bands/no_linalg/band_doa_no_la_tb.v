@@ -12,7 +12,7 @@ module band_doa_no_la_tb #(
     parameter PRE_ACC_DELAY = 0,    //for timing
     parameter PRE_ACC_SHIFT = 0,    //positive <<, negative >>
     parameter ACC_WIDTH = 20,
-    parameter ACC_POINT = 10,
+    parameter ACC_POINT = 16,
     parameter DOUT_WIDTH = 32
 ) (
     input wire clk,

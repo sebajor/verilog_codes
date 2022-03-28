@@ -3,6 +3,9 @@ import matplotlib.pyplot as plt
 import optparse, sys
 sys.path.append('../')
 
+###
+### Author: Sebastian Jorquera
+###
 
 def sqrt_gen(din_width, din_pt, dout_width, dout_pt, filename, plot=0):
     """ 

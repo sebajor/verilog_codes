@@ -5,6 +5,9 @@ from two_comp import two_comp_pack, two_comp_unpack
 from cocotb.triggers import ClockCycles, RisingEdge
 from cocotb.clock import Clock
 
+###
+### Author: Sebastian Jorquera
+###
 
 @cocotb.test()
 async def quad_root_test(dut, iters=1024, din_width=16, din_pt=14,

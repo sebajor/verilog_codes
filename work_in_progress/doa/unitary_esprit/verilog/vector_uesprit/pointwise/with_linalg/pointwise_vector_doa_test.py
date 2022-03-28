@@ -86,9 +86,9 @@ def uesprit_eigen(r11,r22,r12):
 async def pointwise_vector_doa_test(dut, iters=10, acc_len=10, vec_len=64,din_width=16, din_pt=14, 
         dout_width=16, dout_pt=10, corr_shift=4,cont=1, burst_len=10, thresh=0.5):
     ##hyper params for the data generation
-    freqs = [20, 33]
-    phases = [70, 33]
-    amps = [0.8, 0.2]
+    freqs = [2, 20, 33, 50]
+    phases = [-123, 100, 40, -70]
+    amps = [0.1, 0.5, 0.2, 0.8]
     
     ##
     clk = Clock(dut.clk, 10, units='ns')
@@ -115,7 +115,7 @@ async def pointwise_vector_doa_test(dut, iters=10, acc_len=10, vec_len=64,din_wi
     fig=plt.figure();   ax1 = fig.add_subplot(121); ax2=fig.add_subplot(122)
     ax1.plot(20*np.log10(np.abs(dat0[0,:])))
     ax2.plot(20*np.log10(np.abs(dat1[0,:])))
-    plt.savefig('Input data')
+    plt.savefig('in_spect.png')
     plt.close()
 
 
@@ -194,8 +194,8 @@ async def read_data(dut, gold, vec_len, dout_width, dout_pt, freqs, thresh):
                 print("eig1 \t gold: %.3f \t rtl: %.3f" %(gold[2][count].real, outs[2]))
                 print("eig2 \t gold: %.3f \t rtl: %.3f" %(gold[3][count].real, outs[3]))
                 print("eig frac \t gold: %.3f \t rtl: %.3f" %(gold[4][count].real, outs[4]))
-                gold_phase = np.rad2deg(np.arctan2(gold[2][count].real, gold[4][count].real))/2.
-                rtl_phase = np.rad2deg(np.arctan2(float(outs[2]), float(outs[4])))/2.
+                gold_phase = np.rad2deg(np.arctan2(gold[2][count].real, gold[4][count].real)*2)
+                rtl_phase = np.rad2deg(np.arctan2(float(outs[2]), float(outs[4]))*2)
                 print("phase \t gold: %.4f \t rtl: %.4f" %(gold_phase, rtl_phase))
 
             assert (np.abs(gold[0][count]-outs[0])<thresh), "l1 error"

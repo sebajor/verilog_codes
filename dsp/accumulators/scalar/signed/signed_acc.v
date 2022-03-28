@@ -43,7 +43,7 @@ always@(posedge clk)begin
         acc <= acc;
 end
 
-assign dout_valid = acc_done_r;
+assign dout_valid = acc_done_r & din_valid_r;//acc_done_r;
 assign dout = acc;
 
 

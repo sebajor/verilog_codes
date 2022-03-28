@@ -1,13 +1,17 @@
 `default_nettype none
 
 /*
-solve a quadratic eigen value problem..
-In uesprit with 2 antennas we have:
-    lamb**2-(r11+r22)*lamb+(r11*r22)-r12**2=0
-    ax**2+bx+c=0 -->
-    a = 1, b=-(r11+r22) c=(r11*r22)-r12**2
-
-The eigen vector is -(r11-lamb)/r12 
+*   Author: Sebastian Jorquera
+*
+*   solve a quadratic eigen value problem..
+*   In uesprit with 2 antennas we have:
+*    
+*   lamb**2-(r11+r22)*lamb+(r11*r22)-r12**2=0
+*   ax**2+bx+c=0 -->
+*   a = 1, b=-(r11+r22) c=(r11*r22)-r12**2
+*
+*   The eigen vector is -(r11-lamb)/r12 
+*
 */
 
 module quad_eigen #(

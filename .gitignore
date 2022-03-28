@@ -5,3 +5,4 @@ traces.vcd
 *sim_build*
 *.pdf
 *.del
+*.png

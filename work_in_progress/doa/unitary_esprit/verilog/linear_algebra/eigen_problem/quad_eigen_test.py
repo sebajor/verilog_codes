@@ -5,6 +5,10 @@ from two_comp import two_comp_pack, two_comp_unpack
 from cocotb.triggers import ClockCycles, RisingEdge
 from cocotb.clock import Clock
 
+###
+### Author: Sebastian Jorquera
+###
+
 def eigen_gold(r11,r22,r12):
     r21 = r12
     lamb1 = (r11+r22+np.sqrt((r11+r22)**2-4*(r11*r22-r12*r21)))/2
