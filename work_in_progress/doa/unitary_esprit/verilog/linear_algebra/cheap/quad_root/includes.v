@@ -2,3 +2,4 @@
 `include "main/dsp/dsp48_mult/dsp48_mult.v"
 `include "main/utils/fifo_sync.v"
 `include "main/work_in_progress/sqrt/iterative/iterative_sqrt.v"
+`include "main/delay/delay.v"
