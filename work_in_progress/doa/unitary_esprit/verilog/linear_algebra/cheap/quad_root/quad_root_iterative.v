@@ -1,4 +1,3 @@
-
 `default_nettype none
 
 /*
@@ -20,21 +19,25 @@ module quad_root_iterative #(
     parameter DIN_POINT = 14,
     parameter SQRT_WIDTH = 10,
     parameter SQRT_POINT = 7,
-    parameter FIFO_DEPTH = 8    //Address= 2**FIFO_DEPTH
+    parameter FIFO_DEPTH = 8,    //Address= 2**FIFO_DEPTH
+    parameter BANDS = 4
 ) (
     input wire clk,
     input wire signed [DIN_WIDTH-1:0] b,c,
     input wire din_valid,
     output wire fifo_full,
+    input wire [$clog2(BANDS)-1:0] band_in,
 
     output wire signed [SQRT_WIDTH-1:0] x1,x2,
     output wire dout_valid,
-    output wire dout_error
+    output wire dout_error,
+    output wire [$clog2(BANDS)-1:0] band_out
 );
 
 wire signed [2*DIN_WIDTH-1:0] b2;
 wire b2_valid;
 
+//4 delay
 dsp48_mult #(
     .DIN1_WIDTH(DIN_WIDTH),
     .DIN2_WIDTH(DIN_WIDTH),
@@ -50,15 +53,15 @@ dsp48_mult #(
 );
 
 //sync the rest of the signals
-wire signed [DIN_WIDTH-1:0] c_r=0, b_r=0;
-
+wire signed [DIN_WIDTH-1:0] c_r, b_r;
+wire [$clog2(BANDS)-1:0] bands_r;
 delay #(
-    .DATA_WIDTH(2*DIN_WIDTH),
+    .DATA_WIDTH(2*DIN_WIDTH+$clog2(BANDS)),
     .DELAY_VALUE(3)
 ) delay_b_c (
     .clk(clk),
-    .din({b,c}),
-    .dout({b_r,c_r})
+    .din({b,c, band_in}),
+    .dout({b_r,c_r, bands_r})
 );
 
 
@@ -79,6 +82,22 @@ always@(posedge clk)begin
     if(b2_valid)
         diff <= $signed(b2_shift)-$signed(c4);
 end
+
+//convert the b to the SQRT_WIDTH
+wire signed [SQRT_WIDTH-1:0] b_resize;
+
+signed_cast #(
+    .DIN_WIDTH(DIN_WIDTH),
+    .DIN_POINT(DIN_POINT),
+    .DOUT_WIDTH(SQRT_WIDTH),
+    .DOUT_POINT(SQRT_POINT)
+) sqrt_out_cast (
+    .clk(clk), 
+    .din(b_r),
+    .din_valid(1'b1),
+    .dout(b_resize),
+    .dout_valid()
+);
 
 //convert the data to sqrt input
 localparam DIFF_POINT = 2*DIN_POINT-2;
@@ -102,27 +121,10 @@ signed_cast #(
 wire [SQRT_WIDTH-1:0] sqrt_data;
 wire sqrt_valid, read_req;
 
-
-//convert the b to the SQRT_WIDTH
-
-wire signed [DOUT_WIDTH-1:0] b_resize;
-
-signed_cast #(
-    .DIN_WIDTH(DIN_WIDTH),
-    .DIN_POINT(DIN_POINT),
-    .DOUT_WIDTH(SQRT_WIDTH),
-    .DOUT_POINT(SQRT_POINT)
-) sqrt_out_cast (
-    .clk(clk), 
-    .din(b_r),
-    .din_valid(1'b1),
-    .dout(b_resize),
-    .dout_valid()
-);
-
 //delay b_resize to match the diff
-//check!!!
 wire signed [SQRT_WIDTH-1:0] b_delay;
+wire [$clog2(BANDS)-1:0] bands_rr;
+
 delay #(
     .DATA_WIDTH(SQRT_WIDTH),
     .DELAY_VALUE(2)
@@ -132,21 +134,32 @@ delay #(
     .dout(b_delay)
 );
 
+delay #(
+    .DATA_WIDTH($clog2(BANDS)),
+    .DELAY_VALUE(3)
+) delay_bands (
+    .clk(clk),
+    .din(bands_r),
+    .dout(bands_rr)
+);
 
+
+wire signed [SQRT_WIDTH-1:0] b_data;
+wire [$clog2(BANDS)-1:0] bands_rrr;
 
 fifo_sync #(
-    .DIN_WIDTH(SQRT_WIDTH),
+    .DIN_WIDTH(2*SQRT_WIDTH+$clog2(BANDS)),
     .FIFO_DEPTH(FIFO_DEPTH)
 ) fifo_sync_inst (
     .clk(clk),
     .rst(1'b0),
-    .wdata(sqrt_in),
+    .wdata({sqrt_in, b_delay, bands_rr}),
     .w_valid(sqrt_in_valid),
     .full(fifo_full),
     .empty(),
-    .rdata(sqrt_data),
+    .rdata({sqrt_data, b_data, bands_rrr}),
     .r_valid(sqrt_valid),
-    .read_req(read_req)
+    .read_req(~read_req)
 );
 
 wire [SQRT_WIDTH-1:0] sqrt_dout;
@@ -157,13 +170,62 @@ iterative_sqrt #(
     .DIN_POINT(SQRT_POINT)
 ) iterative_sqrt_inst (
     .clk(clk),
-    .busy(!read_req),
-    .din_valid(sqrt_valid & !sqrt_dout[SQRT_WIDTH-1]),
+    .busy(read_req),
+    .din_valid(sqrt_valid & !sqrt_data[SQRT_WIDTH-1]),
     .din(sqrt_data),
     .dout(sqrt_dout),
     .reminder(),
     .dout_valid(sqrt_out_valid)
 );
 
+
+wire signed [SQRT_WIDTH-1:0] b_delay_r;
+wire [$clog2(BANDS)-1:0] bands_delay;
+delay #(
+    .DATA_WIDTH(SQRT_WIDTH+$clog2(BANDS)),
+    .DELAY_VALUE((SQRT_WIDTH+SQRT_POINT)/2)
+) delay_b_again (
+    .clk(clk),
+    .din({b_data, bands_rrr}),
+    .dout({b_delay_r, bands_delay})
+);
+
+reg error=0;
+always@(posedge clk)begin
+    if(sqrt_dout[SQRT_WIDTH-1])
+        error <= 1;
+    else
+        error <=0;
+end
+
+wire error_delay;
+delay #(
+    .DATA_WIDTH(1),
+    .DELAY_VALUE((SQRT_WIDTH+SQRT_POINT)/2-1)
+) delay_error (
+    .clk(clk),
+    .din(error),
+    .dout(error_delay)
+);
+
+reg signed [SQRT_WIDTH-1:0] b_minus=0;
+reg signed [SQRT_WIDTH-1:0] x1_r=0, x2_r=0;
+reg dout_valid_r=0;
+
+always@(posedge clk)begin
+    b_minus <= ~b_delay_r+1'b1;
+    if(sqrt_out_valid)begin
+        x1_r <= $signed(b_minus)+$signed(sqrt_dout);
+        x2_r <= $signed(b_minus)-$signed(sqrt_dout);
+        dout_valid_r <=1;
+    end
+    else
+        dout_valid_r <=0;
+end
+
+assign x1 = x1_r>>>1;
+assign x2 = x2_r>>>1;
+
+assign dout_valid = dout_valid_r;
 
 endmodule

@@ -75,11 +75,13 @@ def uesprit_matrix(antenna0, antenna1, acc_len):
 @cocotb.test()
 async def point_doa_no_la(dut, iters=100, acc_len=10, vec_len=64,bands=4,
         din_width=16, din_pt=14, dout_width=32, dout_pt=16, 
-        cont=1, burst_len=10, thresh=0.5):
+        cont=1, burst_len=10, thresh=0.2):
     ##hyper params for the data generation
     freqs = [2, 33]
     phases = [70, 33]
     amps = [0.2, 0.2]
+
+    thresh = thresh*acc_len
     
     ##
     clk = Clock(dut.clk, 10, units='ns')

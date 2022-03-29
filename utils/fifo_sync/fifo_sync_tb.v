@@ -1,4 +1,5 @@
 `default_nettype none
+`include "rtl/sync_simple_dual_ram.v"
 `include "fifo_sync.v"
 
 module fifo_sync_tb #(
