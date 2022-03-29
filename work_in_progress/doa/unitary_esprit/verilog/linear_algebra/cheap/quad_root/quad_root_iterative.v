@@ -192,7 +192,7 @@ delay #(
 
 reg error=0;
 always@(posedge clk)begin
-    if(sqrt_dout[SQRT_WIDTH-1])
+    if(sqrt_data[SQRT_WIDTH-1] & sqrt_valid)
         error <= 1;
     else
         error <=0;
