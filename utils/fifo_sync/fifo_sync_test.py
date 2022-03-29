@@ -74,7 +74,8 @@ async def read_beat(dut, gold_data):
         else:
             dut.read_req.value =0;
         valid = int(dut.r_valid.value)
-        if(valid ==1):
+        read_req = int(dut.read_req.value)
+        if((valid ==1)):
             out = int(dut.rdata.value)
             assert (out==gold_data[count])
             count  +=1;
