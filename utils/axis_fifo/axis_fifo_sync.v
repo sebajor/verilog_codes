@@ -92,22 +92,37 @@ always@(posedge clk)begin
         read_valid <= {read_valid[0], (read_ready & ~fifo_empty)};
 end
 
+
 wire read_stall = ~(read_ready);
-reg stall_flag =0;
-reg [DATA_WIDTH-1:0] rdata_r=0;
+reg stall_flag0 =0, stall_flag1=0;
+reg [DATA_WIDTH-1:0] rdata_r=0, rdata_rr=0;
 always@(posedge clk)begin
-    if(read_stall)begin
+    if(read_stall & ~stall_flag0)begin
         rdata_r <= rdata;
-        stall_flag <= 1;
+        stall_flag0 <= 1;
     end
     else
-        stall_flag <= 0;
+        stall_flag0 <= 0;
 end
+
+always@(posedge clk)begin
+    if(stall_flag0 & read_valid[1])begin
+        rdata_rr <= rdata;
+        stall_flag1 <= 1;
+    end
+    else if(~stall_flag0 & ~read_stall)
+        stall_flag1 <=0;
+end
+
 
 reg [DATA_WIDTH-1:0] dout=0;
 always@(*)begin
-    if(stall_flag)
+    if(stall_flag0 & ~stall_flag1)
         dout = rdata_r;
+    else if(stall_flag1 & ~stall_flag0)
+        dout = rdata_rr;
+    else if(stall_flag1 & stall_flag0)
+        dout = rdata_rr;
     else
         dout = rdata; 
 end
@@ -118,7 +133,7 @@ skid_buffer #(
     .clk(clk),
     .rst(rst),
     .din(dout),
-    .din_valid(read_valid[1] | stall_flag), 
+    .din_valid(read_valid[1] | stall_flag0 | stall_flag1), 
     .din_ready(read_ready), 
     .dout_valid(read_tvalid),//(sk_valid), 
     .dout_ready(read_tready),//(sk_ready), 

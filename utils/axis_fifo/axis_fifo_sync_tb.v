@@ -4,7 +4,7 @@
 `include "axis_fifo_sync.v"
 
 module axis_fifo_sync_tb #(
-    parameter DATA_WIDTH = 32,
+    parameter DATA_WIDTH = 16,
     parameter ADDR_WIDTH = 4     //2**DEPTH
 ) (
     input wire clk,
