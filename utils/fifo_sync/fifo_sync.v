@@ -3,7 +3,9 @@
 /*
 *   Synchronous FIFO.
 *   The write only occurs when ~full & w_valid in the same clock cycle
-*
+*   
+*   This module takes 2 cycles to anwser a read request. It doesnt support
+*   backpreassure. 
 */
 
 
