@@ -69,63 +69,88 @@ sync_simple_dual_ram #(
     .regceb(1'b1),
     .doutb(rdata)
 );
-//like it takes two cycles to complete a read we are going to cascade two
-// skid buffers
 
-wire sk_valid, sk_ready;
-wire [DATA_WIDTH-1:0] sk_data;
+
+localparam  NORMAL = 2'd0,
+            ONE = 2'd1,
+            TWO = 2'd3;
+reg [1:0] state=NORMAL, next_state = NORMAL, prev_state=NORMAL;
+
+
+always@(posedge clk)begin
+    prev_state <= state;
+    if(rst)
+        state <= NORMAL;
+    else
+        state <= next_state;
+end
+
 wire read_ready;
 reg [1:0] read_valid=0;
 
+wire valid_read = read_ready & read_valid[0];
+wire read_stall = ~(valid_read);
+
+//change of state
+always@(*)begin
+    case(state)
+        NORMAL:begin
+            if(read_stall)  next_state = ONE;
+            else            next_state = NORMAL;
+        end
+        ONE:begin
+            if(read_valid[1] & ~read_ready) next_state = TWO;
+            else if(valid_read)             next_state = ONE;
+        end
+        TWO:begin
+            if(valid_read)                  next_state = ONE;
+            else                            next_state = TWO;
+        end
+        default:
+            next_state = NORMAL;
+    endcase
+end
+
+
 always@(posedge clk)begin
-    if(rst)begin
+    if(rst)
         raddr <=0;
-    end
-    else if((read_ready & ~fifo_empty) & ~read_stall)
+    else if(read_ready & ~fifo_empty & (state==NORMAL))
         raddr <= raddr+1;
 end
 
 always@(posedge clk)begin
     if(rst)
         read_valid <=0;
-    else
+    else if(state == NORMAL)
         read_valid <= {read_valid[0], (read_ready & ~fifo_empty)};
 end
 
-
-wire read_stall = ~(read_ready);
-reg stall_flag0 =0, stall_flag1=0;
-reg [DATA_WIDTH-1:0] rdata_r=0, rdata_rr=0;
+reg [DATA_WIDTH-1:0] rdata_r=0;
+reg [DATA_WIDTH-1:0] rdata_rr=0;
 always@(posedge clk)begin
-    if(read_stall & ~stall_flag0)begin
+    if((state==NORMAL) & read_stall)
         rdata_r <= rdata;
-        stall_flag0 <= 1;
-    end
-    else
-        stall_flag0 <= 0;
+    else if((state==ONE) & (prev_state==TWO))
+        rdata_r <= rdata_rr;
 end
 
 always@(posedge clk)begin
-    if(stall_flag0 & read_valid[1])begin
+    if((state==ONE) & read_valid[1])
         rdata_rr <= rdata;
-        stall_flag1 <= 1;
-    end
-    else if(~stall_flag0 & ~read_stall)
-        stall_flag1 <=0;
 end
 
-
+   
 reg [DATA_WIDTH-1:0] dout=0;
 always@(*)begin
-    if(stall_flag0 & ~stall_flag1)
-        dout = rdata_r;
-    else if(stall_flag1 & ~stall_flag0)
-        dout = rdata_rr;
-    else if(stall_flag1 & stall_flag0)
+    if(state==NORMAL)
+        dout = rdata;
+    else if((state==ONE) & (prev_state==TWO))
         dout = rdata_rr;
     else
-        dout = rdata; 
+        dout = rdata_rr;
 end
+
 
 skid_buffer #(
     .DIN_WIDTH(DATA_WIDTH)
@@ -133,7 +158,7 @@ skid_buffer #(
     .clk(clk),
     .rst(rst),
     .din(dout),
-    .din_valid(read_valid[1] | stall_flag0 | stall_flag1), 
+    .din_valid(read_valid[1] | (state!=NORMAL)), 
     .din_ready(read_ready), 
     .dout_valid(read_tvalid),//(sk_valid), 
     .dout_ready(read_tready),//(sk_ready), 
