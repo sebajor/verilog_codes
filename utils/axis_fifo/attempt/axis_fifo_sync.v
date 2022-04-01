@@ -88,8 +88,8 @@ end
 wire read_ready;
 reg [1:0] read_valid=0;
 
-wire valid_read = read_ready & read_valid[0];
-wire read_stall = ~(valid_read);
+wire valid_read_req = read_ready & (read_valid[1] | (state!=NORMAL));
+wire read_stall = ~read_ready & read_valid[1];
 
 //change of state
 always@(*)begin
@@ -99,11 +99,17 @@ always@(*)begin
             else            next_state = NORMAL;
         end
         ONE:begin
-            if(read_valid[1] & ~read_ready) next_state = TWO;
-            else if(valid_read)             next_state = ONE;
+            if(read_valid[1] & ~read_ready)    
+                next_state = TWO;
+            else if(valid_read_req)begin
+                if(read_valid[1])
+                    next_state = ONE;
+                else
+                    next_state = NORMAL;
+            end
         end
         TWO:begin
-            if(valid_read)                  next_state = ONE;
+            if(valid_read_req)              next_state = ONE;
             else                            next_state = TWO;
         end
         default:
@@ -124,6 +130,8 @@ always@(posedge clk)begin
         read_valid <=0;
     else if(state == NORMAL)
         read_valid <= {read_valid[0], (read_ready & ~fifo_empty)};
+    else
+        read_valid <= {read_valid[0], 1'b0};
 end
 
 reg [DATA_WIDTH-1:0] rdata_r=0;
@@ -131,8 +139,12 @@ reg [DATA_WIDTH-1:0] rdata_rr=0;
 always@(posedge clk)begin
     if((state==NORMAL) & read_stall)
         rdata_r <= rdata;
-    else if((state==ONE) & (prev_state==TWO))
-        rdata_r <= rdata_rr;
+    else if(state==ONE)begin
+        if(prev_state==TWO)
+            rdata_r <= rdata_rr;
+        else if(valid_read_req)
+            rdata_r <= rdata;
+    end
 end
 
 always@(posedge clk)begin
@@ -148,7 +160,7 @@ always@(*)begin
     else if((state==ONE) & (prev_state==TWO))
         dout = rdata_rr;
     else
-        dout = rdata_rr;
+        dout = rdata_r;
 end
 
 

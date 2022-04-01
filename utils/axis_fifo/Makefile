@@ -1,4 +1,4 @@
-dut=axis_fifo_sync
+dut=axis_fifo
 SIM=icarus
 
 WAVES ?= 0
