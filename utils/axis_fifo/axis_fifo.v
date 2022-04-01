@@ -107,7 +107,9 @@ module axis_fifo #
      */
     output wire                   status_overflow,
     output wire                   status_bad_frame,
-    output wire                   status_good_frame
+    output wire                   status_good_frame,
+    //
+    output wire                   fifo_full
 );
 
 parameter ADDR_WIDTH = (KEEP_ENABLE && KEEP_WIDTH > 1) ? $clog2(DEPTH/KEEP_WIDTH) : $clog2(DEPTH);
@@ -297,6 +299,8 @@ always @(posedge clk) begin
         m_axis_tvalid_pipe_reg <= {PIPELINE_OUTPUT{1'b0}};
     end
 end
+
+assign fifo_full = full;
 
 endmodule
 

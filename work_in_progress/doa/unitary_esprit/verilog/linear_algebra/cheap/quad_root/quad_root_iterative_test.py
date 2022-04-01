@@ -11,7 +11,7 @@ from cocotb.clock import Clock
 
 @cocotb.test()
 async def quad_root_iterative_test(dut, iters=1024, din_width=16, din_pt=14,
-        dout_width = 16, dout_pt=13, thresh=0.1, cont=0, burst=10):
+        dout_width = 12, dout_pt=8, thresh=0.1, cont=0, burst=10, rest=100):
 
     #setup dut
     clk = Clock(dut.clk, 10, units='ns')
@@ -23,18 +23,19 @@ async def quad_root_iterative_test(dut, iters=1024, din_width=16, din_pt=14,
     await ClockCycles(dut.clk, 4)
 
 
-    np.random.seed(19)
+    #np.random.seed(19)
+    np.random.seed(9)
     b = np.random.random(iters)-0.5
     c = np.random.random(iters)-0.5
 
     b_bin = two_comp_pack(b, din_width, din_pt)
     c_bin = two_comp_pack(c, din_width, din_pt)
 
-    cocotb.fork(write_data(dut, b_bin,c_bin,cont, burst))
+    cocotb.fork(write_data(dut, b_bin,c_bin,cont, burst, rest))
     await read_data(dut,b,c,dout_width, dout_pt, thresh)
 
 
-async def write_data(dut, b,c, cont, burst_len):
+async def write_data(dut, b,c, cont, burst_len, rest):
     dut.band_in.value = 1
     if(cont):
         for i in range(len(b)):
@@ -46,6 +47,7 @@ async def write_data(dut, b,c, cont, burst_len):
     else:
         count = 0
         for i in range(len(b)):
+            dut.band_in.value = int(i%4)
             dut.b.value = int(b[i])
             dut.c.value = int(c[i])
             dut.din_valid.value = 1;
@@ -54,7 +56,8 @@ async def write_data(dut, b,c, cont, burst_len):
             if(count ==burst_len):
                 count =0
                 dut.din_valid.value =0
-                await ClockCycles(dut.clk, np.random.randint(10))
+                #await ClockCycles(dut.clk, np.random.randint(10))
+                await ClockCycles(dut.clk, rest)
         dut.din_valid.value =0
 
 async def read_data(dut, b,c,dout_width, dout_pt, thresh):
@@ -62,6 +65,8 @@ async def read_data(dut, b,c,dout_width, dout_pt, thresh):
     while(index < len(b)):
         valid = int(dut.dout_valid.value)
         if(valid==1):
+            print(index)
+            print(b[index]**2-4*c[index])
             err = bool(dut.dout_error.value)
             gold = np.roots([1, b[index], c[index]])
             gold = np.sort(gold)
@@ -73,6 +78,7 @@ async def read_data(dut, b,c,dout_width, dout_pt, thresh):
                 out2 = int(dut.x2.value)
                 out1, out2 = two_comp_unpack(np.array([out1, out2]), dout_width, dout_pt)
                 out = np.sort([out1, out2])
+                print("gold: %.3f , %.3f \t rtl: %.3f , %.3f"%(gold[0], gold[1], out[0], out[1]))
                 assert (np.abs(gold[0]-out[0])<thresh), "gold0: {gold0:.4f} ; x0: {x0:.4f}".format(gold0=gold[0], x0=out[0])
                 assert (np.abs(gold[1]-out[1])<thresh), "gold1: {gold1:.4f} ; x1: {x1:.4f}".format(gold1=gold[1], x1=out[1])
             index +=1

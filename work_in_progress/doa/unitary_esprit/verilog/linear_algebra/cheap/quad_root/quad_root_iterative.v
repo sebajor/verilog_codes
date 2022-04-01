@@ -147,23 +147,41 @@ delay #(
 wire signed [SQRT_WIDTH-1:0] b_data;
 wire [$clog2(BANDS)-1:0] bands_rrr;
 
-fifo_sync #(
-    .DIN_WIDTH(2*SQRT_WIDTH+$clog2(BANDS)),
-    .FIFO_DEPTH(FIFO_DEPTH)
-) fifo_sync_inst (
+wire fifo_write_ready;
+axis_fifo #
+(
+    .DEPTH(2**FIFO_DEPTH),
+    .DATA_WIDTH(2*SQRT_WIDTH+$clog2(BANDS))
+) axis_fifo_inst
+(
     .clk(clk),
     .rst(1'b0),
-    .wdata({sqrt_in, b_delay, bands_rr}),
-    .w_valid(sqrt_in_valid),
-    .full(fifo_full),
-    .empty(),
-    .rdata({sqrt_data, b_data, bands_rrr}),
-    .r_valid(sqrt_valid),
-    .read_req(~read_req)
+    .s_axis_tdata({sqrt_in, b_delay, bands_rr}),
+    .s_axis_tkeep(),
+    .s_axis_tvalid(sqrt_in_valid),
+    .s_axis_tready(fifo_write_ready),
+    .s_axis_tlast(),
+    .s_axis_tid(),
+    .s_axis_tdest(),
+    .s_axis_tuser(),
+    .m_axis_tdata({sqrt_data, b_data, bands_rrr}),
+    .m_axis_tkeep(),
+    .m_axis_tvalid(sqrt_valid),
+    .m_axis_tready(~read_req),
+    .m_axis_tlast(),
+    .m_axis_tid(),
+    .m_axis_tdest(),
+    .m_axis_tuser(),
+    .status_overflow(),
+    .status_bad_frame(),
+    .status_good_frame(),
+    .fifo_full(fifo_full)
 );
+
 
 wire [SQRT_WIDTH-1:0] sqrt_dout;
 wire sqrt_out_valid;
+wire valid_req = sqrt_valid & ~read_req;
 
 iterative_sqrt #(
     .DIN_WIDTH(SQRT_WIDTH),
@@ -172,22 +190,24 @@ iterative_sqrt #(
     .clk(clk),
     .busy(read_req),
     .din_valid(sqrt_valid & !sqrt_data[SQRT_WIDTH-1]),
-    .din(sqrt_data),
+    .din($unsigned(sqrt_data)),
     .dout(sqrt_dout),
     .reminder(),
     .dout_valid(sqrt_out_valid)
 );
 
 
+
 wire signed [SQRT_WIDTH-1:0] b_delay_r;
 wire [$clog2(BANDS)-1:0] bands_delay;
+wire valid_req_fifo;
 delay #(
-    .DATA_WIDTH(SQRT_WIDTH+$clog2(BANDS)),
+    .DATA_WIDTH(SQRT_WIDTH+$clog2(BANDS)+1),
     .DELAY_VALUE((SQRT_WIDTH+SQRT_POINT)/2)
 ) delay_b_again (
     .clk(clk),
-    .din({b_data, bands_rrr}),
-    .dout({b_delay_r, bands_delay})
+    .din({b_data, bands_rrr, (valid_req)}),
+    .dout({b_delay_r, bands_delay, valid_req_fifo})
 );
 
 reg error=0;
@@ -201,7 +221,7 @@ end
 wire error_delay;
 delay #(
     .DATA_WIDTH(1),
-    .DELAY_VALUE((SQRT_WIDTH+SQRT_POINT)/2-1)
+    .DELAY_VALUE((SQRT_WIDTH+SQRT_POINT)/2+1)
 ) delay_error (
     .clk(clk),
     .din(error),
@@ -210,22 +230,22 @@ delay #(
 
 reg signed [SQRT_WIDTH-1:0] b_minus=0;
 reg signed [SQRT_WIDTH-1:0] x1_r=0, x2_r=0;
-reg dout_valid_r=0;
+reg [1:0] dout_valid_r=0;
 
 always@(posedge clk)begin
+    dout_valid_r <= {dout_valid_r[0],valid_req_fifo};
     b_minus <= ~b_delay_r+1'b1;
     if(sqrt_out_valid)begin
         x1_r <= $signed(b_minus)+$signed(sqrt_dout);
         x2_r <= $signed(b_minus)-$signed(sqrt_dout);
-        dout_valid_r <=1;
     end
-    else
-        dout_valid_r <=0;
 end
 
 assign x1 = x1_r>>>1;
 assign x2 = x2_r>>>1;
 
-assign dout_valid = dout_valid_r;
+assign dout_valid = dout_valid_r[1];
+assign dout_error = error_delay;
+assign band_out = bands_delay;
 
 endmodule

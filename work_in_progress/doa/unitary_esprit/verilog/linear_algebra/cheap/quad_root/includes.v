@@ -1,6 +1,5 @@
 `include "main/dsp/data_cast/signed_cast/signed_cast.v"
 `include "main/dsp/dsp48_mult/dsp48_mult.v"
-`include "main/utils/fifo_sync/fifo_sync.v"
-`include "main/xlx_templates/ram/simple_dual_port/sync_simple_dual_ram.v"
+`include "main/utils/axis_fifo/axis_fifo.v"
 `include "main/work_in_progress/sqrt/iterative/iterative_sqrt.v"
 `include "main/dsp/delay/delay.v"

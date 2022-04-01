@@ -5,8 +5,8 @@
 module quad_root_iterative_tb #(
     parameter DIN_WIDTH = 16,
     parameter DIN_POINT = 14,
-    parameter SQRT_WIDTH = 10,
-    parameter SQRT_POINT = 7,
+    parameter SQRT_WIDTH = 12,
+    parameter SQRT_POINT = 8,
     parameter FIFO_DEPTH = 8,    //Address= 2**FIFO_DEPTH
     parameter BANDS = 4
 ) (
