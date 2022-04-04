@@ -62,6 +62,7 @@ async def write_data(dut, data, cont, burst, rest):
     else:
         count =0
         for i in range(len(data[0])):
+            dut.band_in.value = int((i+1)%4)
             dut.r11.value = int(data[0][i])
             dut.r22.value = int(data[1][i])
             dut.r12.value = int(data[2][i])

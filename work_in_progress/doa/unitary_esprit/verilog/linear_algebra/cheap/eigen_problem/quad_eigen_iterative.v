@@ -263,7 +263,9 @@ generate
 
     end
 endgenerate
+reg [$clog2(BANDS)-1:0] band_dout=0;
 always@(posedge clk)begin
+    band_dout <= band_data;
     eigval1_r <= $signed(eig1_sized);   eigval2_r <= $signed(eig2_sized);
     eigen_valid <= $signed(eigval_valid);
     eigvec1 <= $signed(r11_data)-$signed(eig1_sized);
@@ -279,5 +281,6 @@ assign eigen1_y = ~eigvec1+1'b1;
 assign eigen2_y = ~eigvec2+1'b1;
 assign eigen_x = eigfrac;
 assign dout_error = eigen_error;
+assign band_out = band_dout;
 
 endmodule
