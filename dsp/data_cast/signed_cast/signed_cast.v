@@ -38,7 +38,7 @@ localparam DIN_INT = DIN_WIDTH-DIN_POINT;
 localparam DOUT_INT = DOUT_WIDTH-DOUT_POINT;
 
 initial begin
-    $display("Conveting %d _ %d to %d _ %d ", DIN_WIDTH, DIN_POINT, DOUT_WIDTH, DOUT_POINT);
+    $display("Conveting %d,%d to %d,%d ", DIN_WIDTH, DIN_POINT, DOUT_WIDTH, DOUT_POINT);
 end
 
 //integer part

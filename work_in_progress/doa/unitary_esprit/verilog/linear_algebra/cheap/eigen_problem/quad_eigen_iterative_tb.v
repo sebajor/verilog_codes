@@ -7,7 +7,7 @@ module quad_eigen_iterative_tb #(
     parameter DIN_WIDTH = 16,
     parameter DIN_POINT = 15,
     parameter SQRT_WIDTH = 16,
-    parameter SQRT_POINT = 8,
+    parameter SQRT_POINT = 10,
     parameter DOUT_WIDTH = 16,
     parameter DOUT_POINT = 13,
     parameter BANDS = 4,
