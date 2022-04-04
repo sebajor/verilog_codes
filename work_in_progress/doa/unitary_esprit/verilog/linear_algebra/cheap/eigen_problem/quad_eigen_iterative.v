@@ -1,5 +1,4 @@
 `default_nettype none
-`include "includes.v"
 
 /*
 *   Author: Sebastian Jorquera
@@ -17,7 +16,7 @@
 *
 */
 
-module quad_eigen #(
+module quad_eigen_iterative #(
     parameter DIN_WIDTH = 16,
     parameter DIN_POINT = 15,
     parameter SQRT_WIDTH = 16,
@@ -74,7 +73,6 @@ signed_cast #(
     .dout(r12_cast),
     .dout_valid()
 );
-
 
 //delay those values to match the eigenvalue calculation
 //TODO !!!!! check!!
@@ -184,7 +182,7 @@ quad_root_iterative #(
     .DIN_WIDTH(DIN_WIDTH+1),
     .DIN_POINT(DIN_POINT),
     .SQRT_WIDTH(SQRT_WIDTH),
-    .SQRT_POINT(SQRT_WIDTH),
+    .SQRT_POINT(SQRT_POINT),
     .FIFO_DEPTH(FIFO_DEPTH),
     .BANDS(BANDS)
 ) quad_root_inst  (
