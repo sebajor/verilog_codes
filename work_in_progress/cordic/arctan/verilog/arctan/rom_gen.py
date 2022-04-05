@@ -2,8 +2,9 @@ import numpy as np
 import matplotlib.pyplot as plt
 import struct, optparse
 
-
-
+###
+### Author: Sebastian Jorquera
+###
 
 def arctan_gen(din_width, dout_width, filename='atan_rom.mem'):
     f = open(filename, 'w')

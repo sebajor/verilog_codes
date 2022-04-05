@@ -1,5 +1,11 @@
 `default_nettype none
-
+/*
+*   Author: Sebastian Jorquera
+*   This module returns the index of the first appeareance of a 1
+*   between two inputs.
+*   
+*
+*/
 module first_one_finder #(
     parameter DIN_WIDTH = 32,
     parameter DOUT_WIDTH = $clog2(DIN_WIDTH)

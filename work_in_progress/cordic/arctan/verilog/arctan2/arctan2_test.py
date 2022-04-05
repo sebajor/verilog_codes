@@ -8,6 +8,9 @@ sys.path.append('../../../../../cocotb_python/')
 from two_comp import two_comp_pack, two_comp_unpack
 import itertools
 
+###
+### Author: Sebastian Jorquera
+###
 
 @cocotb.test()
 async def arctan2_test(dut, din_width=16, dout_width=16, iters=255, thresh=10**-2):

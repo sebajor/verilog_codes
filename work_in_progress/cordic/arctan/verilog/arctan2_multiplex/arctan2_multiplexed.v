@@ -1,5 +1,14 @@
 `default_nettype none
 
+/*
+*   Author: Sebastian Jorquera
+*   Interface for the arctan2 module. It receives multiple inputs
+*   at the time, store them into a RAM and then read one by one and
+*   insert it in the arctan2 module
+*   
+*   Be carefull of not fill the RAM fifo.
+*/
+
 module arctan2_multiplexed #(
     parameter DIN_WIDTH = 16,
     parameter DOUT_WIDTH = 16,

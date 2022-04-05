@@ -1,5 +1,15 @@
 `default_nettype none
 
+/*
+*   Author: Sebastian Jorquera
+*   Cordic Arctan, support eevry quadrant using trigonometric relations
+*   This module needs DIN_WIDTH cycles to produce a valid output. 
+*   A valid input occurs only when din_valid & sys_ready in the same cycle.
+*
+*   dout = arctan2(y,x)
+*/
+
+
 module arctan2 #(
     parameter DIN_WIDTH = 16,
     parameter DOUT_WIDTH = 16,

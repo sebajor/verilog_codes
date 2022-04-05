@@ -1,11 +1,13 @@
 `default_nettype none
 /*
-    arctan based in cordic algorithm. The output is 1/pi*arctan2(y,x)
-    so the output lives in -1,1
-    this module takes DIN_WIDTH cycles to output one value
-    
-    also this module is just in the first quadrant, could be extended using
-    trigronometic relations.
+    Author: Sebastian Jorquera
+*
+*    arctan based in cordic algorithm. The output is 1/pi*arctan2(y,x)
+*    so the output lives in -1,1
+*    this module takes DIN_WIDTH cycles to output one value.
+*    
+*    Also this module is just in the first quadrant, could be extended using
+*    trigronometic relations.
 */
 
 module arctan #(

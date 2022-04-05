@@ -19,15 +19,26 @@ module band_vector_doa_tb #(
     parameter LA_DIN_WIDTH = 16,
     parameter LA_DIN_POINT = 10,
     parameter SQRT_WIDTH = 16,
-    parameter SQRT_POINT = 8,
+    parameter SQRT_POINT = 6,
     parameter DOUT_WIDTH = 16,
-    parameter DOUT_POINT = 13,
+    parameter DOUT_POINT = 10,
     parameter FIFO_DEPTH = 8
 ) (
     
     input wire clk,
-    input wire [PARALLEL*DIN_WIDTH-1:0] din1_re, din1_im,
-    input wire [PARALLEL*DIN_WIDTH-1:0] din2_re, din2_im,
+    
+    input wire signed [DIN_WIDTH-1:0] din1_re0, din1_im0,
+    input wire signed [DIN_WIDTH-1:0] din1_re1, din1_im1,
+    input wire signed [DIN_WIDTH-1:0] din1_re2, din1_im2,
+    input wire signed [DIN_WIDTH-1:0] din1_re3, din1_im3,
+    
+    
+    input wire signed [DIN_WIDTH-1:0] din2_re0, din2_im0,
+    input wire signed [DIN_WIDTH-1:0] din2_re1, din2_im1,
+    input wire signed [DIN_WIDTH-1:0] din2_re2, din2_im2,
+    input wire signed [DIN_WIDTH-1:0] din2_re3, din2_im3,
+    
+
     input wire din_valid,
     input wire new_acc,     //this comes previous the first channel
 
@@ -63,10 +74,10 @@ band_vector_doa #(
     .FIFO_DEPTH(FIFO_DEPTH)
 ) band_vector_doa_inst (
     .clk(clk),
-    .din1_re(din1_re),
-    .din1_im(din1_im),
-    .din2_re(din2_re),
-    .din2_im(din2_im),
+    .din1_re({din1_re3, din1_re2, din1_re1, din1_re0}),
+    .din1_im({din1_im3, din1_im2, din1_im1, din1_im0}),
+    .din2_re({din2_re3, din2_im2, din2_im1, din2_im0}),
+    .din2_im({din2_im3, din2_im2, din2_im1, din2_im0}),
     .din_valid(din_valid),
     .new_acc(new_acc),
     .lamb1(lamb1),

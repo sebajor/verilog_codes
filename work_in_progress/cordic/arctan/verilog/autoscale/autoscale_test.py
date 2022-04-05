@@ -3,6 +3,10 @@ from cocotb.clock import Clock
 from cocotb.triggers import ClockCycles
 import numpy as np
 
+###
+### Author: Sebastian Jorquera
+###
+
 def gold_autoscale(dat1, dat2, bit_width,max_shift):
     bin1 = np.ceil(np.log2(dat1))
     bin2 = np.ceil(np.log2(dat2))

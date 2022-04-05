@@ -1,9 +1,10 @@
 `default_nettype none
 /*
-    Compare two signed inputs and determine the optimal shifting to
-   use in best way the DIN_WIDTH bits.
-   Like in the arctang we manage to just use the first quadrant the
-   input are always unsigned :)
+*   Author: Sebastian Jorquer
+*   Compare two unsigned inputs and determine the optimal shifting to
+*   use in best way the DIN_WIDTH bits.
+*   Like in the arctang we manage to just use the first quadrant the
+*   input are always unsigned :)
 */
 
 

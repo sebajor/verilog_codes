@@ -5,6 +5,10 @@ from cocotb.triggers import ClockCycles, RisingEdge
 sys.path.append('../../../../../cocotb_python/')
 from two_comp import two_comp_pack, two_comp_unpack
 
+###
+### Author: Sebastian Jorquera
+###
+
 @cocotb.test()
 async def arctan2_multiplexed_test(dut, din_width=16, iters=256, parallel=4,
         burst_len=10, rest=100, thresh=10**-2):
