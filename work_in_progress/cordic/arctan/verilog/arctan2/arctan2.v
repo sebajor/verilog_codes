@@ -167,21 +167,15 @@ assign dout_valid = dout_valid_r;
 
 
 //timing of the ready signal
-reg shift_valid_r=0;
-always@(posedge clk)
-    shift_valid_r<= shift_valid;
-
-reg ready=1;
-wire busy = abs_valid | shift_valid | scale_valid |din_valid_r |shift_valid_r;
+reg ready = 1'b1;
 always@(posedge clk)begin
-    if(ready & din_valid)
-        ready <=1'b0;
-    else if(atan_valid)
-        ready <= 1'b1;
-    else
-        ready <= ready;
+    if(sys_ready & din_valid)
+        ready <=0;
+    else if(dout_valid_r)
+        ready <= 1;
 end
 
-assign sys_ready = ready & atan_rdy & ~dout_valid_r;
+assign sys_ready = ready;
+
 
 endmodule
