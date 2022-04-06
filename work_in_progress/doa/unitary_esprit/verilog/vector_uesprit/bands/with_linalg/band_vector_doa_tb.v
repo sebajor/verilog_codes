@@ -10,7 +10,7 @@ module band_vector_doa_tb #(
     parameter BANDS = 4,            //
     //correlator  parameters
     parameter PRE_ACC_DELAY = 0,    //for timing
-    parameter PRE_ACC_SHIFT = 2,    //positive <<, negative >>
+    parameter PRE_ACC_SHIFT = -2,    //positive <<, negative >>
     parameter ACC_WIDTH = 20,
     parameter ACC_POINT = 16,
     parameter ACC_DOUT = 32,

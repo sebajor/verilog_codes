@@ -65,10 +65,3 @@ async def read_data(dut, dout_width, gold, thresh):
             count +=1
         await ClockCycles(dut.clk, 1)
 
-
-
-
-
-
-
-

@@ -75,6 +75,21 @@ always@(posedge clk)begin
     acc_band_out_r <= acc_band_out;
 end
 
+wire signed [ACC_DOUT-1:0] r11_shift, r12_shift, r22_shift;
+shift #(
+    .DATA_WIDTH(ACC_DOUT),
+    .DATA_TYPE("signed"), //"signed" or "unsigned"
+    .SHIFT_VALUE(PRE_ACC_SHIFT),      //positive <<, negative >>
+    .ASYNC(1)             // 
+) shift_pre_acc_inst [2:0] (
+    .clk(clk),
+    .din({r11,r12,r22}),
+    .dout({r11_shift, r12_shift, r22_shift})
+);
+
+
+
+
 
 wire signed [LA_DIN_WIDTH-1:0] r11_cast, r12_cast, r22_cast;
 wire acc_valid_r;
@@ -86,7 +101,7 @@ signed_cast #(
     .DOUT_POINT(LA_DIN_POINT)
 ) acc_cast_inst [2:0] (
     .clk(clk), 
-    .din({r11,r12,r22}),
+    .din({r11_shift,r12_shift,r22_shift}),
     .din_valid(acc_valid),
     .dout({r11_cast, r12_cast, r22_cast}),
     .dout_valid(acc_valid_r)
@@ -104,6 +119,9 @@ delay #(
     .din({r11_cast,r12_cast,r22_cast,acc_band_out_r,acc_valid_r}),
     .dout({r11_data,r12_data,r22_data,la_band_in, la_in_valid})
 );
+
+
+
 
 quad_eigen_iterative #(
     .DIN_WIDTH(LA_DIN_WIDTH),

@@ -82,7 +82,8 @@ def uesprit_eigen(r11,r22,r12):
 
 @cocotb.test()
 async def point_doa_no_la(dut, iters=100, acc_len=10, vec_len=64,bands=4,
-        din_width=16, din_pt=14, dout_width=16, dout_pt=16, corr_shift=0,
+        din_width=16, din_pt=14, dout_width=16, dout_pt=16, corr_shift=2,
+        corr_width=32, corr_pt=16, corr_thresh=0.2,
         cont=1, burst_len=10, thresh=0.2):
     ##hyper params for the data generation
     freqs = [2, 33]
@@ -143,6 +144,13 @@ async def point_doa_no_la(dut, iters=100, acc_len=10, vec_len=64,bands=4,
     r12 = r12/2.**corr_shift
     r22 = r22/2.**corr_shift
 
+    print(r11.T.flatten()[:8])
+    print(r12.T.flatten()[:8])
+    print(r22.T.flatten()[:8])
+
+    gold_corr = [r11.T.flatten(),r22.T.flatten(), r12.T.flatten()]
+
+
     l1,l2,eig1,eig2,frac = uesprit_eigen(r11.flatten(),r22.flatten(),r12.flatten())
     gold = [l1,l2,eig1,eig2,frac]
 
@@ -157,9 +165,14 @@ async def point_doa_no_la(dut, iters=100, acc_len=10, vec_len=64,bands=4,
     ##like we subsample in the frequencies
     freq = np.array(freqs)//bands
     
+    
     ##start simulation
-    cocotb.fork(read_data(dut, gold, bands, dout_width, dout_pt, freqs,
-                thresh, print_all=1))
+
+    cocotb.fork(check_correlator_output(dut, gold_corr,vec_len//bands, corr_width, corr_pt, 
+        corr_thresh))
+    #check global output
+    #cocotb.fork(read_data(dut, gold, bands, dout_width, dout_pt, freqs,
+    #            thresh, print_all=1))
     await write_data(dut,data, acc_len, vec_len//bands, cont, burst_len)
     
 
@@ -246,9 +259,29 @@ async def read_data(dut, gold, vec_len, dout_width, dout_pt, freqs, thresh, prin
             count += 1
         await ClockCycles(dut.clk, 1)
 
-async def check_correlator_output(dut, gold):
+
+async def check_correlator_output(dut, gold, vec_len, dout_width, dout_pt, thresh):
     count =0
     while(count < len(gold)):
+        valid = int(dut.band_vector_doa_inst.la_in_valid.value)
+        if(valid):
+            r11 = int(dut.band_vector_doa_inst.r11_data.value)
+            r22 = int(dut.band_vector_doa_inst.r22_data.value)
+            r12 = int(dut.band_vector_doa_inst.r12_data.value)
+            r11,r22,r12 = two_comp_unpack(np.array([r11,r22,r12]),
+                    dout_width, dout_pt)
+            print("%i"%(count%vec_len))
+            print("r11    \t rtl:%.3f \t gold:%.3f" %(r11,gold[0][count]))
+            print("r22    \t rtl:%.3f \t gold:%.3f" %(r22,gold[1][count]))
+            print("r12_re \t rtl:%.3f \t gold:%.3f" %(r12,gold[2][count].real))
+
+            assert (np.abs(r11-gold[0][count])<thresh), "Error R11"
+            assert (np.abs(r22-gold[1][count])<thresh), "Error R22"
+            assert (np.abs(r12-gold[2][count].real)<thresh), "Error R12_re"
+
+            count += 1
+        await ClockCycles(dut.clk, 1)
+
         
     
 
