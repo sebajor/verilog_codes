@@ -10,18 +10,18 @@ module band_vector_doa_tb #(
     parameter BANDS = 4,            //
     //correlator  parameters
     parameter PRE_ACC_DELAY = 0,    //for timing
-    parameter PRE_ACC_SHIFT = -2,    //positive <<, negative >>
+    parameter PRE_ACC_SHIFT = 0,    //positive <<, negative >>
     parameter ACC_WIDTH = 20,
     parameter ACC_POINT = 16,
     parameter ACC_DOUT = 32,
     //linear algebra parameters
-    parameter LA_DELAY_IN = 2,
+    parameter LA_DELAY_IN = 0,
     parameter LA_DIN_WIDTH = 16,
-    parameter LA_DIN_POINT = 10,
-    parameter SQRT_WIDTH = 16,
+    parameter LA_DIN_POINT = 8,
+    parameter SQRT_WIDTH = 20,
     parameter SQRT_POINT = 6,
     parameter DOUT_WIDTH = 16,
-    parameter DOUT_POINT = 10,
+    parameter DOUT_POINT = 8,
     parameter FIFO_DEPTH = 8
 ) (
     
@@ -76,7 +76,7 @@ band_vector_doa #(
     .clk(clk),
     .din1_re({din1_re3, din1_re2, din1_re1, din1_re0}),
     .din1_im({din1_im3, din1_im2, din1_im1, din1_im0}),
-    .din2_re({din2_re3, din2_im2, din2_im1, din2_im0}),
+    .din2_re({din2_re3, din2_re2, din2_re1, din2_re0}),
     .din2_im({din2_im3, din2_im2, din2_im1, din2_im0}),
     .din_valid(din_valid),
     .new_acc(new_acc),
@@ -90,5 +90,15 @@ band_vector_doa #(
     .band_out(band_out),
     .fifo_full(fifo_full)
 );
+
+reg [31:0] count=0;
+always@(posedge clk)begin
+    if(new_acc)
+        count <=0;
+    else
+        count <= count+1;
+
+end
+
 
 endmodule

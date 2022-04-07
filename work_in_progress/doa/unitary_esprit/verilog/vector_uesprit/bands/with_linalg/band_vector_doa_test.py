@@ -49,7 +49,6 @@ class gen_data():
         spec1 = 10*np.log10(np.abs(np.abs(self.antenna1)))
         return spec0, spec1
 
-
 def uesprit_matrix(antenna0, antenna1, acc_len):
     """
         antenna:    [vect_len, iters] 
@@ -82,8 +81,8 @@ def uesprit_eigen(r11,r22,r12):
 
 @cocotb.test()
 async def point_doa_no_la(dut, iters=100, acc_len=10, vec_len=64,bands=4,
-        din_width=16, din_pt=14, dout_width=16, dout_pt=16, corr_shift=2,
-        corr_width=32, corr_pt=16, corr_thresh=0.2,
+        din_width=16, din_pt=14, dout_width=16, dout_pt=8, corr_shift=0,
+        corr_width=16, corr_pt=8, corr_thresh=1,
         cont=1, burst_len=10, thresh=0.2):
     ##hyper params for the data generation
     freqs = [2, 33]
@@ -128,7 +127,6 @@ async def point_doa_no_la(dut, iters=100, acc_len=10, vec_len=64,bands=4,
             amplitude=amps, noise_std=10**-3)
 
     dat0, dat1 = (generator.antenna0, generator.antenna1)
-    print(dat0.shape) 
     norm = np.max(np.array([dat0.real, dat0.imag, dat1.real, dat1.imag]))
     dat0 = dat0/norm
     dat1 = dat1/norm
@@ -144,14 +142,14 @@ async def point_doa_no_la(dut, iters=100, acc_len=10, vec_len=64,bands=4,
     r12 = r12/2.**corr_shift
     r22 = r22/2.**corr_shift
 
-    print(r11.T.flatten()[:8])
-    print(r12.T.flatten()[:8])
-    print(r22.T.flatten()[:8])
+    #print(r11.T.flatten()[:8])
+    #print(r12.T.flatten()[:8])
+    #print(r22.T.flatten()[:8])
 
     gold_corr = [r11.T.flatten(),r22.T.flatten(), r12.T.flatten()]
 
 
-    l1,l2,eig1,eig2,frac = uesprit_eigen(r11.flatten(),r22.flatten(),r12.flatten())
+    l1,l2,eig1,eig2,frac = uesprit_eigen(r11.T.flatten(),r22.T.flatten(),r12.T.flatten())
     gold = [l1,l2,eig1,eig2,frac]
 
     ##convert data into binary
@@ -167,12 +165,15 @@ async def point_doa_no_la(dut, iters=100, acc_len=10, vec_len=64,bands=4,
     
     
     ##start simulation
+    print(dat0.flatten()[:10])
+    print(dat1.flatten()[:10])
 
-    cocotb.fork(check_correlator_output(dut, gold_corr,vec_len//bands, corr_width, corr_pt, 
-        corr_thresh))
+    #check the output of the correlator, for debuging
+    #cocotb.fork(check_correlator_output(dut, gold_corr,vec_len//bands, corr_width, corr_pt, 
+    #    corr_thresh))
     #check global output
-    #cocotb.fork(read_data(dut, gold, bands, dout_width, dout_pt, freqs,
-    #            thresh, print_all=1))
+    cocotb.fork(read_data(dut, gold, bands, dout_width, dout_pt, freqs,
+                thresh, print_all=1))
     await write_data(dut,data, acc_len, vec_len//bands, cont, burst_len)
     
 
@@ -260,9 +261,21 @@ async def read_data(dut, gold, vec_len, dout_width, dout_pt, freqs, thresh, prin
         await ClockCycles(dut.clk, 1)
 
 
+###
+###The task below are to debug the internal signals
+###
+
+
 async def check_correlator_output(dut, gold, vec_len, dout_width, dout_pt, thresh):
     count =0
-    while(count < len(gold)):
+    ##skip the first output because is garbage
+    while(count < vec_len):
+        valid = int(dut.band_vector_doa_inst.la_in_valid.value)
+        if(valid):
+            count += 1
+        await ClockCycles(dut.clk, 1)
+    count = 0
+    while(count < len(gold[0])):
         valid = int(dut.band_vector_doa_inst.la_in_valid.value)
         if(valid):
             r11 = int(dut.band_vector_doa_inst.r11_data.value)
@@ -283,6 +296,9 @@ async def check_correlator_output(dut, gold, vec_len, dout_width, dout_pt, thres
         await ClockCycles(dut.clk, 1)
 
         
-    
+async def check_sqrt_output(dut, gold, vec_len, dout_width, dout_pt, thresh):
+    #TODO
+    return 1
+
 
     
