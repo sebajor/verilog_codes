@@ -253,7 +253,7 @@ generate
         assign eig1_sized = (eigval1<<<(DOUT_POINT-SQRT_POINT));
         assign eig2_sized = (eigval2<<<(DOUT_POINT-SQRT_POINT));
     end
-    else if(DOUT_POINT<SQRT_OUT_POINT)begin
+    else if(DOUT_POINT<SQRT_POINT)begin
         assign eig1_sized = (eigval1>>>(SQRT_POINT-DOUT_POINT));
         assign eig2_sized = (eigval2>>>(SQRT_POINT-DOUT_POINT));
     end

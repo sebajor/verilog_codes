@@ -15,16 +15,19 @@ from two_comp import two_comp_pack, two_comp_unpack
 
 
 @cocotb.test()
-async def point_doa_no_la(dut, iters=100, acc_len=10, vec_len=64,bands=4,
-        din_width=16, din_pt=14, dout_width=16, dout_pt=8, corr_shift=0,
+async def point_doa_no_la(dut, iters=256, acc_len=10, vec_len=64,bands=4,
+        din_width=16, din_pt=14, dout_width=20, dout_pt=10, corr_shift=0,
         corr_width=16, corr_pt=8, corr_thresh=1,cont=1, burst_len=10, 
         thresh=0.2, collect_phases=1, print_all=0):
     ##hyper params for the data generation
-    freqs = [3,  33, 54]
-    phases = [-10, -33, -90]
-    amps = [0.02, 0.2, 0.05]
+
+    freqs = [3, 18, 33, 54]
+    phases = [-10,-56, -75, -33]
+    amps = [0.01, 0.02 ,0.2, 0.02]
+    noise_std = 10**-3
 
     iters_doa = 65*2
+    phases_plot = 30         #+- plot phases
 
     thresh = thresh*acc_len
     
@@ -61,7 +64,7 @@ async def point_doa_no_la(dut, iters=100, acc_len=10, vec_len=64,bands=4,
 
     ##generate input data
     generator = gen_data(dft_len=vec_len,iters=iters*acc_len, freqs=freqs, phases=phases, 
-            amplitude=amps, noise_std=10**-3)
+            amplitude=amps, noise_std=noise_std)
 
     dat0, dat1 = (generator.antenna0, generator.antenna1)
     norm = np.max(np.array([dat0.real, dat0.imag, dat1.real, dat1.imag]))
@@ -76,6 +79,13 @@ async def point_doa_no_la(dut, iters=100, acc_len=10, vec_len=64,bands=4,
     ax2.set_title('Antenna 1')
     ax1.grid()
     ax2.grid()
+    colors = ['b','g','r','c','m','y','k']
+    for i in range(bands):
+        y = np.linspace(0, -80)
+        ax1.fill_betweenx(y, vec_len//bands*i, vec_len//bands*(i+1), facecolor=colors[i],
+                alpha=0.2)
+        ax2.fill_betweenx(y, vec_len//bands*i, vec_len//bands*(i+1), facecolor=colors[i],
+                alpha=0.2)
     plt.savefig('in_spect.png')
     plt.close()
 
@@ -117,19 +127,26 @@ async def point_doa_no_la(dut, iters=100, acc_len=10, vec_len=64,bands=4,
         fig = plt.figure()
         ax_shape = get_fig_shape(len(freq))
          
-        colors = ['b','g','r','c','m','y','k']
         for i in range(len(freq)):
+            print('band %i'%freq[i])
             ax = fig.add_subplot(ax_shape[0],ax_shape[1],i+1)
-            ax_lim = [-phases[i]-40, -phases[i]+40]
+            ax_lim = [-phases[i]-phases_plot, -phases[i]+phases_plot]
             ax.set_title('Band %i  doa: %.3f' %(freq[i], -phases[i]))
-            ax.plot(gold_phases[str(int(freq[i]))], colors[0]+'x', label='gold doa')
+            ax.plot(gold_phases[str(int(freq[i]))], colors[0]+'x', label='python doa')
             ax.plot(rtl_phases[str(int(freq[i]))], colors[1]+'.', label='rtl doa')
-            plt.axhline(np.median(rtl_phases[str(int(freq[i]))]),0, 
+            rtl_median = np.median(rtl_phases[str(int(freq[i]))])
+            gold_median = np.median(gold_phases[str(int(freq[i]))])
+            gold_mean = np.mean(gold_phases[str(int(freq[i]))])
+            rtl_mean = np.mean(rtl_phases[str(int(freq[i]))])
+            print('Right answer %.4f' %(-phases[i]))
+            print('python median: %.4f \t rtl median: %.4f '%(gold_median, rtl_median))
+            print('python mean: %.4f \t rtl mean: %.4f \n'%(gold_mean, rtl_mean))
+            plt.axhline(rtl_median,0, 
                     len(rtl_phases[str(int(freq[i]))]), color=colors[2],
                     linestyle='--', label='rtl median')
-            plt.axhline(np.median(gold_phases[str(int(freq[i]))]),0, 
+            plt.axhline(gold_median,0, 
                     len(rtl_phases[str(int(freq[i]))]), color=colors[3],
-                    linestyle='-.', label='gold median')
+                    linestyle='-.', label='python median')
             ax.set_ylim(ax_lim)
             ax.grid()
         line_label = [ax.get_legend_handles_labels()]
