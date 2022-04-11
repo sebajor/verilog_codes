@@ -34,3 +34,4 @@ clean::
 	@rm -rf __pycache__
 	@rm -rf *.del 
 	@rm -rf iverilog_dump.v
+	@rm -rf doa.png in_spect.png
