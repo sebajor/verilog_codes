@@ -12,13 +12,13 @@ module band_vector_doa_tb #(
     parameter PRE_ACC_DELAY = 0,    //for timing
     parameter PRE_ACC_SHIFT = 0,    //positive <<, negative >>
     parameter ACC_WIDTH = 24,
-    parameter ACC_POINT = 16,
+    parameter ACC_POINT = 10,
     parameter ACC_DOUT = 32,
     //linear algebra parameters
     parameter LA_DELAY_IN = 0,
-    parameter LA_DIN_WIDTH = 20,
+    parameter LA_DIN_WIDTH = 25,
     parameter LA_DIN_POINT = 10,
-    parameter SQRT_WIDTH = 20,
+    parameter SQRT_WIDTH = 24,
     parameter SQRT_POINT = 8,
     parameter DOUT_WIDTH = 20,
     parameter DOUT_POINT = 10,

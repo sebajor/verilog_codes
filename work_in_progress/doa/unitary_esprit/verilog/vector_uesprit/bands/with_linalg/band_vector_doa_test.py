@@ -15,7 +15,7 @@ from two_comp import two_comp_pack, two_comp_unpack
 
 
 @cocotb.test()
-async def point_doa_no_la(dut, iters=256, acc_len=10, vec_len=64,bands=4,
+async def point_doa_no_la(dut, iters=512, acc_len=50, vec_len=64,bands=4,
         din_width=16, din_pt=14, dout_width=20, dout_pt=10, corr_shift=0,
         corr_width=16, corr_pt=8, corr_thresh=1,cont=1, burst_len=10, 
         thresh=0.2, collect_phases=1, print_all=0):
@@ -26,7 +26,7 @@ async def point_doa_no_la(dut, iters=256, acc_len=10, vec_len=64,bands=4,
     amps = [0.01, 0.02 ,0.2, 0.02]
     noise_std = 10**-3
 
-    iters_doa = 65*2
+    iters_doa = 65*2*2*2
     phases_plot = 30         #+- plot phases
 
     thresh = thresh*acc_len
