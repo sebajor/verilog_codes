@@ -1,5 +1,6 @@
 import cocotb, sys
 from scipy.fftpack import fft
+from scipy.stats import circmean
 sys.path.append('../../../../')
 import numpy as np
 import matplotlib.pyplot as plt
@@ -136,8 +137,10 @@ async def point_doa_no_la(dut, iters=512, acc_len=50, vec_len=64,bands=4,
             ax.plot(rtl_phases[str(int(freq[i]))], colors[1]+'.', label='rtl doa')
             rtl_median = np.median(rtl_phases[str(int(freq[i]))])
             gold_median = np.median(gold_phases[str(int(freq[i]))])
-            gold_mean = np.mean(gold_phases[str(int(freq[i]))])
-            rtl_mean = np.mean(rtl_phases[str(int(freq[i]))])
+            #gold_mean = np.mean(gold_phases[str(int(freq[i]))])
+            #rtl_mean = np.mean(rtl_phases[str(int(freq[i]))])
+            gold_mean = np.rad2deg(circmean(np.deg2rad(gold_phases[str(int(freq[i]))])))
+            rtl_mean = np.rad2deg(circmean(np.deg2rad(rtl_phases[str(int(freq[i]))])))
             print('Right answer %.4f' %(-phases[i]))
             print('python median: %.4f \t rtl median: %.4f '%(gold_median, rtl_median))
             print('python mean: %.4f \t rtl mean: %.4f \n'%(gold_mean, rtl_mean))
