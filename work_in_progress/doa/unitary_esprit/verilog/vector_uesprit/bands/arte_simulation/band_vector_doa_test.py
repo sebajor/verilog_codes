@@ -16,18 +16,18 @@ from two_comp import two_comp_pack, two_comp_unpack
 
 
 @cocotb.test()
-async def point_doa_no_la(dut, iters=512, acc_len=32, vec_len=64,bands=4,
-        din_width=16, din_pt=14, dout_width=32, dout_pt=16, corr_shift=0,
-        corr_width=16, corr_pt=8, corr_thresh=1,cont=1, burst_len=10, 
+async def point_doa_no_la(dut, iters=512, acc_len=10, vec_len=2048,bands=8,
+        din_width=18, din_pt=16, dout_width=32, dout_pt=15, corr_shift=0,
+        corr_width=32, corr_pt=15, corr_thresh=1,cont=1, burst_len=10, 
         thresh=0.2, collect_phases=1, print_all=0):
     ##hyper params for the data generation
 
-    freqs = [3, 18, 33, 54]
-    phases = [-40,-56, -75, -33]
-    amps = [0.005, 0.008 ,0.2, 0.0001]
-    noise_std = 10**-4
+    freqs = [18, 300, 700]
+    phases = [-40,-56, -75]
+    amps = [0.01, 0.02 ,0.2]
+    noise_std = 10**-3
 
-    iters_doa = 65*2*2*2
+    iters_doa = 65*2*2
     phases_plot = 30         #+- plot phases
 
     thresh = thresh*acc_len
@@ -35,10 +35,10 @@ async def point_doa_no_la(dut, iters=512, acc_len=32, vec_len=64,bands=4,
     ##
     clk = Clock(dut.clk, 10, units='ns')
     cocotb.fork(clk.start())
-    np.random.seed(30)
+    np.random.seed(29)
 
     #setup dut
-    setup_dut(dut)
+    await setup_dut(dut)
     await ClockCycles(dut.clk, 5)
 
     ##generate input data
@@ -51,6 +51,7 @@ async def point_doa_no_la(dut, iters=512, acc_len=32, vec_len=64,bands=4,
     dat1 = dat1/norm
    
     #plot the input spectra
+    colors = ['b','g','r','c','m','y','k']
     fig=plt.figure();   ax1 = fig.add_subplot(121); ax2=fig.add_subplot(122)
     ax1.plot(20*np.log10(np.abs(dat0[0,:])))
     ax2.plot(20*np.log10(np.abs(dat1[0,:])))
@@ -58,13 +59,12 @@ async def point_doa_no_la(dut, iters=512, acc_len=32, vec_len=64,bands=4,
     ax2.set_title('Antenna 1')
     ax1.grid()
     ax2.grid()
-    colors = ['b','g','r','c','m','y','k']
-    for i in range(bands):
-        y = np.linspace(0, -80)
-        ax1.fill_betweenx(y, vec_len//bands*i, vec_len//bands*(i+1), facecolor=colors[i],
-                alpha=0.2)
-        ax2.fill_betweenx(y, vec_len//bands*i, vec_len//bands*(i+1), facecolor=colors[i],
-                alpha=0.2)
+    #for i in range(bands):
+    #    y = np.linspace(0, -80)
+    #    ax1.fill_betweenx(y, vec_len//bands*i, vec_len//bands*(i+1), facecolor=colors[i],
+    #            alpha=0.2)
+    #    ax2.fill_betweenx(y, vec_len//bands*i, vec_len//bands*(i+1), facecolor=colors[i],
+    #            alpha=0.2)
     plt.savefig('in_spect.png')
     plt.close()
 
@@ -93,7 +93,7 @@ async def point_doa_no_la(dut, iters=512, acc_len=32, vec_len=64,bands=4,
     data = [din0_re+1j*din0_im, din1_re+1j*din1_im]
     
     ##like we subsample in the frequencies
-    freq = np.array(freqs)//(vec_len/4)
+    freq = np.array(freqs)//(vec_len/bands)
     
     
     ##start simulation
@@ -101,8 +101,7 @@ async def point_doa_no_la(dut, iters=512, acc_len=32, vec_len=64,bands=4,
     cocotb.fork(read_data(dut, gold, bands, dout_width, dout_pt, freq,
                 thresh, print_all=print_all))
 
-    #await check_correlator_output(dut, gold_corr, vec_len, corr_dout_width, dout_pt, thresh)
-
+    #cocotb.fork(check_correlator_output(dut, gold_corr, bands, corr_width, corr_pt, corr_thresh))
     if(collect_phases): 
         cocotb.fork(write_data(dut,data, acc_len, vec_len//bands, cont, burst_len))
         gold_phases,rtl_phases = await collect_doa(dut, gold,vec_len, dout_width, dout_pt, freq.astype(int), iters_doa)

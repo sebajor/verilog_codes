@@ -8,6 +8,8 @@ VERILOG_SOURCES = $(shell pwd)/$(dut)_tb.v
 TOPLEVEL = $(dut)_tb
 MODULE = $(dut)_test 
 
+FPGA_PART = xc7k325t-ffg676-2
+
 #sigmoid rom file
 DIN_WIDTH= 16
 DIN_POINT= 10
@@ -29,6 +31,17 @@ gen_rom:
 	   					--dout_width $(DOUT_WIDTH) --dout_pt $(DOUT_POINT)\
 					   	--filename sqrt.mem --plot 1
 
+synth:
+	rm -rf synthesis.tcl
+	echo "create_project -force -part $(FPGA_PART) synth_test" > synthesis.tcl
+	echo "add_files -fileset sources_1 $(VERILOG_SOURCES)" >> synthesis.tcl
+	echo "reset_run synth_1" >> synthesis.tcl
+	echo "launch_runs synth_1" >> synthesis.tcl
+	echo "wait_on_run synth_1" >> synthesis.tcl
+	echo "exit" >> synthesis.tcl
+	vivado -nojournal -nolog -mode batch -source synthesis.tcl
+
+
 iverilog_dump.v:
 	echo 'module iverilog_dump();' > $@
 	echo 'initial begin' >> $@
@@ -44,3 +57,9 @@ clean::
 	@rm -rf __pycache__
 	@rm -rf *.del 
 	@rm -rf iverilog_dump.v
+	@rm -rf synthesis.tcl
+	@rm -rf *.cache *.hw *.ip_user_files *.runs *.xpr *.sim
+	@rm -rf .Xil
+
+
+

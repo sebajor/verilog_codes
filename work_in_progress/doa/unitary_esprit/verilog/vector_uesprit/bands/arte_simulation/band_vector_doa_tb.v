@@ -3,15 +3,15 @@
 `include "band_vector_doa.v"
 
 module band_vector_doa_tb #(
-    parameter DIN_WIDTH = 16,
-    parameter DIN_POINT = 14,
+    parameter DIN_WIDTH = 18,
+    parameter DIN_POINT = 16,
     parameter PARALLEL = 4,     //parallel inputs
-    parameter VECTOR_LEN = 64,      //FFT channels
-    parameter BANDS = 4,            //
+    parameter VECTOR_LEN = 2048,      //FFT channels
+    parameter BANDS = 8,            //
     //correlator  parameters
     parameter PRE_ACC_DELAY = 0,    //for timing
     parameter PRE_ACC_SHIFT = 0,    //positive <<, negative >>
-    parameter ACC_WIDTH = 26,
+    parameter ACC_WIDTH = 25,
     parameter ACC_POINT = 16,
     parameter ACC_DOUT = 32,
     //linear algebra parameters
