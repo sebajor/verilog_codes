@@ -2,7 +2,9 @@
 
 /*
 *   Author: Sebastian Jorquera
-*   This module generate
+*   This module generates a pulse after a certain
+*   amount of cycles. Typically we use it to 
+*   start a new accumlation in spectrometers
 *   
 */
 

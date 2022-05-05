@@ -11,7 +11,7 @@
 
 module shift #(
     parameter DATA_WIDTH = 16,
-    parameter DATA_TYPE = "signed", //"signed" or "unsigned"
+    parameter DATA_TYPE = "unsigned", //"signed" or "unsigned"
     parameter SHIFT_VALUE = 1,      //positive <<, negative >>
     parameter ASYNC = 0,             // 
     parameter OVERFLOW_WARNING = 1
@@ -22,6 +22,9 @@ module shift #(
     output wire [DATA_WIDTH-1:0] dout,
     output wire [1:0] warning
 );
+initial begin
+    //$display("SHIFT OVERFLOW WARNING %d", OVERFLOW_WARNING);
+end
 
 generate
     if(DATA_TYPE=="signed")begin
@@ -77,7 +80,8 @@ generate
         else begin
             reg [DATA_WIDTH+SHIFT_VALUE-1:0] dout_temp=0;
             assign dout = dout_temp;
-            reg warning_r =0;
+            reg [1:0] warning_r =0;
+            assign warning = warning_r;
             always@(posedge clk)begin
                 if(SHIFT_VALUE==0)
                     dout_temp <= $unsigned(din);

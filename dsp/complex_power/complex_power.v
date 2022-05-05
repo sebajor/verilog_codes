@@ -4,6 +4,7 @@
 *   Author: Sebastian Jorquera
 *   
 *   This module calculate the power over a complex value (a+i*b) ie (a**2+b**2)
+*   it takes 5 cycles
 */
 
 module complex_power #(
