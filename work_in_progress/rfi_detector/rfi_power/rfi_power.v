@@ -6,7 +6,7 @@ module rfi_power #(
     parameter CHANNEL_ADDR = 9,
 
     parameter POST_POW_DELAY = 0,
-    parameter ACC_WIDTH = 32,
+    parameter ACC_WIDTH = 64,
     //convert the output of the accumulator
     parameter POST_ACC_SHIFT = 0,
     parameter POST_ACC_WIDTH = 32,
@@ -105,7 +105,7 @@ wire post_acc_warn;
 
 resize_module #(
     .DIN_WIDTH(ACC_WIDTH),
-    .DIN_POINT(2*DIN_WIDTH),
+    .DIN_POINT(2*DIN_POINT),
     .DATA_TYPE("unsigned"),
     .PARALLEL(2),
     .SHIFT(POST_ACC_SHIFT),

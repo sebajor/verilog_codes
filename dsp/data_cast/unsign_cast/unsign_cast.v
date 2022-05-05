@@ -17,6 +17,12 @@ module unsign_cast #(
 localparam DIN_INT = DIN_WIDTH-DIN_POINT;
 localparam DOUT_INT = DOUT_WIDTH-DOUT_POINT;
 
+initial begin
+    $display("Conveting %d,%d to %d,%d ", DIN_WIDTH, DIN_POINT, DOUT_WIDTH, DOUT_POINT);
+    //$display("Overflow warning %d", OVERFLOW_WARNING);
+end
+
+
 //integer part
 reg [DOUT_INT-1:0] dout_int=0;
 reg [1:0] warning_r=0;
