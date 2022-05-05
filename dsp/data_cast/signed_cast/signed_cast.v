@@ -17,6 +17,9 @@
 *   it gets diminish..but at least your saturation goes up to
 *    -(2**(dout_int-1)-1+frac) and when you dont have fractional part the
 *   saturation goes to -2**(dout_int-1)
+*   
+*   If WARNING_OVERFLOW is 1 the warning output will be 1 if there is an overflow
+*   2 if there is an underflow and 0 if everything is ok. 
 *
 *   I didnt fix it because the if-else conditions are horrible enough to also
 *   make them in just one generate statment aagg
@@ -26,13 +29,15 @@ module signed_cast #(
     parameter DIN_WIDTH = 8,
     parameter DIN_POINT = 4,
     parameter DOUT_WIDTH = 16,
-    parameter DOUT_POINT = 11
+    parameter DOUT_POINT = 11,
+    parameter WARNING_OVERFLOW = 0
 ) (
     input wire clk, 
     input wire [DIN_WIDTH-1:0] din,
     input wire din_valid,
     output wire [DOUT_WIDTH-1:0] dout,
-    output wire dout_valid
+    output wire dout_valid,
+    output wire [1:0] warning
 );
 localparam DIN_INT = DIN_WIDTH-DIN_POINT;
 localparam DOUT_INT = DOUT_WIDTH-DOUT_POINT;
@@ -113,5 +118,25 @@ assign dout_valid = valid_out;
 always@(posedge clk)
     valid_out <= din_valid;
 
+reg [1:0] warning_r=0;
+assign warning = warning_r;
+generate
+if(WARNING_OVERFLOW)begin
+    always@(posedge clk)begin
+        //check overflow, check msb to check the sign and look for any one above DOUT_INT
+        if(~din[DIN_WIDTH-1] & (|din[DIN_WIDTH-1-:DIN_INT-DOUT_INT+1]))begin
+            warning_r <= 1;
+        end
+        //check underflow, check the msb and look for a zero above DOUT_INT 
+        else if(din[DIN_WIDTH-1] & ~(&din[DIN_WIDTH-1-:DIN_INT-DOUT_INT+1]))begin
+            warning_r <= 2;
+        end
+        else
+            warning_r <= 0;
+    end
+end
+
+
+endgenerate
 
 endmodule

@@ -18,5 +18,24 @@ async def shift_test(dut):
     for dat in din_data:
         dut.din.value = -int(dat)
         await ClockCycles(dut.clk, 1)
+    ###overflow
+    dut.din.value = 2**15-1
+    await ClockCycles(dut.clk, 5)
+    ###last overflow
+    dut.din.value = 2**14
+    await ClockCycles(dut.clk, 5)
+    ###almost overflow 
+    dut.din.value = 2**14-1
+    await ClockCycles(dut.clk, 5)
+    ##underflow
+    dut.din.value = 2**15
+    await ClockCycles(dut.clk, 5)
+    ##last underflow
+    dut.din.value = 2**15+2**14-1
+    await ClockCycles(dut.clk, 5)
+    ##almost underflow
+    dut.din.value = 2**15+2**14
+    await ClockCycles(dut.clk, 5)
 
+    
 

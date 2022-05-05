@@ -29,6 +29,15 @@ async def signed_cast_test(dut, din_width=16, din_pt=12, dout_width=8, dout_pt=4
     cocotb.fork(read_data(dut, din, dout_width, dout_pt))
     await write_data(dut, din_bin, cont, burst_len)
     
+    #overflow
+    dut.din.value = 2**(din_width-1)-1
+    dut.din_valid.value  =1
+    await ClockCycles(dut.clk, 5)
+    #underflow
+    dut.din.value = 2**(din_width-1)
+    await ClockCycles(dut.clk, 5)
+
+    
 
 async def write_data(dut, data, cont, burst_len):
     if(cont):
