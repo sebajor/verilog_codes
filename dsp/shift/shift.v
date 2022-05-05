@@ -34,7 +34,7 @@ generate
                 assign dout_temp = $signed(din)<<<(SHIFT_VALUE);
                 if(OVERFLOW_WARNING)begin
                     assign warning[0] = $signed(din)>(2**(DATA_WIDTH-SHIFT_VALUE-1)-1);
-                    assign warning[1] = $signed(din)<(-(2**(DATA_WIDTH-SHIFT_VALUE-1)))
+                    assign warning[1] = $signed(din)<(-(2**(DATA_WIDTH-SHIFT_VALUE-1)));
                 end
             end
             else
@@ -62,23 +62,30 @@ generate
     end
     else begin
         if(ASYNC)begin
-            wire [DATA_WIDTH-1:0] dout_temp;
+            wire [DATA_WIDTH+SHIFT_VALUE-1:0] dout_temp;
             assign dout = dout_temp;
             if(SHIFT_VALUE==0)
                 assign dout_temp = din;
-            else if(SHIFT_VALUE>0)
+            else if(SHIFT_VALUE>0)begin
                 assign dout_temp = $unsigned(din)<<(SHIFT_VALUE);
+                if(OVERFLOW_WARNING)
+                    assign warning = $unsigned(din) > (2**(DATA_WIDTH-SHIFT_VALUE)-1);
+            end
             else
                 assign dout_temp = $unsigned(din)>>(-SHIFT_VALUE);
         end
         else begin
-            reg [DATA_WIDTH-1:0] dout_temp=0;
+            reg [DATA_WIDTH+SHIFT_VALUE-1:0] dout_temp=0;
             assign dout = dout_temp;
+            reg warning_r =0;
             always@(posedge clk)begin
                 if(SHIFT_VALUE==0)
                     dout_temp <= $unsigned(din);
-                else if(SHIFT_VALUE>0)
+                else if(SHIFT_VALUE>0)begin
                     dout_temp <= $unsigned(din)<<(SHIFT_VALUE);
+                    if(OVERFLOW_WARNING)
+                        warning_r <= $unsigned(din) > (2**(DATA_WIDTH-SHIFT_VALUE)-1);
+                end
                 else
                     dout_temp <= $unsigned(din)>>(-SHIFT_VALUE);
             end

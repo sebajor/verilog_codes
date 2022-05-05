@@ -2,7 +2,8 @@
 
 /*
 *   Author: Sebastian Jorquera
-*
+*   
+*   Takes 6 cycles
 */
 
 module complex_mult #(

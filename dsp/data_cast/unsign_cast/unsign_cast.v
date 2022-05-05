@@ -4,19 +4,22 @@ module unsign_cast #(
     parameter DIN_WIDTH = 8,
     parameter DIN_POINT = 4,
     parameter DOUT_WIDTH = 16, 
-    parameter DOUT_POINT = 11
+    parameter DOUT_POINT = 11,
+    parameter OVERFLOW_WARNING = 0
 ) (
     input wire clk, 
     input wire [DIN_WIDTH-1:0] din,
     input wire din_valid,
     output wire [DOUT_WIDTH-1:0] dout,
-    output wire dout_valid
+    output wire dout_valid,
+    output wire overflow
 );
 localparam DIN_INT = DIN_WIDTH-DIN_POINT;
 localparam DOUT_INT = DOUT_WIDTH-DOUT_POINT;
 
 //integer part
 reg [DOUT_INT-1:0] dout_int=0;
+reg warning_r=0;
 generate 
 if(DIN_INT==DOUT_INT)begin
     always@(posedge clk)begin
@@ -28,9 +31,13 @@ else if(DIN_INT>DOUT_INT)begin
         if( (|din[DIN_WIDTH-1-:(DIN_INT-DOUT_INT+1)]))begin
             //check overflow, review the condition..
             dout_int <= {(DOUT_INT){1'b1}};
+            if(OVERFLOW_WARNING)
+                warning_r <=1;
         end
         else begin
             dout_int <= din[DIN_POINT+:DOUT_INT];
+            if(OVERFLOW_WARNING)
+                warning <= 0;
         end
     end
 end
