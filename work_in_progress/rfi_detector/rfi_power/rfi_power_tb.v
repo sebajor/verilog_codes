@@ -3,19 +3,19 @@
 `include "rfi_power.v"
 
 module rfi_power_tb #(
-    parameter DIN_WIDTH = 18,
-    parameter DIN_POINT = 17,
-    parameter CHANNEL_ADDR = 9,
+    parameter DIN_WIDTH = 9,
+    parameter DIN_POINT = 8,
+    parameter CHANNEL_ADDR = 11,
     parameter POST_POW_DELAY = 0,
     parameter ACC_WIDTH = 64,
     //convert the output of the accumulator
     parameter POST_ACC_SHIFT = 0,
     parameter POST_ACC_WIDTH = 32,
-    parameter POST_ACC_POINT = 16,
+    parameter POST_ACC_POINT = 30,
     parameter POST_ACC_DELAY = 0,
     parameter DOUT_SHIFT = 0,
     parameter DOUT_WIDTH = 16,
-    parameter DOUT_POINT = 10,
+    parameter DOUT_POINT = 12,
     parameter DEBUG = 1
 ) (
     input wire clk,

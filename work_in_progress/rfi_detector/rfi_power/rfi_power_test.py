@@ -8,7 +8,7 @@ from two_comp import two_comp_pack, two_comp_unpack
 
 @cocotb.test()
 async def rfi_power_test(dut, iters=2**14, din_width=9, din_point=8,
-        dout_width=16, dout_point=10, acc_len=10, filename='../tone.hdf5',
+        dout_width=16, dout_point=12, acc_len=10, filename='../tone.hdf5',
         shift=6, thresh=0.1):
     #setup dut
     clk = Clock(dut.clk, 10, units='ns')
