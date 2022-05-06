@@ -1,5 +1,4 @@
 `default_nettype none
-`include "includes.v"
 
 module rfi_detection #(
     parameter DIN_WIDTH = 18,
@@ -123,5 +122,11 @@ rfi_power #(
     .warning(power_warn)
 );
 
+generate
+if(DEBUG)
+    assign warning = (in_warn |power_warn| corr_warn);
+else
+    assign warning =0;
+endgenerate
 
 endmodule

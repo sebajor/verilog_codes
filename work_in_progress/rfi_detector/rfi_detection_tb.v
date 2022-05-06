@@ -54,7 +54,7 @@ rfi_detection #(
     .DOUT_SHIFT(DOUT_SHIFT),
     .DOUT_WIDTH(DOUT_WIDTH),
     .DOUT_POINT(DOUT_POINT),
-    .DEBUG(DEBUG),
+    .DEBUG(DEBUG)
 ) rfi_detection_inst (
     .clk(clk),
     .sig_re(sig_re),
