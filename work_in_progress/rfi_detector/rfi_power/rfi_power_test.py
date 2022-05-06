@@ -8,8 +8,8 @@ from two_comp import two_comp_pack, two_comp_unpack
 
 @cocotb.test()
 async def rfi_power_test(dut, iters=2**14, din_width=9, din_point=8,
-        dout_width=16, dout_point=12, acc_len=10, filename='../tone.hdf5',
-        shift=6, thresh=0.1):
+        dout_width=16, dout_point=8, acc_len=20, filename='../tone.hdf5',
+        shift=6, thresh=0.5):
     #setup dut
     clk = Clock(dut.clk, 10, units='ns')
     cocotb.fork(clk.start())
@@ -46,21 +46,23 @@ async def rfi_power_test(dut, iters=2**14, din_width=9, din_point=8,
     rfi_pow = rfi*np.conj(rfi)
     beam_pow = beam*np.conj(beam)
 
-    rfi_pow = rfi_pow.reshape([-1, 2048]).T 
-    beam_pow = beam_pow.reshape([-1, 2048]).T 
+    rfi_pow = rfi_pow.reshape([-1, 2048])
+    beam_pow = beam_pow.reshape([-1, 2048])
 
 
     ##CHECK!
-    lim_ind = rfi_pow.shape[1]//acc_len
-    rfi_pow = rfi_pow[:,:acc_len*lim_ind]
-    beam_pow = beam_pow[:,:acc_len*lim_ind]
+    lim_ind = rfi_pow.shape[0]//acc_len
+    rfi_pow = rfi_pow[:acc_len*lim_ind,:].T
+    beam_pow = beam_pow[:acc_len*lim_ind,:].T
     
-    rfi_acc = np.sum(rfi_pow.reshape([2048,-1,acc_len]), axis=2)
+    rfi_acc = np.sum(rfi_pow.reshape([2048,-1, acc_len]), axis=2)
     beam_acc = np.sum(beam_pow.reshape([2048,-1,acc_len]), axis=2)
-    gold = (rfi_acc*beam_acc).T.flatten()   
+    gold = (rfi_acc*beam_acc).T.flatten()
 
     cocotb.fork(write_data(dut, data, 2048))
-    await read_data(dut, iters, gold, dout_width, dout_point, thresh)
+    rtl_data = await read_data(dut, iters, gold, dout_width, dout_point, thresh)
+    np.savetxt('rtl_data.txt', rtl_data.reshape([-1,2048]))
+    np.savetxt('gold_data.txt', (gold.real).reshape([-1,2048]))
     
 
 
@@ -83,6 +85,7 @@ async def write_data(dut, data, vec_len):
 
 async def read_data(dut, iters, gold, dout_width, dout_point, thresh):
     count =0
+    data = np.zeros(iters)
     while(count < iters):
         warn =  int(dut.warning.value)
         assert (warn ==0), 'Warning!!'
@@ -92,11 +95,7 @@ async def read_data(dut, iters, gold, dout_width, dout_point, thresh):
             dout = two_comp_unpack(dout, dout_width, dout_point)
             print('rtl: %.4f  gold:%.4f' %(dout, gold[count]))
             assert (np.abs(dout-gold[count])< thresh)
+            data[count] = dout
             count +=1
         await ClockCycles(dut.clk, 1)
-            
-
-
-
-    
-
+    return data

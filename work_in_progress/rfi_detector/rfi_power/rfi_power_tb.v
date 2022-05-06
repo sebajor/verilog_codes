@@ -11,11 +11,11 @@ module rfi_power_tb #(
     //convert the output of the accumulator
     parameter POST_ACC_SHIFT = 0,
     parameter POST_ACC_WIDTH = 32,
-    parameter POST_ACC_POINT = 30,
+    parameter POST_ACC_POINT = 25,
     parameter POST_ACC_DELAY = 0,
     parameter DOUT_SHIFT = 0,
     parameter DOUT_WIDTH = 16,
-    parameter DOUT_POINT = 12,
+    parameter DOUT_POINT = 8,
     parameter DEBUG = 1
 ) (
     input wire clk,
@@ -60,5 +60,14 @@ rfi_power #(
     .dout_valid(dout_valid),
     .warning(warning)
 );
+
+reg [31:0] counter=0;
+always@(posedge clk)begin
+    if(sync_in)
+        counter <=0;
+    else
+        counter <= counter+1;
+
+end
 
 endmodule
