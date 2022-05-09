@@ -4,16 +4,12 @@ from cocotb.triggers import ClockCycles, RisingEdge
 from cocotb.clock import Clock
 sys.path.append('../../cocotb_python')
 from two_comp import two_comp_pack, two_comp_unpack
-from itertools import cycle
 
-###
-### Author: Sebastian Jorquera
-###
 
 @cocotb.test()
-async def rfi_detection_test(dut, iters=2**12, din_width=18, din_point=17,
-        dout_width=18, dout_point=8, acc_len=128*2, filename='tone.hdf5',
-        in_shift=5, out_shift=0,thresh=0.8):
+async def rfi_detection_test(dut, iters=2**14, din_width=18, din_point=17,
+        dout_width=16, dout_point=8, acc_len=50, filename='tone.hdf5',
+        in_shift=5, out_shift=4,thresh=0.5):
     #setup dut
     clk = Clock(dut.clk, 10, units='ns')
     cocotb.fork(clk.start())
@@ -44,9 +40,6 @@ async def rfi_detection_test(dut, iters=2**12, din_width=18, din_point=17,
 
     rfi_re = two_comp_pack(rfi.real, din_width, din_point)
     rfi_im = two_comp_pack(rfi.imag, din_width, din_point)
-
-    beam_re = cycle(beam_re);   beam_im = cycle(beam_im)
-    rfi_re = cycle(rfi_re);     rfi_im = cycle(rfi_im)
 
     data = [beam_re, beam_im, rfi_re, rfi_im]
 
@@ -93,17 +86,14 @@ async def write_data(dut, data, vec_len):
     dut.sync_in.value = 1
     await ClockCycles(dut.clk,1)
     dut.din_valid.value = 1
-    counter =0;
-    while(1):
-        dut.sig_re.value = int(next(data[0]))
-        dut.sig_im.value = int(next(data[1]))
-        dut.ref_re.value = int(next(data[2]))
-        dut.ref_im.value = int(next(data[3]))
-        if((counter%vec_len==(vec_len-1))):
+    for i in range(len(data[0])):
+        dut.sig_re.value = int(data[0][i])
+        dut.sig_im.value = int(data[1][i])
+        dut.ref_re.value = int(data[2][i])
+        dut.ref_im.value = int(data[3][i])
+        if((i%vec_len==(vec_len-1))):
             dut.sync_in.value = 1
-            counter=0
         else:
-            counter+=1
             dut.sync_in.value = 0
         await ClockCycles(dut.clk, 1)
 

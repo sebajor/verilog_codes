@@ -33,7 +33,7 @@ iverilog_dump.v:
 	echo 'endmodule' >> $@
 
 clean::
-	@rm -rf gold_data.txt rtl_data.txt
+	@rm -rf gold_pow.txt rtl_pow.txt gold_corr.txt rtl_corr.txt
 	@rm -rf traces.vcd traces.fst
 	@rm -rf results.xml
 	@rm -rf sim_build

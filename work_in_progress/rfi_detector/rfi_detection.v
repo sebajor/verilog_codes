@@ -87,7 +87,7 @@ rfi_correlation #(
     .acc_len(acc_len),
     .cnt_rst(cnt_rst),
     .dout(corr_data),
-    .dout_valid(),
+    .dout_valid(dout_valid),
     .warning(corr_warn)
 );
 
@@ -102,7 +102,7 @@ rfi_power #(
     .POST_ACC_SHIFT(POST_ACC_SHIFT),
     .POST_ACC_WIDTH(POST_ACC_WIDTH),
     .POST_ACC_POINT(POST_ACC_POINT),
-    .POST_ACC_DELAY(POST_ACC_DELAY),
+    .POST_ACC_DELAY(POST_ACC_DELAY+2),
     .DOUT_SHIFT(DOUT_SHIFT),
     .DOUT_WIDTH(DOUT_WIDTH),
     .DOUT_POINT(DOUT_POINT),
@@ -118,7 +118,7 @@ rfi_power #(
     .acc_len(acc_len),
     .cnt_rst(cnt_rst),
     .dout(pow_data),
-    .dout_valid(dout_valid),
+    .dout_valid(),
     .warning(power_warn)
 );
 
