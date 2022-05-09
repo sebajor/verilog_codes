@@ -5,6 +5,7 @@ from cocotb.clock import Clock
 sys.path.append('../../cocotb_python')
 from two_comp import two_comp_pack, two_comp_unpack
 from itertools import cycle
+import matplotlib.pyplot as plt
 
 ###
 ### Author: Sebastian Jorquera
@@ -12,7 +13,7 @@ from itertools import cycle
 
 @cocotb.test()
 async def rfi_detection_test(dut, iters=2**12, din_width=18, din_point=17,
-        dout_width=18, dout_point=8, acc_len=128*2, filename='tone.hdf5',
+        dout_width=18, dout_point=8, acc_len=400, filename='tone.hdf5',
         in_shift=5, out_shift=0,thresh=0.8):
     #setup dut
     clk = Clock(dut.clk, 10, units='ns')
@@ -82,10 +83,33 @@ async def rfi_detection_test(dut, iters=2**12, din_width=18, din_point=17,
     
     cocotb.fork(write_data(dut, data, 2048))
     pow_data, corr_data = await read_data(dut, iters, gold, dout_width, dout_point, thresh)
-    np.savetxt('rtl_pow.txt', pow_data.reshape([-1,2048]))
-    np.savetxt('rtl_corr.txt', corr_data.reshape([-1,2048]))
-    np.savetxt('gold_pow.txt', (gold[1].real).reshape([-1,2048]))
-    np.savetxt('gold_corr.txt', (gold[0].real).reshape([-1,2048]))
+
+    pow_data = pow_data.reshape([-1,2048])
+    corr_data = corr_data.reshape([-1,2048])
+    gold_pow = (gold[1].real).reshape([-1,2048])
+    gold_corr = (gold[0].real).reshape([-1,2048])
+
+    freq = np.linspace(1200,1800,2048,endpoint=False)
+    fig = plt.figure()
+    ax1 = fig.add_subplot(121)
+    ax2 = fig.add_subplot(122)
+    ax1.plot(freq, corr_data[0,:]/pow_data[0,:])
+    ax2.plot(freq,gold_corr[0,:]/gold_pow[0,:])
+    ax1.grid();     ax2.grid()
+    ax1.set_ylim(-0.2, 1.2)
+    ax2.set_ylim(-0.2, 1.2)
+    ax1.set_title('RTL')
+    ax2.set_title('Python')
+    plt.tight_layout()
+    plt.savefig('rfi_score_'+str(int(acc_len))+'.png')
+    plt.close()
+
+
+    
+    np.savetxt('rtl_pow.txt', pow_data)
+    np.savetxt('rtl_corr.txt', corr_data)
+    np.savetxt('gold_pow.txt', gold_pow)
+    np.savetxt('gold_corr.txt', gold_corr)
 
 async def write_data(dut, data, vec_len):
     dut.sync_in.value =0
@@ -119,10 +143,10 @@ async def read_data(dut, iters, gold, dout_width, dout_point, thresh):
             pow_data = np.array(int(dut.pow_data.value))
             corr_data = np.array(int(dut.corr_data.value))
             pow_data, corr_data= two_comp_unpack(np.array([pow_data, corr_data]), dout_width, dout_point)
-            print('pow  rtl: %.4f  gold:%.4f' %(pow_data, gold[1][count]))
-            print('corr rtl: %.4f  gold:%.4f' %(corr_data, gold[0][count]))
-            assert (np.abs(pow_data-gold[1][count])< thresh)
-            assert (np.abs(corr_data-gold[0][count])< thresh)
+            #print('pow  rtl: %.4f  gold:%.4f' %(pow_data, gold[1][count]))
+            #print('corr rtl: %.4f  gold:%.4f' %(corr_data, gold[0][count]))
+            #assert (np.abs(pow_data-gold[1][count])< thresh)
+            #assert (np.abs(corr_data-gold[0][count])< thresh)
             pow_dout[count] = pow_data
             corr_dout[count] = corr_data
             count +=1

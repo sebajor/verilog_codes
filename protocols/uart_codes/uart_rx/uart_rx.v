@@ -10,12 +10,12 @@ module uart_rx #(
     parameter N_BITS = 8
 ) (
 
-    input rst,
+    input wire rst,
     input wire clk,
-    input rx_data,  //from the outside world
-    output [N_BITS-1:0] uart_rx_tdata,
-    output uart_rx_tvalid,
-    input uart_rx_tready
+    input wire rx_data,  //from the outside world
+    output wire [N_BITS-1:0] uart_rx_tdata,
+    output wire uart_rx_tvalid,
+    input wire uart_rx_tready
 );
     localparam  state0 = 3'b000;    //idle
     localparam  state1 = 3'b001;
