@@ -5,9 +5,7 @@
 *   This module search for an ascii pattern and after found it start to collect
 *   the data that is after it.
 *   The input data comes one byte a the time 
-*   
 */
-
 
 module pattern_search #(
     parameter PATTERN_LEN = 11,
@@ -28,12 +26,14 @@ module pattern_search #(
 reg [7:0] pattern [PATTERN_LEN-1:0];
 initial begin
     for(integer i=0; i<PATTERN_LEN; i=i+1)begin
-        pattern[i] = ((PATTERN>>i)&8'hff);
+        pattern[PATTERN_LEN-1-i] = ((PATTERN>>(8*i))&8'hff);
     end
 end
 
 reg [$clog2(PATTERN_LEN)-1:0] index_read=0;
 reg pattern_found_r=0;
+
+wire [7:0] debug = pattern[index_read];
 
 always@(posedge clk)begin
     if(rst)
@@ -49,7 +49,7 @@ end
 always@(posedge clk)begin
     if(rst)
         pattern_found_r <=0;
-    else if(index_read== PATTERN_LEN)
+    else if(index_read== (PATTERN_LEN))
         pattern_found_r <= 1; 
 end
 
@@ -72,6 +72,8 @@ always@(posedge clk)begin
         else
             info_valid_r <=0;
     end
+    else
+        info_valid_r <=0;
 end
 
 assign info_data= info_data_r;
