@@ -19,6 +19,8 @@ module nmea_timestamp #(
     input wire i_uart_rx,
     input wire i_pps,
 
+    output wire pattern_found,
+
     output wire [5:0] sec, min,
     output wire [4:0] hr,
     output wire [8:0] day,
@@ -27,19 +29,42 @@ module nmea_timestamp #(
     output wire pps
 );
 
+wire [7:0] uart_data;
+wire uart_data_valid;
 
 uart_rx #(
-    CLK_FREQ = 25_000_000,
-    BAUD_RATE = 115200,
-    N_BITS = 8
+    .CLK_FREQ(CLK_FREQ),
+    .BAUD_RATE(BAUD_RATE),
+    .N_BITS(8)
 ) uart_rx_inst (
-    .rst(),
-    .clk(),
-    .rx_data(), 
-    .uart_rx_tdata(),
-    .uart_rx_tvalid(),
+    .rst(rst),
+    .clk(clk),
+    .rx_data(i_uart_rx), 
+    .uart_rx_tdata(uart_data),
+    .uart_rx_tvalid(uart_data_valid),
     .uart_rx_tready(1'b1)
 );
+
+
+wire [7:0] info_data;
+wire info_valid;
+
+pattern_search #(
+    .PATTERN_LEN(6),
+    .PATTERN("GPZDA,"),
+    .INFO_LEN(6)//14
+) pattern_search_inst (
+    .clk(clk),
+    .rst(rst),
+    .din(uart_data),
+    .din_valid(aurt_data_valid),
+    .pattern_found(pattern_found),
+    .info_data(info_data),
+    .info_valid(info_valid)
+);
+
+
+
 
 
 
