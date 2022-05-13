@@ -1,4 +1,5 @@
 `default_nettype none
+
 /*
 *   Author: Sebastian Jorquera
 *   Module to convert a stream of number in ascii to its binary value

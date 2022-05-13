@@ -24,8 +24,9 @@ module pattern_search #(
 );
 
 reg [7:0] pattern [PATTERN_LEN-1:0];
+integer i;
 initial begin
-    for(integer i=0; i<PATTERN_LEN; i=i+1)begin
+    for(i=0; i<PATTERN_LEN; i=i+1)begin
         pattern[PATTERN_LEN-1-i] = ((PATTERN>>(8*i))&8'hff);
     end
 end
