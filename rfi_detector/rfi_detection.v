@@ -1,5 +1,14 @@
 `default_nettype none
 
+/*
+*   Author: Sebastian Jorquera
+*   Module that calculates the accumulated cross correlation and the product of 
+*   the power of two antennas. The main idea is that when the signal is coherent 
+*   (as the case of the RFI) the ratio between those quantities should be similar.
+*   To exploit the property corr(A*B)/(pow(A)*pow(B)) <= 1 you could use as a good
+*   approximation an arctan (like cordic)
+*/
+
 module rfi_detection #(
     parameter DIN_WIDTH = 18,
     parameter CHANNEL_ADDR = 11,

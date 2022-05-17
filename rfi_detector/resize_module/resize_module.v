@@ -1,5 +1,12 @@
 `default_nettype none
 
+/*
+*   Author:Sebastian Jorquera
+*   Module to cast certain signal to another format.
+*   The debug parameter allows you to check if there was an overflow/underflow
+*   
+*/
+
 module resize_module #(
     parameter DIN_WIDTH = 18,
     parameter DIN_POINT = 16,

@@ -1,5 +1,11 @@
 `default_nettype none
 
+/*
+*   Author: Sebastian Jorquera
+*   Calculates accumulated correlation between two antennas.
+*
+*/
+
 module rfi_correlation #(
     parameter DIN_WIDTH = 18,
     parameter DIN_POINT = 17,

@@ -1,5 +1,11 @@
 `default_nettype none
 
+/*
+*   Author: Sebastian Jorquera
+*   This module calculates the accumulated multiplication of the power of two
+*   antennas
+*/
+
 module rfi_power #(
     parameter DIN_WIDTH = 18,
     parameter DIN_POINT = 17,

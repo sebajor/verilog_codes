@@ -33,9 +33,10 @@ def uesprit_eigen(r11,r22,r12):
     return [lamb1, lamb2,eigvec1,eigvec2,eigfrac]
 
 f = h5py.File('arte_tone.hdf5','r')
+#f = h5py.File('arte.hdf5','r')
 
 acc = 16
-bands = 2**5
+bands = 32
 
 adc0 = np.array(f['adc0']) 
 adc1 = np.array(f['adc1']) 
@@ -99,7 +100,7 @@ corr_std = np.rad2deg(circstd(corr_phase, axis=1))
 esprit_std = np.rad2deg(circstd(phases, axis=1))
 
 
-fig, axes = plt.subplots(3,1)
+fig, axes = plt.subplots(3,1, sharex=True)
 axes[0].plot(freq,corr_std)
 axes[0].set_title('SD correlator way')
 axes[0].grid()

@@ -5,6 +5,9 @@ from cocotb.clock import Clock
 sys.path.append('../../../cocotb_python')
 from two_comp import two_comp_pack, two_comp_unpack
 
+###
+### Author: Sebastian Jorquera
+###
 
 @cocotb.test()
 async def rfi_power_test(dut, iters=2**14, din_width=9, din_point=8,
