@@ -12,7 +12,7 @@
 
 module nmea_timestamp #(
     parameter CLK_FREQ = 25_000_000,
-    parameter BAUD_RATE = 9600,
+    parameter BAUD_RATE = 115200,
     parameter DEBOUNCE_LEN = 5
 ) (
     input wire clk, 
@@ -31,7 +31,7 @@ module nmea_timestamp #(
 );
 
 //pps debouncer
-reg [DEBOUNCE_LEN-1:0] sync_pps;
+reg [DEBOUNCE_LEN-1:0] sync_pps=0;
 reg pps_delay=0, pps_internal=0;
 always@(posedge clk)begin
     sync_pps <= {sync_pps[DEBOUNCE_LEN-2:0], i_pps};
@@ -127,13 +127,14 @@ always@(posedge clk)begin
             if(sec_r == 59)begin
                 sec_r <=0;
                 if(min_r == 59)begin
+                    min_r <=0;
                     if(hr_r==23)
                         hr_r <= 0;
                     else
                         hr_r <= hr_r+1;
                 end
                 else
-                    min_r <= 0;
+                    min_r <= min_r+1;
             end
             else
                 sec_r <= sec_r+1;
