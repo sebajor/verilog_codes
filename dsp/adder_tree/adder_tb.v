@@ -16,9 +16,9 @@ module adder_test;
     ) adder_tree(
         .clk(clk),
         .din(din),
-        .in_valid(din_valid),
+        .din_valid(din_valid),
         .dout(dout),
-        .out_valid(dout_valid)
+        .dout_valid(dout_valid)
     );
     
     initial begin

@@ -5,4 +5,5 @@ all:
 	
 clean:
 	rm -rf *.vcd
+	rm -rf *.del
 	rm -rf adder_tb.out
