@@ -13,7 +13,7 @@ import itertools
 ###
 
 @cocotb.test()
-async def arctan2_test(dut, din_width=16, dout_width=16, iters=255, thresh=10**-2):
+async def arctan2_test(dut, din_width=16, dout_width=16, iters=255, thresh=10**-7):
     clk = Clock(dut.clk, 10, units='ns')
     cocotb.fork(clk.start())
     din_pt = din_width-1; dout_pt=dout_width-1

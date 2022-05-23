@@ -1,6 +1,6 @@
 `default_nettype none
 
-module arte_beamform#(
+module arte_beamform #(
     parameter DIN_WIDTH = 18,
     parameter FFT_SIZE = 2048,
     parameter PARALLEL = 4,
