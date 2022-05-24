@@ -1,5 +1,4 @@
 `default_nettype none
-`include "includes.v"
 
 module complete_sim #(
     parameter DIN_WIDTH = 18,
@@ -75,8 +74,8 @@ arte_beamform #(
 
 
 arte_accumulator #(
-    .DIN_WIDTH(DIN_WIDTH),
-    .DIN_POINT(DIN_POINT),
+    .DIN_WIDTH(POWER_WIDTH),
+    .DIN_POINT(POWER_POINT),
     .FFT_CHANNEL(FFT_SIZE),
     .PARALLEL(PARALLEL),
     .INPUT_DELAY(ACC_IN_DELAY),
@@ -86,9 +85,9 @@ arte_accumulator #(
 ) arte_accumulator (
     .clk(clk),
     .cnt_rst(cnt_rst),
-    .sync_in(sync_in),
+    .sync_in(sync_pow_resize),
     .power(power_resize),
-    .acc_len(sync_power_resize),
+    .acc_len(acc_len),
     .dout(dout),
     .dout_valid(dout_valid)
 );
