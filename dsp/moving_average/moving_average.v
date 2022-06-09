@@ -12,6 +12,7 @@ module moving_average #(
     parameter DIN_POINT = 31,
     parameter WINDOW_LEN = 16,
     parameter DOUT_WIDTH = 32,
+    parameter DATA_TYPE = "signed", //signed or unsigned
     parameter APPROX = "nearest"   //truncate, nearest
 ) (
     input wire clk,
@@ -56,52 +57,53 @@ bram_infer #(
 );
 
 
-reg signed [DIN_WIDTH+1:0] comb_reg=0;
-/*
-always@(posedge clk)begin
-    if(din_valid)begin
-        comb_reg <= $signed(din)-$signed(diff_dly_out);
-    end
-    else 
-        comb_reg <= comb_reg;
-end
-*/
+reg [DIN_WIDTH+1:0] comb_reg=0;
 reg valid_dly =0, valid_dly2=0;
 reg [DIN_WIDTH-1:0] din_dly=0, din_dly2=0;
 reg [DIN_WIDTH-1:0] prev_val=0, prev_val2=0;
-always@(posedge clk)begin
-    valid_dly <= din_valid;
-    valid_dly2 <= valid_dly;
-    din_dly <= din;
-    din_dly2 <= din_dly;
-    if(valid_dly2)begin
-        prev_val <= diff_dly_out;
-        prev_val2 <= prev_val;
-        comb_reg <= $signed(din_dly2)-$signed(prev_val2);
+generate
+    always@(posedge clk)begin
+        valid_dly <= din_valid;
+        valid_dly2 <= valid_dly;
+        din_dly <= din;
+        din_dly2 <= din_dly;
+        if(valid_dly2)begin
+            prev_val <= diff_dly_out;
+            prev_val2 <= prev_val;
+            if(DATA_TYPE=="signed")
+                comb_reg <= $signed(din_dly2)-$signed(prev_val2);
+            else
+                comb_reg <=  din_dly2-prev_val2;
+        end
+        else 
+            comb_reg <= comb_reg; 
     end
-    else 
-        comb_reg <= comb_reg; 
-end
+endgenerate
 
 
 
 //integrator
 reg din_valid_dly=0, dout_valid_r=0;
-reg signed [DIN_WIDTH+$clog2(WINDOW_LEN)-1:0] integ=0; 
-always@(posedge clk)begin
-    //din_valid_dly <= din_valid;
-    din_valid_dly <= valid_dly2;
-    if(rst)
-        integ <= 0;
-    else if(din_valid_dly)begin
-        dout_valid_r <=1;
-        integ <= $signed(comb_reg) + $signed(integ);
+reg [DIN_WIDTH+$clog2(WINDOW_LEN)-1:0] integ=0; 
+generate 
+    always@(posedge clk)begin
+        //din_valid_dly <= din_valid;
+        din_valid_dly <= valid_dly2;
+        if(rst)
+            integ <= 0;
+        else if(din_valid_dly)begin
+            dout_valid_r <=1;
+            if(DATA_TYPE=="signed")
+                integ <= $signed(comb_reg) + $signed(integ);
+            else
+                integ <= comb_reg + integ;
+        end
+        else begin
+            dout_valid_r <=0;
+            integ <= integ;
+        end
     end
-    else begin
-        dout_valid_r <=0;
-        integ <= integ;
-    end
-end
+endgenerate
 
 assign dout_valid = dout_valid_r;  //check!
 
