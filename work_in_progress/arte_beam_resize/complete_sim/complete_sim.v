@@ -16,7 +16,6 @@ module complete_sim #(
     parameter ACC_OUT_DELAY =0,
     parameter DEBUG = 1
 )(
-
     input wire clk,
     input wire sync_in,
     input wire [PARALLEL*DIN_WIDTH-1:0] fft0_re, fft0_im, fft1_re, fft1_im,

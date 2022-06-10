@@ -13,7 +13,7 @@ import matplotlib.pyplot as plt
 
 @cocotb.test()
 async def arte_beam_resize(dut, iters=2**10, din_width=18, din_point=17,
-        acc_len=8,dout_width=32, dout_point=17, shift=10, filename='arte_tone.hdf5',
+        acc_len=32,dout_width=32, dout_point=15, shift=5, filename='freq_1607_70.hdf5',
         thresh=1):
     #setup dut
     clk = Clock(dut.clk, 10, units='ns')
@@ -60,9 +60,14 @@ async def arte_beam_resize(dut, iters=2**10, din_width=18, din_point=17,
     rebin_acc = np.sum(rebin_beam.T.reshape([-1,acc_len, 64]), axis=1)
     gold = rebin_acc.flatten()
 
-
-
     cocotb.fork(write_data(dut, din_data))
+
+    #await read_data(dut, gold, 66, dout_width, dout_point, thresh)
+    #dut.cnt_rst.value = 1
+    #await ClockCycles(dut.clk, 10)
+    #dut.cnt_rst.value = 0
+    #await ClockCycles(dut.clk,1)
+    
     dout = await read_data(dut, gold, iters, dout_width, dout_point, thresh)
     np.savetxt('rtl_out.txt', dout)
 
@@ -90,11 +95,11 @@ async def write_data(dut, din_data):
         dut.fft1_im2.value = int(din_data[3][4*i+2])
         dut.fft1_im3.value = int(din_data[3][4*i+3])
         count +=1
-        #if(count==2**10):
-        #    count =0
-        #    dut.sync_in.value = 1
-        #else:
-        #    dut.sync_in.value = 0
+        if(count==2**10):
+            count =0
+            dut.sync_in.value = 1
+        else:
+            dut.sync_in.value = 0
         await ClockCycles(dut.clk,1)
 
 
@@ -113,7 +118,7 @@ async def read_data(dut, gold, iters, dout_width, dout_point, thresh):
         if(valid):
             dout = int(dut.dout.value)/2.**dout_point
             dout_data[count] = dout
-            print("rtl: %.2f \t gold:%.2f" %(dout, gold[count]))
+            #print("rtl: %.2f \t gold:%.2f" %(dout, gold[count]))
             #assert (np.abs(dout-gold[count])<thresh)
             count +=1
         await ClockCycles(dut.clk,1)

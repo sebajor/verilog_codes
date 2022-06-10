@@ -10,7 +10,7 @@ import matplotlib.pyplot as plt
 
 @cocotb.test()
 async def arte_accumulator(dut, din_width=20, din_point=16,
-        dout_width=32, shift=3, filename='freq_1457_70', iters=64*32):
+        dout_width=32, shift=10, filename='arte_tone.hdf5', iters=64*32):
     
     acc_len = 8
 
@@ -49,6 +49,15 @@ async def arte_accumulator(dut, din_width=20, din_point=16,
     gold = rebin_acc.flatten()
 
     cocotb.fork(write_data(dut, input_data))
+    dout = await read_data(dut, gold, 65, dout_width, dout_point, 1)
+    dut.cnt_rst.value = 1
+    await ClockCycles(dut.clk, 10)
+    dut.cnt_rst.value = 0
+    await ClockCycles(dut.clk, 1)
+    
+    
+
+
     dout = await read_data(dut, gold, iters, dout_width, dout_point, 1)
     np.savetxt('rtl_out.txt', dout)
 
