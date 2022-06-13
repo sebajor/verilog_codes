@@ -9,3 +9,4 @@ results.xml
 *.del
 *.png
 *.hdf5
+*dout_data.txt
