@@ -1,5 +1,4 @@
 `default_nettype none
-`include "../async_true_dual_ram.v"
 
 /*
     unbalanced ram where the data size of the PORT1 is bigger than the 
@@ -51,12 +50,14 @@ reg [DATA_WIDTH_A-1:0] dinb_temp = 0;
 reg web_temp=0;
 reg [1:0] din_valid=0;
 
+//we would have troubles to write, but reading should be direct
 always@(posedge clkb)begin
     addrb_temp <= addrb[ADDR_WIDTH_B-1:$clog2(DEINTERLEAVE)];
     web_temp <= web;
     dinb_temp[DATA_WIDTH_B*sub_word+:DATA_WIDTH_B] <= dinb;
     din_valid<= {din_valid[0], in_valid_b};
 end
+
 
 async_true_dual_ram #(
     .RAM_WIDTH(DATA_WIDTH_A),

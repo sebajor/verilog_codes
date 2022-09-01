@@ -1,4 +1,5 @@
 `default_nettype none
+`include "../async_true_dual_ram.v"
 `include "unbalanced_ram.v"
 
 module unbalanced_ram_tb #(
