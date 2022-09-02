@@ -45,7 +45,7 @@ module axil_bram_unbalanced #(
 );
 
 wire [AXI_ADDR_WIDTH-1:0] arbiter_addr;
-wire arbiter_we;
+wire arbiter_we, arbiter_en;
 wire [AXI_DATA_WIDTH-1:0] arbiter_dout, arbiter_din;
 
 axil_bram_arbiter #(
@@ -76,6 +76,7 @@ axil_bram_arbiter #(
     .bram_addr(arbiter_addr),
     .bram_dout(arbiter_dout),
     .bram_din(arbiter_din),
+    .bram_en(arbiter_en),
     .bram_we(arbiter_we)
 );
 
@@ -100,7 +101,7 @@ unbalanced_ram #(
     .doutb(arbiter_dout),
     .web(arbiter_we),
     //.enb(1'b1),
-    .enb(1'b1),
+    .enb(arbiter_en),
     .rstb(1'b0)
 );
 

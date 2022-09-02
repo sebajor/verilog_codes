@@ -44,7 +44,8 @@ async def axil_bram(dut, iters=32):
         dut.bram_we.value=1
         dut.bram_addr.value= int(i)
         dut.bram_din.value= int((2*i+1)<<32)+int(2*i)
-        await Timer(FPGA_PERIOD, units='ns')
+        #await Timer(FPGA_PERIOD, units='ns')
+        await ClockCycles(dut.fpga_clk,1)
     print('finish writting data')
     dut.bram_we.value=0
     dut.bram_addr.value = 0
