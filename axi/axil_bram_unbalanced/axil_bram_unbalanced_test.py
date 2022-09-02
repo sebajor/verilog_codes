@@ -35,6 +35,8 @@ async def axil_bram(dut, iters=32):
     await RisingEdge(dut.axi_clock)
     dut.rst.value= 0
     await Timer(AXI_PERIOD*10, units='ns')
+    #like there are weird results when you have the write pointer and read pointer
+    #in the same address we will move them
     print("write the fpga side")
     await RisingEdge(dut.fpga_clk)
     gold = np.arange(iters)
@@ -44,8 +46,18 @@ async def axil_bram(dut, iters=32):
         dut.bram_din.value= int((2*i+1)<<32)+int(2*i)
         await Timer(FPGA_PERIOD, units='ns')
     print('finish writting data')
-    await RisingEdge(dut.axi_clock)
     dut.bram_we.value=0
+    dut.bram_addr.value = 0
+    await ClockCycles(dut.fpga_clk, 3)
+    dut.bram_addr.value = 1
+    await ClockCycles(dut.fpga_clk, 3)
+
+
+    await RisingEdge(dut.axi_clock)
+    #we need to move the fkn read pointer to update the value from zero
+    await axil_master.read_dwords(0, 4)
+
+
     cont = await read_continous(dut, iters, axil_master)
     assert ((cont == gold).all()), "Error continous reading"
     print(cont)

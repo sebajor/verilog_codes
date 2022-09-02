@@ -1,5 +1,7 @@
 `default_nettype none
 `include "../async_true_dual_ram.v"
+`include "../async_true_dual_ram_read_first.v"
+`include "../async_true_dual_ram_write_first.v"
 `include "unbalanced_ram.v"
 
 module unbalanced_ram_tb #(
@@ -8,6 +10,7 @@ module unbalanced_ram_tb #(
     parameter DEINTERLEAVE = 2,
     parameter RAM_PERFORMANCE = "LOW_LATENCY",
     parameter MUX_LATENCY = 0,
+    parameter RAM_TYPE = "WRITE",
     //localparameters...
     parameter DATA_WIDTH_B = DATA_WIDTH_A/(DEINTERLEAVE),
     parameter ADDR_WIDTH_B = ADDR_WIDTH_A+$clog2(DEINTERLEAVE)
@@ -37,6 +40,7 @@ unbalanced_ram #(
     .DEINTERLEAVE(DEINTERLEAVE),
     .RAM_PERFORMANCE(RAM_PERFORMANCE),
     .MUX_LATENCY(MUX_LATENCY),
+    .RAM_TYPE(RAM_TYPE),
     .DATA_WIDTH_B(DATA_WIDTH_B),
     .ADDR_WIDTH_B(ADDR_WIDTH_B)
 ) unbalanced_ram_inst (

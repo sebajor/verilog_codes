@@ -69,7 +69,25 @@ async def unbalanced_ram_test(dut, mux_lat=0, deinterleave=2, nbits=32):
     for i in range(len(dat_b)):
         assert (rdata[i] == dat_b[i])
 
+    dut.addrb.value = 0
+    dut.addra.value = 0
+    await ClockCycles(dut.clka, 4)
 
+    dat_a = np.random.randint(nbits, size=size).reshape([-1, deinterleave])
+    gold_a = dat_a.flatten()
+    addr_a = np.arange(size//deinterleave)
+
+    print('Write a')
+    await write_a(dut, dat_a, addr_a, deinterleave, nbits)
+    ClockCycles(dut.clka, 3)
+
+
+    await RisingEdge(dut.clkb)
+    print("Read b")
+    addrb = np.arange(size)
+    rdata = await read_b(dut, addrb)
+    for (rdat, dat) in zip(rdata, gold_a):
+        assert (rdat==dat)
 
 
 

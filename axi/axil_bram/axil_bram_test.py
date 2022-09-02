@@ -37,15 +37,19 @@ async def axil_bram(dut, iters=32):
     await Timer(AXI_PERIOD*10, units='ns')
     print("write the fpga side")
     await RisingEdge(dut.fpga_clk)
-    gold = np.arange(iters)
+    gold = np.arange(iters)+1
     for i in range(iters):
         dut.bram_we.value=1
         dut.bram_addr.value= int(i)
-        dut.bram_din.value= int(i)
-        await Timer(FPGA_PERIOD, units='ns')
+        dut.bram_din.value= int(i+1)
+        #await Timer(FPGA_PERIOD, units='ns')
+        await ClockCycles(dut.fpga_clk, 1)
     print('finish writting data')
-    await RisingEdge(dut.axi_clock)
     dut.bram_we.value=0
+    #await ClockCycles(dut.fpga_clk, 3)
+    #dut.bram_addr.value = 0
+    #await ClockCycles(dut.fpga_clk, 5)
+    await RisingEdge(dut.axi_clock)
     cont = await read_continous(dut, iters, axil_master)
     assert ((cont == gold).all()), "Error continous reading"
     print(cont)

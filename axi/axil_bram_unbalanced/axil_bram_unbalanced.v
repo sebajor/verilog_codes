@@ -6,7 +6,8 @@ module axil_bram_unbalanced #(
     parameter AXI_DATA_WIDTH = 32,
     parameter DEINTERLEAVE = FPGA_DATA_WIDTH/AXI_DATA_WIDTH,
     parameter AXI_ADDR_WIDTH = FPGA_ADDR_WIDTH+$clog2(DEINTERLEAVE),
-	parameter INIT_FILE = ""
+	parameter INIT_FILE = "",
+    parameter RAM_TYPE="TRUE"
 ) (
     input wire axi_clock, 
     input wire rst, 
@@ -83,15 +84,14 @@ unbalanced_ram #(
     .DATA_WIDTH_A(FPGA_DATA_WIDTH),
     .ADDR_WIDTH_A(FPGA_ADDR_WIDTH),
     .DEINTERLEAVE(DEINTERLEAVE),
-    .MUX_LATENCY(0)
+    .MUX_LATENCY(0),
+    .RAM_TYPE(RAM_TYPE)
 ) unbalanced_ram (
     .clka(fpga_clk),
     .addra(bram_addr),
     .dina(bram_din),
     .douta(bram_dout),
     .wea(bram_we),
-    .in_valid_a(),
-    .out_valid_a(),
     .ena(1'b1),
     .rsta(1'b0),
     .clkb(axi_clock),
@@ -99,8 +99,7 @@ unbalanced_ram #(
     .dinb(arbiter_din),
     .doutb(arbiter_dout),
     .web(arbiter_we),
-    .in_valid_b(),
-    .out_valid_b(),
+    //.enb(1'b1),
     .enb(1'b1),
     .rstb(1'b0)
 );

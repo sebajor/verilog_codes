@@ -35,7 +35,6 @@ module axil_bram_arbiter #(
     output wire [ADDR_WIDTH-1:0] bram_addr,
     input wire [DATA_WIDTH-1:0] bram_dout,
     output wire [DATA_WIDTH-1:0] bram_din,
-    output wire bram_en,
     output wire bram_we
 );
 
@@ -172,7 +171,6 @@ always@(posedge axi_clock)begin
         axi_read_valid <=0;
 end
 assign skrdata_valid = axi_read_valid;
-assign bram_en = (skraddr_valid & skraddr_rdy) | bram_we;
 
 skid_buffer #(
     .DIN_WIDTH(DATA_WIDTH)

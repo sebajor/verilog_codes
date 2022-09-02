@@ -6,6 +6,12 @@
     Anyway they should be divisible.
     The implementation just create different rams with the PORT2 size and handle
     which one has to be written/read
+
+    It seems tha if you write a value in the ram doesnt update the 
+    other port (eg: if you write the address 0 in the porta meanwhile the portb
+    is stuck at 0 you wont see the new value)
+    TODO: check if using the enable port could fix the issue.
+
 */
 
 module unbalanced_ram #(
@@ -14,6 +20,7 @@ module unbalanced_ram #(
     parameter DEINTERLEAVE = 2,
     parameter RAM_PERFORMANCE = "LOW_LATENCY",
     parameter MUX_LATENCY = 0,
+    parameter RAM_TYPE = "WRITE",    //write, read, real (write first, read first, real)
     //localparameters...
     parameter DATA_WIDTH_B = DATA_WIDTH_A/(DEINTERLEAVE),
     parameter ADDR_WIDTH_B = ADDR_WIDTH_A+$clog2(DEINTERLEAVE)
@@ -71,28 +78,83 @@ always@(posedge clkb)begin
 end
 
 
-async_true_dual_ram #(
-    .RAM_WIDTH(DATA_WIDTH_A),
-    .RAM_DEPTH(2**ADDR_WIDTH_A),
-    .RAM_PERFORMANCE(RAM_PERFORMANCE)
-) async_dual_ram_inst (
-    .clka(clka),
-    .addra(addra),
-    .dina(dina),
-    .wea(wea),
-    .ena(ena),
-    .rsta(rsta),
-    .regcea(regcea),
-    .douta(douta), 
-    .clkb(clkb),
-    .addrb(addrb[ADDR_WIDTH_B-1:$clog2(DEINTERLEAVE)]),
-    .dinb({dinb,dinb_temp}),
-    .web(web & (&sub_addr)),
-    .enb(enb),
-    .rstb(rstb),
-    .regceb(regceb),
-    .doutb(doutb_temp)
-);
+
+
+generate
+    if(RAM_TYPE=="READ")begin
+        async_true_dual_read_first #(
+            .RAM_WIDTH(DATA_WIDTH_A),
+            .RAM_DEPTH(2**ADDR_WIDTH_A),
+            .RAM_PERFORMANCE(RAM_PERFORMANCE)
+        ) async_dual_ram_inst (
+            .clka(clka),
+            .addra(addra),
+            .dina(dina),
+            .wea(wea),
+            .ena(ena),
+            .rsta(rsta),
+            .regcea(regcea),
+            .douta(douta), 
+            .clkb(clkb),
+            .addrb(addrb[ADDR_WIDTH_B-1:$clog2(DEINTERLEAVE)]),
+            .dinb({dinb,dinb_temp}),
+            .web(web & (&sub_addr)),
+            .enb(enb),
+            .rstb(rstb),
+            .regceb(regceb),
+            .doutb(doutb_temp)
+        );
+    end
+    else if(RAM_TYPE=="WRITE")begin
+        async_true_dual_ram_write_first#(
+            .RAM_WIDTH(DATA_WIDTH_A),
+            .RAM_DEPTH(2**ADDR_WIDTH_A),
+            .RAM_PERFORMANCE(RAM_PERFORMANCE)
+        ) async_dual_ram_inst (
+            .clka(clka),
+            .addra(addra),
+            .dina(dina),
+            .wea(wea),
+            .ena(ena),
+            .rsta(rsta),
+            .regcea(regcea),
+            .douta(douta), 
+            .clkb(clkb),
+            .addrb(addrb[ADDR_WIDTH_B-1:$clog2(DEINTERLEAVE)]),
+            .dinb({dinb,dinb_temp}),
+            .web(web & (&sub_addr)),
+            .enb(enb),
+            .rstb(rstb),
+            .regceb(regceb),
+            .doutb(doutb_temp)
+        );
+    end
+    else begin
+        async_true_dual_ram #(
+            .RAM_WIDTH(DATA_WIDTH_A),
+            .RAM_DEPTH(2**ADDR_WIDTH_A),
+            .RAM_PERFORMANCE(RAM_PERFORMANCE)
+        ) async_dual_ram_inst (
+            .clka(clka),
+            .addra(addra),
+            .dina(dina),
+            .wea(wea),
+            .ena(ena),
+            .rsta(rsta),
+            .regcea(regcea),
+            .douta(douta), 
+            .clkb(clkb),
+            .addrb(addrb[ADDR_WIDTH_B-1:$clog2(DEINTERLEAVE)]),
+            .dinb({dinb,dinb_temp}),
+            .web(web & (&sub_addr)),
+            .enb(enb),
+            .rstb(rstb),
+            .regceb(regceb),
+            .doutb(doutb_temp)
+        );
+    end
+endgenerate
+
 
 //the ram respond with one cycle of delay.. so we need to delay the index
 reg [$clog2(DEINTERLEAVE)-1:0]sub_addr_r=0;
