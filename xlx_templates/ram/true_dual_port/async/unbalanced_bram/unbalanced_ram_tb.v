@@ -17,8 +17,6 @@ module unbalanced_ram_tb #(
     input wire [DATA_WIDTH_A-1:0] dina,
     output wire [DATA_WIDTH_A-1:0] douta,
     input wire wea,
-    input wire in_valid_a,
-    output wire out_valid_a,
     input wire ena,
     input wire rsta,
     input wire regcea,
@@ -27,8 +25,6 @@ module unbalanced_ram_tb #(
     input wire [DATA_WIDTH_B-1:0] dinb,
     output wire [DATA_WIDTH_B-1:0] doutb,
     input wire web,
-    input wire in_valid_b,
-    output wire out_valid_b,
     input wire enb,
     input wire rstb,
     input wire regceb
@@ -49,8 +45,6 @@ unbalanced_ram #(
     .dina(dina),
     .douta(douta),
     .wea(wea),
-    .in_valid_a(in_valid_a),
-    .out_valid_a(out_valid_a),
     .ena(ena),
     .rsta(rsta),
     .regcea(regcea),
@@ -59,13 +53,14 @@ unbalanced_ram #(
     .dinb(dinb),
     .doutb(doutb),
     .web(web),
-    .in_valid_b(in_valid_b),
-    .out_valid_b(out_valid_b),
     .enb(enb),
     .rstb(rstb),
     .regceb(regceb)
 );
 
+
+wire [DATA_WIDTH_B-1:0] help0 = douta[0+:DATA_WIDTH_B];
+wire [DATA_WIDTH_B-1:0] help1 = douta[DATA_WIDTH_B+:DATA_WIDTH_B];
 
 
 endmodule

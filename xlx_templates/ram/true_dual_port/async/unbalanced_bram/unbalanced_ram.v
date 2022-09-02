@@ -23,8 +23,6 @@ module unbalanced_ram #(
     input wire [DATA_WIDTH_A-1:0] dina,
     output wire [DATA_WIDTH_A-1:0] douta,
     input wire wea,
-    input wire in_valid_a,
-    output wire out_valid_a,
     input wire ena,
     input wire rsta,
     input wire regcea,
@@ -33,8 +31,6 @@ module unbalanced_ram #(
     input wire [DATA_WIDTH_B-1:0] dinb,
     output wire [DATA_WIDTH_B-1:0] doutb,
     input wire web,
-    input wire in_valid_b,
-    output wire out_valid_b,
     input wire enb,
     input wire rstb,
     input wire regceb
@@ -107,7 +103,6 @@ always@(posedge clkb)
 generate 
     if(MUX_LATENCY==0)begin
         assign doutb = doutb_temp[sub_addr_r*DATA_WIDTH_B+:DATA_WIDTH_B];
-        assign out_valid_b = din_valid[1];
     end 
     else begin
         reg [MUX_LATENCY*DATA_WIDTH_B-1:0] mux_out=0;
@@ -118,7 +113,6 @@ generate
                         doutb_temp[sub_addr*DATA_WIDTH_B+:DATA_WIDTH_B]};
         end 
         assign doutb = mux_out[MUX_LATENCY*DATA_WIDTH_B-1-:DATA_WIDTH_B];
-        assign out_valid_b = din_valid_r[MUX_LATENCY-1];
     end
 endgenerate
 
