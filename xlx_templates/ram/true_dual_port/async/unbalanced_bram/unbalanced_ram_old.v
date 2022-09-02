@@ -44,34 +44,18 @@ module unbalanced_ram #(
 reg [ADDR_WIDTH_A-1:0] addrb_temp=0;
 wire [DATA_WIDTH_A-1:0] doutb_temp;
 
-wire [$clog2(DEINTERLEAVE)-1:0] sub_addr = addrb[$clog2(DEINTERLEAVE)-1:0];
+wire [$clog2(DEINTERLEAVE)-1:0] sub_word = addrb[$clog2(DEINTERLEAVE)-1:0];
 
-reg [(DEINTERLEAVE-1)*DATA_WIDTH_B-1:0] dinb_temp = 0;
+reg [DATA_WIDTH_A-1:0] dinb_temp = 0;
 reg web_temp=0;
 reg [1:0] din_valid=0;
 
 //we would have troubles to write, but reading should be direct
-//there is a bug right here.. first we need two words to write the data into
-//the ram and not just delay the web. Also it gives another delay for the 
-//reading and that is not acceptable for axil
-/*
 always@(posedge clkb)begin
     addrb_temp <= addrb[ADDR_WIDTH_B-1:$clog2(DEINTERLEAVE)];
     web_temp <= web;
     dinb_temp[DATA_WIDTH_B*sub_word+:DATA_WIDTH_B] <= dinb;
     din_valid<= {din_valid[0], in_valid_b};
-end
-*/
-
-reg [$clog2(DEINTERLEAVE)-1:0] full=0;
-wire [5-1:0] test = {($clog2(DEINTERLEAVE)){1'b1}};
-always@(posedge clkb)begin
-    if((sub_addr != {($clog2(DEINTERLEAVE)){1'b1}}) & web)begin
-        dinb_temp[DATA_WIDTH_B*sub_addr+:DATA_WIDTH_B] <= dinb;
-        full[addrb[$clog2(DEINTERLEAVE)]] = 1'b1;
-    end
-    else if((sub_addr=={$clog2(DEINTERLEAVE){1'b1}})&web)
-        full <=0;
 end
 
 
@@ -87,26 +71,22 @@ async_true_dual_ram #(
     .ena(ena),
     .rsta(rsta),
     .regcea(regcea),
-    .douta(douta), 
+    .douta(douta),
+    
     .clkb(clkb),
-    .addrb(addrb[ADDR_WIDTH_B-1:$clog2(DEINTERLEAVE)]),
-    .dinb({dinb,dinb_temp}),
-    .web(web & (&sub_addr)),
+    .addrb(addrb_temp),
+    .dinb(dinb_temp),
+    .web(web_temp),
     .enb(enb),
     .rstb(rstb),
     .regceb(regceb),
     .doutb(doutb_temp)
 );
 
-//the ram respond with one cycle of delay.. so we need to delay the index
-reg [$clog2(DEINTERLEAVE)-1:0]sub_addr_r=0;
-always@(posedge clkb)
-    sub_addr_r <= sub_addr;
-
 //mux latency
 generate 
     if(MUX_LATENCY==0)begin
-        assign doutb = doutb_temp[sub_addr_r*DATA_WIDTH_B+:DATA_WIDTH_B];
+        assign doutb = doutb_temp[sub_word*DATA_WIDTH_B+:DATA_WIDTH_B];
         assign out_valid_b = din_valid[1];
     end 
     else begin
@@ -115,7 +95,7 @@ generate
         always@(posedge clkb)begin
             din_valid_r <= {din_valid_r[MUX_LATENCY-2:0], din_valid[1]};
             mux_out <= {mux_out[(MUX_LATENCY-1)*DATA_WIDTH_B-1:0],
-                        doutb_temp[sub_addr*DATA_WIDTH_B+:DATA_WIDTH_B]};
+                        doutb_temp[sub_word*DATA_WIDTH_B+:DATA_WIDTH_B]};
         end 
         assign doutb = mux_out[MUX_LATENCY*DATA_WIDTH_B-1-:DATA_WIDTH_B];
         assign out_valid_b = din_valid_r[MUX_LATENCY-1];

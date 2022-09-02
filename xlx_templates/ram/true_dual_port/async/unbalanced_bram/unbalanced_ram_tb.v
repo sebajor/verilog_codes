@@ -7,7 +7,7 @@ module unbalanced_ram_tb #(
     parameter ADDR_WIDTH_A = 10,
     parameter DEINTERLEAVE = 2,
     parameter RAM_PERFORMANCE = "LOW_LATENCY",
-    parameter MUX_LATENCY = 2,
+    parameter MUX_LATENCY = 0,
     //localparameters...
     parameter DATA_WIDTH_B = DATA_WIDTH_A/(DEINTERLEAVE),
     parameter ADDR_WIDTH_B = ADDR_WIDTH_A+$clog2(DEINTERLEAVE)

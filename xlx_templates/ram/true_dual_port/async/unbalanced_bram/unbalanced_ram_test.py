@@ -54,7 +54,7 @@ def unpack_multiple(data, mult_factor, nbits):
 async def unbalanced_ram_test(dut, mux_lat=0,deinterleave=2, nbits=32):
     setup_dut(dut)
 
-    lat_b = 5
+    lat_b = 1
 
     await Timer(5*CLK_A, units='ns')
     await RisingEdge(dut.clka)
@@ -88,6 +88,7 @@ async def unbalanced_ram_test(dut, mux_lat=0,deinterleave=2, nbits=32):
     ClockCycles(dut.clka, 10)
 
     print('Read b')
+    #dato_b = await read_b(dut, addrb,lat_b)
     dato_b = await read_b(dut, addrb,lat_b)
     for i in range(len(dato_b)):
         assert (dato_b[i] == dat_b[i])
@@ -101,9 +102,10 @@ async def unbalanced_ram_test(dut, mux_lat=0,deinterleave=2, nbits=32):
         assert (dato_a[i] == dat_b[i])
 
     #cont
-    cocotb.fork(cont_addr_b(dut, addrb))
-    await read_cont_b(dut, dat_b)
-    await ClockCycles(dut.clkb, 10)
+    #print('Read continuous')
+    #cocotb.fork(cont_addr_b(dut, addrb))
+    #await read_cont_b(dut, dat_b)
+    #await ClockCycles(dut.clkb, 10)
 
 
 async def write_a(dut, data, addr, deinterleave, nbits, lat):
@@ -132,11 +134,12 @@ async def write_b(dut, data, addr, deinterleave):
     for i in range(len(addr)):
         dut.addrb.value = int(addr[i])
         dut.dinb.value = int(data[i])
-        if(count == deinterleave):
-            dut.web.value = 1#int(count)
-            count =1
-        else:
-            dut.web.value = 0#int(count)
+        #if(count == deinterleave):
+        #    dut.web.value = 1#int(count)
+        #    count =1
+        #else:
+        #    dut.web.value = 0#int(count)
+        dut.web.value = 1
         await ClockCycles(dut.clkb, 1)
         count +=1
     dut.web.value = 0
