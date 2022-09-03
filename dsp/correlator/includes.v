@@ -6,4 +6,6 @@
 `include "../xlx_bram/bram_infer.v"
 `include "../accumulators/vector/vector_accumulator.v"
 `include "../accumulators/vector/rtl/sync_simple_dual_ram.v"
-
+`include "../delay/delay.v"
+`include "../resize_data/resize_data.v"
+`include "../shift/shift.v"
