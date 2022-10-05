@@ -97,6 +97,8 @@ resize_data #(
     .warning(power_cast_warning)
 );
 
+
+
 //generate the new accumulation signal
 wire new_acc= (counter==(acc_len<<$clog2(VECTOR_LEN))):
 reg [31:0] counter=0;
