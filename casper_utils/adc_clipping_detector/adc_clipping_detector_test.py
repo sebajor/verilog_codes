@@ -32,13 +32,12 @@ async def adc_clipping_detector_test(dut, iters=1024, din_width=8, parallel=8):
     data = np.random.randint(-2**(din_width-2), 2**(din_width-2), iters*parallel)   #not saturated
     data = data.reshape([-1, parallel])
     
-    np.random.seed(12)
+    np.random.seed(18)
     indices = np.random.randint(0,len(data), iters//10)
     indices = np.unique(indices//parallel)
     indices = np.sort(indices)[::3] ##to avoid having near indices.. we just care bcs
                                     ##the reset takes one cycle to take effect
                                     ##in the hw is not that important..
-    print(indices)
     
     clip_values = [-2**(din_width-1), 2**(din_width-1)-1]
     sub_ind = np.arange(parallel)
@@ -76,7 +75,8 @@ async def read_data(dut, indices):
         dut.rst.value = 0
         ovf = int(dut.clip.value)
         if(ovf & (not(int(dut.rst.value)))):
-            print("{:} {:}".format(counter, indices[ind_count]))
+            assert(counter==(indices[ind_count]+2)), "error"
+            #print("{:} {:}".format(counter, indices[ind_count]))
             ind_count+=1
             dut.rst.value = 1
         counter+=1
