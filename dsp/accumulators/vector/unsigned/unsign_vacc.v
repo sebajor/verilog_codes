@@ -1,5 +1,5 @@
 `default_nettype none
-`include "rtl/sync_simple_dual_ram.v"
+//`include "rtl/sync_simple_dual_ram.v"
 
 module unsign_vacc #(
     parameter DIN_WIDTH = 32,

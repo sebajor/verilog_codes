@@ -35,23 +35,35 @@ async def axil_bram(dut, iters=32):
     await RisingEdge(dut.axi_clock)
     dut.rst.value= 0
     await Timer(AXI_PERIOD*10, units='ns')
+    #like there are weird results when you have the write pointer and read pointer
+    #in the same address we will move them
     print("write the fpga side")
     await RisingEdge(dut.fpga_clk)
-    np.random.seed(12)
-    gold =np.random.randint(255,size=iters)
-    addrs = np.arange(iters)
-
+    gold = np.arange(iters)
     for i in range(iters):
         dut.bram_we.value=1
-        dut.bram_addr.value= int(addrs[i])
-        dut.bram_din.value= int(gold[i])
-        await ClockCycles(dut.fpga_clk, 1)
+        dut.bram_addr.value= int(i)
+        dut.bram_din.value= int((2*i+1)<<32)+int(2*i)
+        #await Timer(FPGA_PERIOD, units='ns')
+        await ClockCycles(dut.fpga_clk,1)
     print('finish writting data')
     dut.bram_we.value=0
+    dut.bram_addr.value = 0
+    await ClockCycles(dut.fpga_clk, 3)
+    dut.bram_addr.value = 1
+    await ClockCycles(dut.fpga_clk, 3)
+
+
     await RisingEdge(dut.axi_clock)
+    #we need to move the fkn read pointer to update the value from zero
+    await axil_master.read_dwords(0, 4)
+
+
     cont = await read_continous(dut, iters, axil_master)
     assert ((cont == gold).all()), "Error continous reading"
-
+    print(cont)
+    #print(back 
+    np.random.seed(10)
     for i in range(32):
         pause_val = np.array(np.random.randint(1, 255), dtype=np.uint8)
         pause_bin = np.unpackbits(pause_val).tolist()
@@ -61,6 +73,8 @@ async def axil_bram(dut, iters=32):
     test_data = [x+1 for x in range(iters)]
     gold = np.array(test_data)
     wdata = await write_continous(dut, test_data, axil_master)
+    #wdata = await axil_master.write_dwords(0, test_data)
+    #rdata = await axil_master.read_dwords(0, iters)
     rdata = await read_continous(dut, iters, axil_master)
     assert (gold == rdata).all(), "error continous w/r"
     for i in range(32):
@@ -72,22 +86,9 @@ async def axil_bram(dut, iters=32):
         wdata = await write_backpreassure(dut, test_data, axil_master, pause_bin_w, pause_bin_w)
         rdata = await read_backpreassure(dut, iters, axil_master, pause_bin_r)
         gold = np.array(test_data)
+        #print(rdata)
+        #print(test_data)
         assert (gold==rdata).all(), ("backpreassure w/r in %i, \t pauses: %i %i " %(i, pause_w, pause_r))
-    await RisingEdge(dut.fpga_clk)
-    #now we read it with the FPGA side
-    dout = np.zeros(iters+1) 
-    for i in range(iters):
-        dut.bram_addr.value= int(addrs[i])
-        await ClockCycles(dut.fpga_clk, 1)
-        dout[i] = int(dut.bram_dout.value)
-    await ClockCycles(dut.fpga_clk, 1)
-    dout[-1] = int(dut.bram_dout.value)
-    assert (dout[1:]==gold).all()
-
-
-        
-    
-
     #collision
     await RisingEdge(dut.axi_clock)
     await ClockCycles(dut.axi_clock,2)

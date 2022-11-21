@@ -1,19 +1,10 @@
 `default_nettype none
+`include "includes.v"
+`include "axil_bram.v"
 
-/*  Take care, this module dont support full-duplex and dont handle 
-collision so you need to take care to only request write or read but not both.
-(I think that the zynq ps only execute read or write commands at the time, so
-for that case it should work 
-
-(this is because the axi-lite port interface with only one side of the bram
-and it only handle read or write)
-
-*/
-
-module axil_bram #(
+module axil_bram_tb #(
     parameter DATA_WIDTH = 32,
-    parameter ADDR_WIDTH = 10,
-	parameter INIT_FILE = ""
+    parameter ADDR_WIDTH = 10
 ) (
     input wire axi_clock, 
     input wire rst, 
@@ -50,14 +41,11 @@ module axil_bram #(
     output wire [DATA_WIDTH-1:0] bram_dout
 );
 
-wire [ADDR_WIDTH-1:0] arbiter_addr;
-wire arbiter_we, arbiter_en;
-wire [DATA_WIDTH-1:0] arbiter_dout, arbiter_din;
 
-axil_bram_arbiter #(
+axil_bram #(
     .DATA_WIDTH(DATA_WIDTH),
     .ADDR_WIDTH(ADDR_WIDTH)
-) axil_bram_arbiter (
+) axil_bram_inst (
     .axi_clock(axi_clock), 
     .rst(rst), 
     .s_axil_awaddr(s_axil_awaddr),
@@ -79,33 +67,17 @@ axil_bram_arbiter #(
     .s_axil_rresp(s_axil_rresp),
     .s_axil_rvalid(s_axil_rvalid),
     .s_axil_rready(s_axil_rready),
-    .bram_addr(arbiter_addr),
-    .bram_dout(arbiter_dout),
-    .bram_din(arbiter_din),
-    .bram_we(arbiter_we),
-    .bram_en(arbiter_en)
+    .fpga_clk(fpga_clk),
+    .bram_din(bram_din),
+    .bram_addr(bram_addr),
+    .bram_we(bram_we),
+    .bram_dout(bram_dout)
 );
 
-async_true_dual_ram #(
-    .RAM_WIDTH(DATA_WIDTH),
-    .RAM_DEPTH(2**ADDR_WIDTH),
-    .RAM_PERFORMANCE("LOW_LATENCY"),
-	.INIT_FILE(INIT_FILE)
-) ram_inst (
-  .clkb(axi_clock),
-  .addrb(arbiter_addr), 
-  .dinb(arbiter_din),
-  .doutb(arbiter_dout),
-  .web(arbiter_we),
-  .enb(arbiter_en),
-  .rstb(1'b0),
-  .clka(fpga_clk),
-  .addra(bram_addr),
-  .dina(bram_din),
-  .douta(bram_dout),
-  .ena(1'b1),
-  .wea(bram_we),
-  .rsta(1'b0)
-);
+
+initial begin
+    $dumpfile("traces.vcd");
+    $dumpvars();
+end
 
 endmodule

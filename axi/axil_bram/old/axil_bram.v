@@ -51,7 +51,7 @@ module axil_bram #(
 );
 
 wire [ADDR_WIDTH-1:0] arbiter_addr;
-wire arbiter_we, arbiter_en;
+wire arbiter_we;
 wire [DATA_WIDTH-1:0] arbiter_dout, arbiter_din;
 
 axil_bram_arbiter #(
@@ -82,8 +82,7 @@ axil_bram_arbiter #(
     .bram_addr(arbiter_addr),
     .bram_dout(arbiter_dout),
     .bram_din(arbiter_din),
-    .bram_we(arbiter_we),
-    .bram_en(arbiter_en)
+    .bram_we(arbiter_we)
 );
 
 async_true_dual_ram #(
@@ -97,7 +96,7 @@ async_true_dual_ram #(
   .dinb(arbiter_din),
   .doutb(arbiter_dout),
   .web(arbiter_we),
-  .enb(arbiter_en),
+  .enb(1'b1),
   .rstb(1'b0),
   .clka(fpga_clk),
   .addra(bram_addr),
