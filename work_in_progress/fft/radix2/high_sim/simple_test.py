@@ -31,19 +31,21 @@ def DFT_dif(data):
     #fist divide the data in upper/lower half
     #x_low = data[:len(data)//2]
     #x_high = data[len(data)//2:]
+    dat = np.zeros([iters+1, len(data)], dtype=complex)
+    dat[0,:] = data
     for i in range(iters):
         dft_idx = np.arange(2**(iters-1-i))*2**i    #check!
         w_ = np.exp(-1j*2*np.pi*dft_idx/2**(iters))
         for j in range(2**i):#(i+1):
-            sub_data = data[len(data)//2**i*j:len(data)//2**i*(j+1)]
+            sub_data = dat[i,len(data)//2**i*j:len(data)//2**i*(j+1)]
             #print("i: %i j:%i"%(i,j))
             #print(sub_data)
             #print("\n")
             x_low = sub_data[:len(sub_data)//2]
             x_high = sub_data[len(sub_data)//2:]
             x,y =butterfly_dif(x_low, x_high, w_)
-            data[len(data)//2**i*j:len(data)//2**i*(j+1)] = np.concatenate([x,y])
-    return data
+            dat[i+1,len(data)//2**i*j:len(data)//2**i*(j+1)] = np.concatenate([x,y])
+    return dat
      
 
 
@@ -77,9 +79,10 @@ if __name__=='__main__':
     #input_data = np.arange(64)
     input_data = np.random.random(128)
     data = DFT_dif(input_data)
+    out = data[-1,:]
     #reorder
-    bitmap = bit_reversal_mapping(int(np.log2(len(data))))
-    fft_data = data[bitmap]
+    bitmap = bit_reversal_mapping(int(np.log2(len(out))))
+    fft_data = out[bitmap]
     error = np.abs(fft_data-np.fft.fft(input_data))
     assert((error<threshold).all())
 
