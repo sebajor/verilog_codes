@@ -1,4 +1,4 @@
-dut=axil_spectrometer
+dut=spectrometer_lane
 SIM=icarus
 
 WAVES ?= 0

@@ -2,7 +2,7 @@ import numpy as np
 import cocotb, sys
 from cocotb.triggers import ClockCycles, RisingEdge
 from cocotb.clock import Clock
-sys.path.append('../../cocotb_python')
+sys.path.append('../../../cocotb_python')
 from two_comp import two_comp_pack, two_comp_unpack
 import ipdb
 
@@ -12,8 +12,8 @@ import ipdb
 ###
 
 @cocotb.test()
-async def spectrometer_lane_test(dut, iters=10, din_width=18, din_point=17,vector_len=512,
-        dout_width=64, dout_point=34, acc_len=2, shift=0, thresh=0.5):
+async def spectrometer_lane_test(dut, iters=5, din_width=18, din_point=17,vector_len=512,
+        dout_width=64, dout_point=34, acc_len=32, shift=0, thresh=0.5):
     
     #setup dut
     clk = Clock(dut.clk, 10, units='ns')
@@ -77,14 +77,3 @@ async def read_data(dut, gold, dout_width, dout_point,thresh):
             count +=1
         await ClockCycles(dut.clk, 1)
     return 1
-
-
-
-
-
-
-
-
-
-
-

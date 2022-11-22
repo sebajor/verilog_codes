@@ -9,3 +9,13 @@
 `include "../../dsp/accumulators/vector/rtl/sync_simple_dual_ram.v"
 `include "../../dsp/accumulators/vector/vector_accumulator.v"
 `include "../../dsp/dsp48_mult/dsp48_mult.v"
+`include "spectrometer_lane/spectrometer_lane.v"
+
+`include "../../xlx_templates/ram/true_dual_port/async/unbalanced_bram/unbalanced_ram.v"
+`include "../../xlx_templates/ram/true_dual_port/async/async_true_dual_ram.v"
+`include "../../xlx_templates/ram/true_dual_port/async/async_true_dual_ram_read_first.v"
+`include "../../xlx_templates/ram/true_dual_port/async/async_true_dual_ram_write_first.v"
+`include "../../utils/skid_buffer/skid_buffer.v"
+`include "../../axi/axil_bram/axil_bram_arbiter.v"
+`include "../../axi/axil_bram/axil_bram.v"
+`include "../../axi/axil_bram_unbalanced/axil_bram_unbalanced.v"
