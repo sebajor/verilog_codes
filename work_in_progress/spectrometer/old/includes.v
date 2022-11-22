@@ -4,8 +4,9 @@
 `include "../../dsp/data_cast/unsign_cast/unsign_cast.v"
 `include "../../dsp/complex_power/complex_power.v"
 `include "../../dsp/resize_data/resize_data.v"
-`include "../../casper_utils/acc_control/acc_control.v"
 
 `include "../../dsp/accumulators/vector/rtl/sync_simple_dual_ram.v"
 `include "../../dsp/accumulators/vector/vector_accumulator.v"
 `include "../../dsp/dsp48_mult/dsp48_mult.v"
+
+`include "../../casper_utils/sync_gen/sync_gen.v"

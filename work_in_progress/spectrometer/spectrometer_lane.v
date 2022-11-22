@@ -2,9 +2,7 @@
 
 /*
 *   Author: Sebastian Jorquera
-*   Single lane of one spectrometer, it takes the output of one FFT lane,
-*   calculate the power of the complex input, then accumulate the data and
-*   finally write into a bram
+*   
 */
 
 module spectrometer_lane #(
@@ -20,108 +18,132 @@ module spectrometer_lane #(
     parameter DOUT_CAST_SHIFT = 0,
     parameter DOUT_CAST_DELAY = 0,
     parameter DOUT_WIDTH = 64,
-    parameter DOUT_POINT = 2*DIN_POINT
+    parameter DOUT_POINT = 2*DIN_POINT,
+    parameter DEBUG = 0
 ) (
     input wire clk,
     input wire signed [DIN_WIDTH-1:0] din_re, din_im,
+    input wire din_valid,
     input wire sync_in,
     input wire [31:0] acc_len,
     input wire cnt_rst,
 
-    //axi signals 
-    input wire axi_clock, 
-    input wire rst, 
-    //write address channel
-    input wire [AXI_ADDR_WIDTH+1:0] s_axil_awaddr,
-    input wire [2:0] s_axil_awprot,
-    input wire s_axil_awvalid,
-    output wire s_axil_awready,
-    //write data channel
-    input wire [AXI_DATA_WIDTH-1:0] s_axil_wdata,
-    input wire [AXI_DATA_WIDTH/8-1:0] s_axil_wstrb,
-    input wire s_axil_wvalid,
-    output wire s_axil_wready,
-    //write response channel 
-    output wire [1:0] s_axil_bresp,
-    output wire s_axil_bvalid,
-    input wire s_axil_bready,
-    //read address channel
-    input wire [AXI_ADDR_WIDTH+1:0] s_axil_araddr,
-    input wire s_axil_arvalid,
-    output wire s_axil_arready,
-    input wire [2:0] s_axil_arprot,
-    //read data channel
-    output wire [AXI_DATA_WIDTH-1:0] s_axil_rdata,
-    output wire [1:0] s_axil_rresp,
-    output wire s_axil_rvalid,
-    input wire s_axil_rready
-)
+    output wire [DOUT_WIDTH-1:0] dout,
+    output wire dout_valid,
+    output wire [$clog2(VECTOR_LEN)-1:0] dout_addr,
+    output wire ovf_flag
+);
+
+reg din_valid_r=0;
+reg signed [DIN_WIDTH-1:0] din_re_r=0, din_im_r=0;
+reg sync_in_r=0;
+always@(posedge clk)begin
+    din_re_r <= din_re;
+    din_im_r <= din_im;
+    sync_in_r <= sync_in;
+    if(cnt_rst)
+        din_valid_r<=0;
+    else if(sync_in)
+        din_valid_r <=1;
+end
 
 
-wire [POWER_DOUT-1:0] power_dout;
-wire power_sync;
+//calcula the power of the complex data
+wire [POWER_DOUT:0] power_dout;
+wire power_dout_valid;
+
 complex_power #(
     .DIN_WIDTH(DIN_WIDTH)
 ) complex_power_inst (
     .clk(clk),
     .din_re(din_re),
     .din_im(din_im),
-    .din_valid(sync_in),
+    .din_valid(din_valid_r),
     .dout(power_dout),
-    .dout_valid(power_sync)
+    .dout_valid(power_dout_valid)
+);
+
+//delay to match the valid signal
+wire sync_pow;
+delay #(
+    .DATA_WIDTH(1),
+    .DELAY_VALUE(4)
+) delay_power (
+    .clk(clk),
+    .din(sync_in_r),
+    .dout(sync_pow)
 );
 
 
+
+//resize the output
 wire [ACC_DIN_WIDTH-1:0] acc_in;
 wire acc_sync_in;
 wire power_cast_warning;
+wire power_cast_valid;
 
 resize_data #(
-    .DIN_WIDTH(POWER_DOUT),
+    .DIN_WIDTH(POWER_DOUT+1),
     .DIN_POINT(2*DIN_POINT),
     .DATA_TYPE("unsigned"),
     .PARALLEL(1),
-    .SHIFT(POWER_SHIFT)
-    .DELAY(POWER_DELAY)
-    .DOUT_WIDTH(ACC_DIN_WIDTH)
-    .DOUT_POINT(ACC_DIN_POINT)
+    .SHIFT(POWER_SHIFT),
+    .DELAY(POWER_DELAY),
+    .DOUT_WIDTH(ACC_DIN_WIDTH),
+    .DOUT_POINT(ACC_DIN_POINT),
     .DEBUG(DEBUG)
 ) resize_power (
     .clk(clk), 
     .din(power_dout),
-    .din_valid(),
-    .sync_in(power_sync),
+    .din_valid(power_dout_valid),
+    .sync_in(sync_pow),
     .dout(acc_in),
-    .dout_valid(),
+    .dout_valid(power_cast_valid),
     .sync_out(acc_sync_in),
     .warning(power_cast_warning)
 );
 
+//accumulation control signal
+wire new_acc;
 
-
-//generate the new accumulation signal
-wire new_acc= (counter==(acc_len<<$clog2(VECTOR_LEN))):
-reg [31:0] counter=0;
-reg first_sync=0;
-
-//check if we need to start in 0 or in 2**32-1
+reg [31:0] frame_counter=0;
+reg frame_en=0;
 always@(posedge clk)begin
-    if(cnt_rst)begin
-        counter <=0;
-        first_sync<=0;
-    end
-    else begin
-        first_sync <= acc_sync_in;
-        if(~fist_sync & acc_sync_in)
-            counter<=0;
-        else if(counter == (acc_len<<$clog2(VECTOR_LEN)))
-            counter <=0;
+    if(cnt_rst)
+        frame_en<=0;
+    else if(acc_sync_in)
+        frame_en <= 1;
+end
+
+always@(posedge clk)begin
+    if(cnt_rst)
+        frame_counter <=0;
+    else if(frame_en)begin
+        if(frame_counter == (acc_len<<$clog2(VECTOR_LEN))-1)
+            frame_counter <=0;
         else
-            counter <=counter+1;
+            frame_counter <= frame_counter+1;
     end
 end
 
+assign new_acc = (frame_counter == (acc_len<<$clog2(VECTOR_LEN))-1);
 
+
+/*
+acc_control #(
+    .CHANNEL_ADDR($clog2(VECTOR_LEN))
+) acc_control_inst (
+    .clk(clk),
+    .sync_in(acc_sync_in),
+    .acc_len(acc_len),
+    .rst(cnt_rst),
+    .new_acc(new_acc)
+);
+*/
+
+//check timing!!
+wire [DOUT_WIDTH-1:0] vector_out;
+wire vector_out_valid;
 
 vector_accumulator #(
     .DIN_WIDTH(ACC_DIN_WIDTH),
@@ -129,54 +151,28 @@ vector_accumulator #(
     .DOUT_WIDTH(ACC_DOUT_WIDTH),
     .DATA_TYPE("unsigned")
 ) vector_accumulator_inst (
-    .clk(),
-    .new_acc(),     //new accumulation, set it previous the first sample of the frame
-    .din(),
-    .din_valid(),
-    .dout(),
-    .dout_valid()
+    .clk(clk),
+    .new_acc(new_acc),     //new accumulation, set it previous the first sample of the frame
+    .din(acc_in),
+    .din_valid(power_cast_valid),
+    .dout(vector_out),
+    .dout_valid(vector_out_valid)
 );
 
 
+//counter
+reg [$clog2(VECTOR_LEN)-1:0] addr_counter=0;
+always@(posedge clk)begin
+    if(new_acc)
+        addr_counter <= 0;//{($clog2(VECTOR_LEN)){1'b1}};
+    else if(vector_out_valid)
+        addr_counter <= addr_counter+1;
+end
 
+assign dout = vector_out;
+assign dout_valid = vector_out_valid;
+assign dout_addr = addr_counter;
 
+assign ovf_flag = power_cast_warning;
 
-
-
-
-
-
-
-
-axil_bram_unbalanced #(
-    .FPGA_DATA_WIDTH(DOUT_WIDTH),
-    .FPGA_ADDR_WIDTH($clog2(VECTOR_LEN)),
-    .AXI_DATA_WIDTH(32)
-)axil_bram_inst (
-    .axi_clock(axi_clock), 
-    .rst(rst), 
-    .s_axil_awaddr(s_axil_awaddr),
-    .s_axil_awprot(s_axil_awprot),
-    .s_axil_awvalid(s_axil_awvalid),
-    .s_axil_awready(s_axil_awready),
-    .s_axil_wdata(s_axil_wdata),
-    .s_axil_wstrb(s_axil_wstrb),
-    .s_axil_wvalid(s_axil_wvalid),
-    .s_axil_wready(s_axil_wready),
-    .s_axil_bresp(s_axil_bresp),
-    .s_axil_bvalid(s_axil_bvalid),
-    .s_axil_bready(s_axil_bready),
-    .s_axil_araddr(s_axil_araddr),
-    .s_axil_arvalid(s_axil_arvalid),
-    .s_axil_arready(s_axil_arready),
-    .s_axil_arprot(s_axil_arprot),
-    .s_axil_rdata(s_axil_rdata),
-    .s_axil_rresp(s_axil_rresp),
-    .s_axil_rvalid(s_axil_rvalid),
-    .s_axil_rready(s_axil_rready),
-    .fpga_clk(clk),
-    .bram_din(),
-    .bram_addr(),
-    .bram_we(),
-    .bram_dout()
-);
+endmodule
