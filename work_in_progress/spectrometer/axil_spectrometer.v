@@ -43,8 +43,8 @@ module axil_spectrometer #(
     
     //debug
     output wire ovf_flag,
-
-    //axilite brams (look that the signals are packed!)
+    output wire bram_ready, //sim only
+    //axilite brams 
     input wire axi_clock,
     input wire axi_reset,
 
@@ -144,5 +144,15 @@ axil_bram_unbalanced #(
     .bram_we(spect_out_valid),
     .bram_dout()
 );
+
+reg bram_rdy=0;
+assign bram_ready = bram_rdy;
+always@(posedge clk)begin
+    if(spect_out_valid)
+        bram_rdy <= 1;
+    else if(s_axil_rready & s_axil_rvalid)
+        bram_rdy <=0;
+end
+
 
 endmodule

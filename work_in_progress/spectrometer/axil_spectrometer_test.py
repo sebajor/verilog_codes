@@ -45,8 +45,8 @@ async def setup_dut(dut, acc_len):
 
 
 @cocotb.test()
-async def spectrometer_lane_test(dut, iters=1, din_width=18, din_point=17,vector_len=16,
-        dout_width=64, dout_point=34, acc_len=2, shift=0, thresh=0.5):
+async def spectrometer_lane_test(dut, iters=3, din_width=18, din_point=17,vector_len=256,
+        dout_width=64, dout_point=34, acc_len=32, shift=0, thresh=0.5):
     
     #setup dut
     axil_master = await setup_dut(dut, acc_len)
@@ -57,10 +57,11 @@ async def spectrometer_lane_test(dut, iters=1, din_width=18, din_point=17,vector
 
     ##create data
     np.random.seed(10)
-    #dat_re = np.random.random(size=(vector_len, acc_len*iters))
-    #dat_im = np.random.random(size=(vector_len, acc_len*iters))
-    dat_re = np.tile(np.arange(vector_len)/vector_len,acc_len*iters).reshape((acc_len*iters, vector_len)).T
-    dat_im = np.zeros((vector_len, acc_len*iters))
+
+    dat_re = np.random.random(size=(vector_len, acc_len*iters))
+    dat_im = np.random.random(size=(vector_len, acc_len*iters))
+    #dat_re = np.tile((np.arange(vector_len)+1)/vector_len,acc_len*iters).reshape((acc_len*iters, vector_len)).T
+    #dat_im = np.zeros((vector_len, acc_len*iters))
     
     dat = dat_re+1j*dat_im 
 
@@ -72,11 +73,15 @@ async def spectrometer_lane_test(dut, iters=1, din_width=18, din_point=17,vector
     gold = np.sum(gold.reshape([vector_len, -1, acc_len]), axis=2)
     gold = np.abs(gold.T.flatten())
     
-    await write_data(dut, dat_b, vector_len)
-    await ClockCycles(dut.clk, 530) 
+    #await write_data(dut, dat_b, vector_len)
+    cocotb.fork(write_data(dut, dat_b, vector_len))
+    #await ClockCycles(dut.clk, 530) 
     ##not that easy.. the bram gets write before I can read it :P
-    rdata = await read_continous(dut, vector_len, axil_master)
-    np.save('rdata.npy',rdata)
+    #rdata = await read_continous(dut, vector_len, axil_master)
+    #np.savez('out.npz', gold=gold, rtl=rdata/2**dout_point)
+    await read_data(dut, axil_master, vector_len, gold, dout_point, thresh)
+
+    
 
 
 async def write_data(dut, dat_b, vec_len):
@@ -84,12 +89,30 @@ async def write_data(dut, dat_b, vec_len):
     dut.sync_in.value = 0
     await ClockCycles(dut.clk, 1)
     dut.sync_in.value = 1
+    dut.din_valid.value = 1
     await ClockCycles(dut.clk,1)
     dut.sync_in.value = 0
     for i in range(len(dat_b[1])):
         dut.din_re.value = int(dat_b[0][i])
         dut.din_im.value = int(dat_b[1][i])
         await ClockCycles(dut.clk,1)
+
+async def read_data(dut, axil_master, vector_len, gold, dout_point, thresh):
+    counter = 0
+    await RisingEdge(dut.axi_clock)
+    while(counter<(len(gold)/vector_len)):
+        bram_rdy = dut.bram_ready.value 
+        if(bram_rdy):
+            rtl = await read_continous(dut, vector_len, axil_master)
+            sub_gold = gold[counter*vector_len:(counter+1)*vector_len]
+            errors = np.abs(np.array(rtl)/2**dout_point-sub_gold)
+            assert (errors<thresh).all()
+            #print(np.array(rtl)/2**dout_point)
+            #print(sub_gold)
+            counter +=1
+        await ClockCycles(dut.axi_clock,1)
+        
+             
 
 async def read_continous(dut, iters, axil_master):
     words = await axil_master.read_qwords(0, iters)

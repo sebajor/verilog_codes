@@ -6,7 +6,7 @@
 module axil_spectrometer_tb #(
     parameter DIN_WIDTH = 18,
     parameter DIN_POINT = 17,
-    parameter VECTOR_LEN = 16, 
+    parameter VECTOR_LEN = 256, 
     parameter POWER_DOUT = 2*DIN_WIDTH,
     parameter POWER_DELAY = 2,              //delay after the power computation
     parameter POWER_SHIFT = 0,
@@ -37,6 +37,7 @@ module axil_spectrometer_tb #(
     
     //debug
     output wire ovf_flag,
+    output wire bram_ready,
 
     //axilite brams (look that the signals are packed!)
     input wire axi_clock,
@@ -99,6 +100,7 @@ axil_spectrometer #(
     .acc_len(acc_len),
     .cnt_rst(cnt_rst),
     .ovf_flag(ovf_flag),
+    .bram_ready(bram_ready),
     .axi_clock(axi_clock),
     .axi_reset(axi_reset),
     .s_axil_awaddr(s_axil_awaddr),

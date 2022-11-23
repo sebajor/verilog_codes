@@ -55,6 +55,7 @@ async def write_data(dut, dat_b, vec_len):
     dut.sync_in.value = 0
     await ClockCycles(dut.clk, 1)
     dut.sync_in.value = 1
+    dut.din_valid.value = 1
     await ClockCycles(dut.clk,1)
     dut.sync_in.value = 0
     for i in range(len(dat_b[1])):

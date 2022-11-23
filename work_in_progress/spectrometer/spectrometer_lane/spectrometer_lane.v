@@ -43,8 +43,10 @@ always@(posedge clk)begin
     sync_in_r <= sync_in;
     if(cnt_rst)
         din_valid_r<=0;
-    else if(sync_in)
-        din_valid_r <=1;
+    else
+        din_valid_r <= din_valid;
+    //else if(sync_in)
+    //    din_valid_r <=1;
 end
 
 

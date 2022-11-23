@@ -21,6 +21,7 @@ module spectrometer_lane_tb #(
 ) (
     input wire clk,
     input wire signed [DIN_WIDTH-1:0] din_re, din_im,
+    input wire din_valid,
     input wire sync_in,
     input wire [31:0] acc_len,
     input wire cnt_rst,
@@ -50,6 +51,7 @@ spectrometer_lane #(
     .clk(clk),
     .din_re(din_re),
     .din_im(din_im),
+    .din_valid(din_valid),
     .sync_in(sync_in),
     .acc_len(acc_len),
     .cnt_rst(cnt_rst),
