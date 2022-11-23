@@ -113,7 +113,7 @@ wire spect_valid;
 
 delay #(
     .DATA_WIDTH(DOUT_WIDTH+$clog2(VECTOR_LEN)+1),
-    .DELAY_VALUE()
+    .DELAY_VALUE(BRAM_DELAY)
 ) bram_delay_inst (
     .clk(clk),
     .din({spect_out, spect_addr, spect_out_valid}),

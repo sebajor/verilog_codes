@@ -32,8 +32,8 @@ async def spectrometer_lane_test(dut, iters=5, din_width=18, din_point=17,vector
     
     ##create data
     np.random.seed(10)
-    dat_re = np.random.random(size=(vector_len, acc_len*iters))
-    dat_im = np.random.random(size=(vector_len, acc_len*iters))
+    dat_re = np.random.random(size=(vector_len, acc_len*iters))-0.5
+    dat_im = np.random.random(size=(vector_len, acc_len*iters))-0.5
     #dat_re = np.tile(np.arange(vector_len)/vector_len,acc_len*iters).reshape((acc_len*iters, vector_len)).T
     #dat_im = np.zeros((vector_len, acc_len*iters))
     

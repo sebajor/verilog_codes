@@ -1,10 +1,12 @@
 `default_nettype none
+`include "includes.v"
+`include "axil_correlator.v"
 
 /*
 *   Author: Sebastian Jorquera
 */
 
-module axil_correlator #(
+module axil_correlator_tb #(
     parameter DIN_WIDTH = 18,
     parameter DIN_POINT = 17,
     parameter VECTOR_LEN = 512,
@@ -120,13 +122,7 @@ module axil_correlator #(
     input wire s_r12_axil_rready
 );
 
-
-wire [DOUT_WIDTH-1:0] r11,r22;
-wire signed [DOUT_WIDTH-1:0] r12_re, r12_im;
-wire corr_valid;
-wire [$clog2(VECTOR_LEN)-1:0]corr_addr;
-
-correlator_lane #(
+axil_correlator #(
     .DIN_WIDTH(DIN_WIDTH),
     .DIN_POINT(DIN_POINT),
     .VECTOR_LEN(VECTOR_LEN),
@@ -140,8 +136,16 @@ correlator_lane #(
     .DOUT_CAST_DELAY(DOUT_CAST_DELAY),
     .DOUT_WIDTH(DOUT_WIDTH),
     .DOUT_POINT(DOUT_POINT),
-    .DEBUG(DEBUG)
-) correlator_lane_inst (
+    .BRAM_DELAY(BRAM_DELAY),
+    .DEBUG(DEBUG),
+    .FPGA_DATA_WIDTH(FPGA_DATA_WIDTH),
+    .FPGA_ADDR_WIDTH(FPGA_ADDR_WIDTH),
+    .AXI_DATA_WIDTH(AXI_DATA_WIDTH),
+    .DEINTERLEAVE(DEINTERLEAVE),
+    .AXI_ADDR_WIDTH(AXI_ADDR_WIDTH),
+    .INIT_FILE(INIT_FILE),
+    .RAM_TYPE(RAM_TYPE)
+) axil_correaltor_inst (
     .clk(clk),
     .din0_re(din0_re),
     .din0_im(din0_im),
@@ -151,154 +155,67 @@ correlator_lane #(
     .sync_in(sync_in),
     .acc_len(acc_len),
     .cnt_rst(cnt_rst),
-    .r11(r11),
-    .r12_re(r12_re),
-    .r12_im(r12_im),
-    .r22(r22),
-    .dout_valid(corr_valid),
-    .dout_addr(corr_addr),
-    .ovf_flag(ovf_flag)
+    .ovf_flag(ovf_flag),
+    .bram_ready(bram_ready), //sim only
+    .axi_clock(axi_clock),
+    .axi_reset(axi_reset),
+    .s_r11_axil_awaddr(s_r11_axil_awaddr),
+    .s_r11_axil_awprot(s_r11_axil_awprot),
+    .s_r11_axil_awvalid(s_r11_axil_awvalid),
+    .s_r11_axil_awready(s_r11_axil_awready),
+    .s_r11_axil_wdata(s_r11_axil_wdata),
+    .s_r11_axil_wstrb(s_r11_axil_wstrb),
+    .s_r11_axil_wvalid(s_r11_axil_wvalid),
+    .s_r11_axil_wready(s_r11_axil_wready),
+    .s_r11_axil_bresp(s_r11_axil_bresp),
+    .s_r11_axil_bvalid(s_r11_axil_bvalid),
+    .s_r11_axil_bready(s_r11_axil_bready),
+    .s_r11_axil_araddr(s_r11_axil_araddr),
+    .s_r11_axil_arvalid(s_r11_axil_arvalid),
+    .s_r11_axil_arready(s_r11_axil_arready),
+    .s_r11_axil_arprot(s_r11_axil_arprot),
+    .s_r11_axil_rdata(s_r11_axil_rdata),
+    .s_r11_axil_rresp(s_r11_axil_rresp),
+    .s_r11_axil_rvalid(s_r11_axil_rvalid),
+    .s_r11_axil_rready(s_r11_axil_rready),
+    .s_r22_axil_awaddr(s_r22_axil_awaddr),
+    .s_r22_axil_awprot(s_r22_axil_awprot),
+    .s_r22_axil_awvalid(s_r22_axil_awvalid),
+    .s_r22_axil_awready(s_r22_axil_awready),
+    .s_r22_axil_wdata(s_r22_axil_wdata),
+    .s_r22_axil_wstrb(s_r22_axil_wstrb),
+    .s_r22_axil_wvalid(s_r22_axil_wvalid),
+    .s_r22_axil_wready(s_r22_axil_wready),
+    .s_r22_axil_bresp(s_r22_axil_bresp),
+    .s_r22_axil_bvalid(s_r22_axil_bvalid),
+    .s_r22_axil_bready(s_r22_axil_bready),
+    .s_r22_axil_araddr(s_r22_axil_araddr),
+    .s_r22_axil_arvalid(s_r22_axil_arvalid),
+    .s_r22_axil_arready(s_r22_axil_arready),
+    .s_r22_axil_arprot(s_r22_axil_arprot),
+    .s_r22_axil_rdata(s_r22_axil_rdata),
+    .s_r22_axil_rresp(s_r22_axil_rresp),
+    .s_r22_axil_rvalid(s_r22_axil_rvalid),
+    .s_r22_axil_rready(s_r22_axil_rready),
+    .s_r12_axil_awaddr(s_r12_axil_awaddr),
+    .s_r12_axil_awprot(s_r12_axil_awprot),
+    .s_r12_axil_awvalid(s_r12_axil_awvalid),
+    .s_r12_axil_awready(s_r12_axil_awready),
+    .s_r12_axil_wdata(s_r12_axil_wdata),
+    .s_r12_axil_wstrb(s_r12_axil_wstrb),
+    .s_r12_axil_wvalid(s_r12_axil_wvalid),
+    .s_r12_axil_wready(s_r12_axil_wready),
+    .s_r12_axil_bresp(s_r12_axil_bresp),
+    .s_r12_axil_bvalid(s_r12_axil_bvalid),
+    .s_r12_axil_bready(s_r12_axil_bready),
+    .s_r12_axil_araddr(s_r12_axil_araddr),
+    .s_r12_axil_arvalid(s_r12_axil_arvalid),
+    .s_r12_axil_arready(s_r12_axil_arready),
+    .s_r12_axil_arprot(s_r12_axil_arprot),
+    .s_r12_axil_rdata(s_r12_axil_rdata),
+    .s_r12_axil_rresp(s_r12_axil_rresp),
+    .s_r12_axil_rvalid(s_r12_axil_rvalid),
+    .s_r12_axil_rready(s_r12_axil_rready)
 );
 
-
-wire [DOUT_WIDTH-1:0] r11_r, r22_r, r12_re_r, r12_im_r;
-wire [$clog2(VECTOR_LEN)-1:0] corr_addr_r;
-wire corr_valid_r;
-
-delay #(
-    .DATA_WIDTH(4*DOUT_WIDTH+$clog2(VECTOR_LEN)+1),
-    .DELAY_VALUE()
-) bram_delay_inst (
-    .clk(clk),
-    .din({r11,r22,r12_re,r12_im, corr_addr, corr_valid}),
-    .dout({r11_r,r22_r,r12_re_r,r12_im_r,corr_addr_r, corr_valid_r})
-);
-
-//the memories
-axil_bram_unbalanced #(
-    .FPGA_DATA_WIDTH(FPGA_DATA_WIDTH),
-    .FPGA_ADDR_WIDTH(FPGA_ADDR_WIDTH),
-    .AXI_DATA_WIDTH(AXI_DATA_WIDTH),
-    .DEINTERLEAVE(DEINTERLEAVE),
-    .AXI_ADDR_WIDTH(AXI_ADDR_WIDTH),
-    .INIT_FILE(INIT_FILE),
-    .RAM_TYPE(RAM_TYPE)
-) axil_bram_r11 (
-    .axi_clock(axi_clock), 
-    .rst(axi_reset), 
-    .s_axil_awaddr(s_r11_axil_awaddr),
-    .s_axil_awprot(s_r11_axil_awprot),
-    .s_axil_awvalid(s_r11_axil_awvalid),
-    .s_axil_awready(s_r11_axil_awready),
-    .s_axil_wdata(s_r11_axil_wdata),
-    .s_axil_wstrb(s_r11_axil_wstrb),
-    .s_axil_wvalid(s_r11_axil_wvalid),
-    .s_axil_wready(s_r11_axil_wready),
-    .s_axil_bresp(s_r11_axil_bresp),
-    .s_axil_bvalid(s_r11_axil_bvalid),
-    .s_axil_bready(s_r11_axil_bready),
-    .s_axil_araddr(s_r11_axil_araddr),
-    .s_axil_arvalid(s_r11_axil_arvalid),
-    .s_axil_arready(s_r11_axil_arready),
-    .s_axil_arprot(s_r11_axil_arprot),
-    .s_axil_rdata(s_r11_axil_rdata),
-    .s_axil_rresp(s_r11_axil_rresp),
-    .s_axil_rvalid(s_r11_axil_rvalid),
-    .s_axil_rready(s_r11_axil_rready),
-    //fpga side
-    .fpga_clk(clk),
-    .bram_din(r11_r),
-    .bram_addr(corr_addr_r),
-    .bram_we(corr_valid_r),
-    .bram_dout()
-);
-
-
-axil_bram_unbalanced #(
-    .FPGA_DATA_WIDTH(FPGA_DATA_WIDTH),
-    .FPGA_ADDR_WIDTH(FPGA_ADDR_WIDTH),
-    .AXI_DATA_WIDTH(AXI_DATA_WIDTH),
-    .DEINTERLEAVE(DEINTERLEAVE),
-    .AXI_ADDR_WIDTH(AXI_ADDR_WIDTH),
-    .INIT_FILE(INIT_FILE),
-    .RAM_TYPE(RAM_TYPE)
-) axil_bram_r22 (
-    .axi_clock(axi_clock), 
-    .rst(axi_reset), 
-    .s_axil_awaddr(s_r22_axil_awaddr),
-    .s_axil_awprot(s_r22_axil_awprot),
-    .s_axil_awvalid(s_r22_axil_awvalid),
-    .s_axil_awready(s_r22_axil_awready),
-    .s_axil_wdata(s_r22_axil_wdata),
-    .s_axil_wstrb(s_r22_axil_wstrb),
-    .s_axil_wvalid(s_r22_axil_wvalid),
-    .s_axil_wready(s_r22_axil_wready),
-    .s_axil_bresp(s_r22_axil_bresp),
-    .s_axil_bvalid(s_r22_axil_bvalid),
-    .s_axil_bready(s_r22_axil_bready),
-    .s_axil_araddr(s_r22_axil_araddr),
-    .s_axil_arvalid(s_r22_axil_arvalid),
-    .s_axil_arready(s_r22_axil_arready),
-    .s_axil_arprot(s_r22_axil_arprot),
-    .s_axil_rdata(s_r22_axil_rdata),
-    .s_axil_rresp(s_r22_axil_rresp),
-    .s_axil_rvalid(s_r22_axil_rvalid),
-    .s_axil_rready(s_r22_axil_rready),
-    //fpga side
-    .fpga_clk(clk),
-    .bram_din(r22_r),
-    .bram_addr(corr_addr_r),
-    .bram_we(corr_valid_r),
-    .bram_dout()
-);
-
-axil_bram_unbalanced #(
-    .FPGA_DATA_WIDTH(2*FPGA_DATA_WIDTH),
-    .FPGA_ADDR_WIDTH(FPGA_ADDR_WIDTH),
-    .AXI_DATA_WIDTH(AXI_DATA_WIDTH),
-    .DEINTERLEAVE(2*DEINTERLEAVE),
-    .AXI_ADDR_WIDTH(AXI_ADDR_WIDTH+1),
-    .INIT_FILE(INIT_FILE),
-    .RAM_TYPE(RAM_TYPE)
-) axil_bram_r12 (
-    .axi_clock(axi_clock), 
-    .rst(axi_reset), 
-    .s_axil_awaddr(s_r12_axil_awaddr),
-    .s_axil_awprot(s_r12_axil_awprot),
-    .s_axil_awvalid(s_r12_axil_awvalid),
-    .s_axil_awready(s_r12_axil_awready),
-    .s_axil_wdata(s_r12_axil_wdata),
-    .s_axil_wstrb(s_r12_axil_wstrb),
-    .s_axil_wvalid(s_r12_axil_wvalid),
-    .s_axil_wready(s_r12_axil_wready),
-    .s_axil_bresp(s_r12_axil_bresp),
-    .s_axil_bvalid(s_r12_axil_bvalid),
-    .s_axil_bready(s_r12_axil_bready),
-    .s_axil_araddr(s_r12_axil_araddr),
-    .s_axil_arvalid(s_r12_axil_arvalid),
-    .s_axil_arready(s_r12_axil_arready),
-    .s_axil_arprot(s_r12_axil_arprot),
-    .s_axil_rdata(s_r12_axil_rdata),
-    .s_axil_rresp(s_r12_axil_rresp),
-    .s_axil_rvalid(s_r12_axil_rvalid),
-    .s_axil_rready(s_r12_axil_rready),
-    //fpga side
-    .fpga_clk(clk),
-    .bram_din({r12_im_r, r12_re_r}),
-    .bram_addr(corr_addr_r),
-    .bram_we(corr_valid_r),
-    .bram_dout()
-);
-
-
-
-//debug signal
-reg bram_rdy=0;
-assign bram_ready = bram_rdy;
-always@(posedge clk)begin
-    if(corr_valid)
-        bram_rdy <= 1;
-    else if(s_r11_axil_rready & s_r11_axil_rvalid)
-        bram_rdy <=0;
-end
 endmodule

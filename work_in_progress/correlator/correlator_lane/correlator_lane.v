@@ -55,14 +55,14 @@ correlation_mults #(
 );
 
 //just in case...
-wire [MULT_DOUT:0] din1_pow_ = $unsigned(din1_pow);
-wire [MULT_DOUT:0] din2_pow_ = $unsigned(din2_pow);
+wire [2*DIN_WIDTH:0] din1_pow_ = $unsigned(din1_pow);
+wire [2*DIN_WIDTH:0] din2_pow_ = $unsigned(din2_pow);
 
 //delay the sync
 wire sync_corr;
 delay #(
     .DATA_WIDTH(1),
-    .DELAY_VALUE(6)
+    .DELAY_VALUE(7)
 ) delay_power (
     .clk(clk),
     .din(sync_in),
@@ -70,7 +70,7 @@ delay #(
 );
 
 //resize the outputs
-wire [MULT_DOUT-1:0] pow1_acc, pow2_acc;
+wire [ACC_DIN_WIDTH-1:0] pow1_acc, pow2_acc;
 wire pow_acc_valid;
 wire [1:0] pow_warning;
 
@@ -95,7 +95,7 @@ resize_data #(
     .warning(pow_warning)
 );
 
-wire signed [MULT_DOUT-1:0] corr_re_acc, corr_im_acc;
+wire signed [ACC_DIN_WIDTH-1:0] corr_re_acc, corr_im_acc;
 wire corr_acc_valid;
 wire [1:0] corr_warning;
 wire sync_acc;
@@ -160,7 +160,6 @@ vector_accumulator #(
     .dout({r11,r22}),
     .dout_valid()
 );
-
 
 //accumulators
 wire vector_out_valid;
