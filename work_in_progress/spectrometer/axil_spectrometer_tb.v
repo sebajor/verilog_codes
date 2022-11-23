@@ -17,6 +17,7 @@ module axil_spectrometer_tb #(
     parameter DOUT_CAST_DELAY = 0,
     parameter DOUT_WIDTH = 64,              //32,64,128
     parameter DOUT_POINT = 2*DIN_POINT,
+    parameter BRAM_DELAY = 0,
     parameter DEBUG = 0,
     //axi parameters
     parameter FPGA_DATA_WIDTH = DOUT_WIDTH,
@@ -83,6 +84,7 @@ axil_spectrometer #(
     .DOUT_CAST_DELAY(DOUT_CAST_DELAY),
     .DOUT_WIDTH(DOUT_WIDTH),
     .DOUT_POINT(DOUT_POINT),
+    .BRAM_DELAY(BRAM_DELAY),
     .DEBUG(DEBUG),
     .FPGA_DATA_WIDTH(FPGA_DATA_WIDTH),
     .FPGA_ADDR_WIDTH(FPGA_ADDR_WIDTH),

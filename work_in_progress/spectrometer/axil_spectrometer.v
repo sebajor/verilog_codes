@@ -23,6 +23,7 @@ module axil_spectrometer #(
     parameter DOUT_CAST_DELAY = 0,
     parameter DOUT_WIDTH = 64,              //32,64,128
     parameter DOUT_POINT = 2*DIN_POINT,
+    parameter BRAM_DELAY = 0,
     parameter DEBUG = 0,
     //axi parameters
     parameter FPGA_DATA_WIDTH = DOUT_WIDTH,
@@ -106,6 +107,20 @@ spectrometer_lane #(
     .ovf_flag(ovf_flag)
 );
 
+wire [DOUT_WIDTH-1:0] spect_data;
+wire [$clog2(VECTOR_LEN)-1:0] bram_addr;
+wire spect_valid;
+
+delay #(
+    .DATA_WIDTH(DOUT_WIDTH+$clog2(VECTOR_LEN)+1),
+    .DELAY_VALUE()
+) bram_delay_inst (
+    .clk(clk),
+    .din({spect_out, spect_addr, spect_out_valid}),
+    .dout({spect_data, bram_addr, spect_valid})
+);
+
+
 
 axil_bram_unbalanced #(
     .FPGA_DATA_WIDTH(FPGA_DATA_WIDTH),
@@ -139,16 +154,16 @@ axil_bram_unbalanced #(
     .s_axil_rready(s_axil_rready),
     //fpga side
     .fpga_clk(clk),
-    .bram_din(spect_out),
-    .bram_addr(spect_addr),
-    .bram_we(spect_out_valid),
+    .bram_din(spect_data),
+    .bram_addr(bram_addr),
+    .bram_we(spect_valid),
     .bram_dout()
 );
 
 reg bram_rdy=0;
 assign bram_ready = bram_rdy;
 always@(posedge clk)begin
-    if(spect_out_valid)
+    if(spect_valid)
         bram_rdy <= 1;
     else if(s_axil_rready & s_axil_rvalid)
         bram_rdy <=0;
