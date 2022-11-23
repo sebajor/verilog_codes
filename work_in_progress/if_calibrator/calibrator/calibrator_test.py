@@ -39,8 +39,8 @@ async def setup_dut(dut):
 
 
 @cocotb.test()
-async def axi_correlator_test(dut, iters=10, din_width=18, din_point=17,vector_len=512,
-        coeff_width = 32, coeff_point=20,dout_width=18, dout_point=17, acc_len=10, shift=0, thresh=0.5):
+async def calibrator_test(dut, iters=10, din_width=18, din_point=17,vector_len=512,
+        coeff_width = 32, coeff_point=20,dout_width=18, dout_point=17, shift=0, thresh=0.5):
     
     #setup dut
     axil_master = await setup_dut(dut)
@@ -49,6 +49,7 @@ async def axi_correlator_test(dut, iters=10, din_width=18, din_point=17,vector_l
     await Timer(AXI_PERIOD*10, units='ns')
 
     ##create data
+    np.random.seed(10)
     dat_re = np.random.random(size=(vector_len, iters))-0.5
     dat_im = np.random.random(size=(vector_len, iters))-0.5
     dat0 = dat_re+1j*dat_im 
@@ -75,7 +76,7 @@ async def axi_correlator_test(dut, iters=10, din_width=18, din_point=17,vector_l
 
     mult0 = dat0*(np.tile(coeff0, (iters, 1)).T)
     mult1 = dat1*(np.tile(coeff1, (iters, 1)).T)
-    gold = (mult0+mult1).flatten()
+    gold = (mult0+mult1).T.flatten()
 
     cocotb.fork(write_data(dut, dat0_b, dat1_b, vector_len))
     await read_data(dut, gold, dout_width, dout_point, thresh)
@@ -86,10 +87,11 @@ async def write_data(dut, dat0_b, dat1_b, vec_len):
     await RisingEdge(dut.clk)
     dut.sync_in.value = 0
     await ClockCycles(dut.clk, 1)
+    ##for the spectrometer the sync_in also should be valid
     dut.sync_in.value = 1
-    dut.din_valid.value = 1
     await ClockCycles(dut.clk,1)
     dut.sync_in.value = 0
+    dut.din_valid.value = 1
     for i in range(len(dat0_b[1])):
         dut.din0_re.value = int(dat0_b[0][i])
         dut.din0_im.value = int(dat0_b[1][i])

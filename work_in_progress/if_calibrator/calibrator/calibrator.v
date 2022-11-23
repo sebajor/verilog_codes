@@ -108,6 +108,15 @@ axil_bram_unbalanced #(
     .bram_dout({cal1_im,cal1_re,cal0_im, cal0_re})
 );
 
+reg signed [DIN_WIDTH-1:0] din0_re_r=0, din0_im_r=0, din1_re_r=0, din1_im_r=0;
+reg din_valid_r;
+always@(posedge clk)begin
+    din_valid_r <= din_valid;
+    if(din_valid)begin
+        din0_re_r <= din0_re;   din0_im_r <= din0_im;
+        din1_re_r <= din1_re;   din1_im_r <= din1_im;
+    end
+end
 
 //6 cycles
 wire signed [DIN_WIDTH+COEFF_WIDTH:0] mult0_re, mult0_im, mult1_re, mult1_im;
@@ -117,11 +126,11 @@ complex_mult #(
     .DIN2_WIDTH(COEFF_WIDTH)
 ) complex_mult_inst [1:0] (
     .clk(clk),
-    .din1_re({din0_re, din1_re}),
-    .din1_im({din0_im, din1_im}),
+    .din1_re({din0_re_r, din1_re_r}),
+    .din1_im({din0_im_r, din1_im_r}),
     .din2_re({cal0_re, cal1_re}),
     .din2_im({cal0_im, cal1_im}),
-    .din_valid(din_valid),
+    .din_valid(din_valid_r),
     .dout_re({mult0_re, mult1_re}),
     .dout_im({mult0_im, mult1_im}),
     .dout_valid(mult_valid)
@@ -168,8 +177,8 @@ resize_data #(
 reg signed [DOUT_WIDTH-1:0] dout_re_r=0, dout_im_r=0;
 reg dout_valid_r=0, sync_out_r=0;
 always@(posedge clk)begin
-    dout_re_r <= $signed(mult0_re)+$signed(mult1_re);
-    dout_im_r <= $signed(mult0_im)+$signed(mult1_im);
+    dout_re_r <= $signed(mult0_re_r)+$signed(mult1_re_r);
+    dout_im_r <= $signed(mult0_im_r)+$signed(mult1_im_r);
     dout_valid_r <= mult_valid_r;
     sync_out_r <= sync_mult_r;
 end
