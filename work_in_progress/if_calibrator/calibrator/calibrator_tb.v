@@ -1,6 +1,8 @@
 `default_nettype none
+`include "includes.v"
+`include "calibrator.v"
 
-module calibrator #(
+module calibrator_tb #(
     parameter DIN_WIDTH = 18,
     parameter DIN_POINT = 17,
     parameter VECTOR_LEN = 512,
@@ -12,7 +14,7 @@ module calibrator #(
     parameter BRAM_DELAY = 0,
     parameter DOUT_DELAY = 0,
     parameter DOUT_SHIFT = 0,
-    parameter DEBUG = 0,
+    parameter DEBUG = 1,
     //axi parameters
     parameter FPGA_DATA_WIDTH = 4*COEFF_WIDTH,
     parameter FPGA_ADDR_WIDTH = $clog2(VECTOR_LEN),
@@ -61,16 +63,18 @@ module calibrator #(
     input wire s_axil_rready
 );
 
-reg [FPGA_ADDR_WIDTH-1:0] bram_addr=0;  //check!
-always@(posedge clk)begin
-    if(sync_in)
-        bram_addr <=0;
-    else if(din_valid)
-        bram_addr <= bram_addr+1;
-end
-
-wire [COEFF_WIDTH-1:0] cal0_re, cal0_im, cal1_re, cal1_im;
-axil_bram_unbalanced #(
+calibrator #(
+    .DIN_WIDTH(DIN_WIDTH),
+    .DIN_POINT(DIN_POINT),
+    .VECTOR_LEN(VECTOR_LEN),
+    .COEFF_WIDTH(COEFF_WIDTH),
+    .COEFF_POINT(COEFF_POINT),
+    .DOUT_WIDTH(DOUT_WIDTH),
+    .DOUT_POINT(DOUT_POINT),
+    .BRAM_DELAY(BRAM_DELAY),
+    .DOUT_DELAY(DOUT_DELAY),
+    .DOUT_SHIFT(DOUT_SHIFT),
+    .DEBUG(DEBUG),
     .FPGA_DATA_WIDTH(FPGA_DATA_WIDTH),
     .FPGA_ADDR_WIDTH(FPGA_ADDR_WIDTH),
     .AXI_DATA_WIDTH(AXI_DATA_WIDTH),
@@ -78,9 +82,21 @@ axil_bram_unbalanced #(
     .AXI_ADDR_WIDTH(AXI_ADDR_WIDTH),
     .INIT_FILE(INIT_FILE),
     .RAM_TYPE(RAM_TYPE)
-) axil_bram_inst (
-    .axi_clock(axi_clock), 
-    .rst(axi_reset), 
+) calibrator_inst (
+    .clk(clk),
+    .din0_re(din0_re),
+    .din0_im(din0_im),
+    .din1_re(din1_re),
+    .din1_im(din1_im),
+    .din_valid(din_valid),
+    .sync_in(sync_in),
+    .dout_re(dout_re),
+    .dout_im(dout_im),
+    .dout_valid(dout_valid),
+    .sync_out(sync_out),
+    .ovf_flag(ovf_flag),
+    .axi_clock(axi_clock),
+    .axi_reset(axi_reset),
     .s_axil_awaddr(s_axil_awaddr),
     .s_axil_awprot(s_axil_awprot),
     .s_axil_awvalid(s_axil_awvalid),
@@ -99,92 +115,7 @@ axil_bram_unbalanced #(
     .s_axil_rdata(s_axil_rdata),
     .s_axil_rresp(s_axil_rresp),
     .s_axil_rvalid(s_axil_rvalid),
-    .s_axil_rready(s_axil_rready),
-    //fpga side
-    .fpga_clk(clk),
-    .bram_din(),
-    .bram_addr(bram_addr),
-    .bram_we(1'b0),
-    .bram_dout({cal1_im,cal1_re,cal0_im, cal0_re})
+    .s_axil_rready(s_axil_rready)
 );
-
-
-//6 cycles
-wire signed [DIN_WIDTH+COEFF_WIDTH:0] mult0_re, mult0_im, mult1_re, mult1_im;
-wire mult_valid;
-complex_mult #(
-    .DIN1_WIDTH(DIN_WIDTH),
-    .DIN2_WIDTH(COEFF_WIDTH)
-) complex_mult_inst [1:0] (
-    .clk(clk),
-    .din1_re({din0_re, din1_re}),
-    .din1_im({din0_im, din1_im}),
-    .din2_re({cal0_re, cal1_re}),
-    .din2_im({cal0_im, cal1_im}),
-    .din_valid(din_valid),
-    .dout_re({mult0_re, mult1_re}),
-    .dout_im({mult0_im, mult1_im}),
-    .dout_valid(mult_valid)
-);
-
-
-//delay for the sync signal
-wire sync_mult;
-delay #(
-    .DATA_WIDTH(1),
-    .DELAY_VALUE(6)
-) delay_power (
-    .clk(clk),
-    .din(sync_in),
-    .dout(sync_mult)
-);
-
-
-//resize the output mult output
-wire signed [DOUT_WIDTH-1:0] mult0_re_r, mult0_im_r, mult1_re_r, mult1_im_r;
-wire sync_mult_r, mult_valid_r;
-
-resize_data #(
-    .DIN_WIDTH(DIN_WIDTH+COEFF_WIDTH+1),
-    .DIN_POINT(DIN_POINT+COEFF_POINT),
-    .DATA_TYPE("signed"),
-    .PARALLEL(1),
-    .SHIFT(DOUT_SHIFT),
-    .DELAY(BRAM_DELAY),
-    .DOUT_WIDTH(DOUT_WIDTH),
-    .DOUT_POINT(DOUT_POINT),
-    .DEBUG(DEBUG)
-) resize_mult [3:0] (
-    .clk(clk), 
-    .din({mult0_re, mult0_im, mult1_re, mult1_im}),
-    .din_valid(mult_valid),
-    .sync_in(sync_mult),
-    .dout({mult0_re_r, mult0_im_r, mult1_re_r, mult1_im_r}),
-    .dout_valid(mult_valid_r),
-    .sync_out(sync_mult_r),
-    .warning(ovf_flag)
-);
-
-reg signed [DOUT_WIDTH-1:0] dout_re_r=0, dout_im_r=0;
-reg dout_valid_r=0, sync_out_r=0;
-always@(posedge clk)begin
-    dout_re_r <= $signed(mult0_re)+$signed(mult1_re);
-    dout_im_r <= $signed(mult0_im)+$signed(mult1_im);
-    dout_valid_r <= mult_valid_r;
-    sync_out_r <= sync_mult_r;
-end
-
-
-delay #(
-    .DATA_WIDTH(2*DOUT_WIDTH+2),
-    .DELAY_VALUE(DOUT_DELAY)
-) delay_dout (
-    .clk(clk),
-    .din({dout_re_r, dout_im_r, dout_valid_r, sync_out_r}),
-    .dout({dout_re, dout_im, dout_valid, sync_out})
-);
-
-
-
 
 endmodule
