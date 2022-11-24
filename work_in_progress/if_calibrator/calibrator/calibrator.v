@@ -141,7 +141,7 @@ complex_mult #(
 wire sync_mult;
 delay #(
     .DATA_WIDTH(1),
-    .DELAY_VALUE(6)
+    .DELAY_VALUE(7)
 ) delay_power (
     .clk(clk),
     .din(sync_in),

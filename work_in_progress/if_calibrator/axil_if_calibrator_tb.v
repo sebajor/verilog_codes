@@ -1,7 +1,8 @@
 `default_nettype none
 `include "includes.v"
+`include "axil_if_calibrator.v"
 
-module axil_if_calibrator #(
+module axil_if_calibrator_tb #(
     parameter DIN_WIDTH = 18,
     parameter DIN_POINT = 17,
     parameter VECTOR_LEN = 512,
