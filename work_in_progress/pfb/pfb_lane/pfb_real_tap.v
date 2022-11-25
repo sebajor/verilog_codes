@@ -65,13 +65,13 @@ delay #(
 );
 
 //buffer
-reg [$clog2(TOTAL_TAPS*PFB_SIZE)-1:0] buffer_counter=0;
+reg [$clog2(PFB_SIZE)-1:0] buffer_counter=0;
 always@(posedge clk)
     buffer_counter <= buffer_counter+1;
 
 single_port_ram_read_first #(
     .RAM_WIDTH(DIN_WIDTH),
-    .RAM_DEPTH(TOTAL_TAPS*PFB_SIZE),
+    .RAM_DEPTH(PFB_SIZE),
     .RAM_PERFORMANCE("HIGH_PERFORMANCE")
 ) single_port_ram_inst (
     .addra(buffer_counter),

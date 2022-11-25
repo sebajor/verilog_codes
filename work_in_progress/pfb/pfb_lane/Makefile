@@ -1,4 +1,4 @@
-dut=pfb_real_lane_tb
+dut=pfb_real_lane
 SIM=icarus
 
 WAVES ?= 0
@@ -8,13 +8,6 @@ VERILOG_SOURCES = $(shell pwd)/$(dut)_tb.v
 TOPLEVEL = $(dut)_tb
 MODULE = $(dut)_test 
 
-
-ifeq ($(WAVES), 1)
-	VERILOG_SOURCES += iverilog_dump.v
-	PLUSARGS += -fst
-	COMPILE_ARGS += -s iverilog_dump
-endif
-
 #coeff generation
 COEFF_FOLDER = pfb_coeff
 PFB_SIZE = 32
@@ -23,6 +16,13 @@ LANES = 4
 DATAWIDTH = 18
 DATAPOINT = 17
 WINDOW = hamming
+
+
+ifeq ($(WAVES), 1)
+	VERILOG_SOURCES += iverilog_dump.v
+	PLUSARGS += -fst
+	COMPILE_ARGS += -s iverilog_dump
+endif
 
 
 include $(shell cocotb-config --makefiles)/Makefile.sim
@@ -52,5 +52,4 @@ clean::
 	@rm -rf __pycache__
 	@rm -rf *.del *.npy *.npz
 	@rm -rf iverilog_dump.v
-	@rm -rf $(COEFF_FOLDER)
 

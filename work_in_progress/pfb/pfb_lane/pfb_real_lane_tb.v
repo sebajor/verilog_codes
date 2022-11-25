@@ -5,16 +5,16 @@
 module pfb_real_lane_tb #(
     parameter DIN_WIDTH = 8,
     parameter DIN_POINT = 7,
-    parameter TAPS = 4,
-    parameter PFB_SIZE = 64, //for wola-fft should be the same as size of the FFT
+    parameter TAPS = 5,
+    parameter PFB_SIZE = 8, ///this should be FFT_SIZE/LANES
     parameter COEFF_WIDTH = 18,
     parameter COEFF_POINT = 17,
-    parameter COEFF_FILE = "",
+    parameter COEFF_FILE = "pfb_coeff/pfb_coeff_3",
     parameter DOUT_WIDTH = 18,
     parameter DOUT_POINT = 17,
-    parameter PRE_MULT_LATENCY = 2,
+    parameter PRE_MULT_LATENCY = 1,
     parameter MULT_LATENCY = 1,
-    parameter DOUT_SHIFT = 0,
+    parameter DOUT_SHIFT = -1,
     parameter DOUT_DELAY = 0,
     parameter DEBUG = 1
 ) (

@@ -1,13 +1,16 @@
 import numpy as np
 
-def two_comp_pack(values, n_bits, bin_pt):
+def two_comp_pack(values, n_bits, bin_pt, mode='truncate'):
     """ Values are a numpy array witht the actual values
         that you want to set in the dut port
         n_bits: number of bits
         n_int: integer part of the representation
     """
     n_int = n_bits-bin_pt
-    quant_data = (2**bin_pt*values).astype(int)
+    if(mode=="truncate"):
+        quant_data = (2**bin_pt*values).astype(int)
+    elif(mode=="near"):
+        quant_data = np.rint((2**bin_pt*values))
     ovf = (quant_data>2**(n_bits-1)-1)&(quant_data<2**(n_bits-1))
     if(ovf.any()):
         raise "Cannot represent one value with that representation"

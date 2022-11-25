@@ -12,7 +12,7 @@ module single_port_ram_read_first #(
   parameter RAM_PERFORMANCE = "HIGH_PERFORMANCE", // Select "HIGH_PERFORMANCE" or "LOW_LATENCY" 
   parameter INIT_FILE = ""                        // Specify name/location of RAM initialization file if using one (leave blank if not)
 ) (
-  input [clogb2(RAM_DEPTH-1)-1:0] addra,  // Address bus, width determined from RAM_DEPTH
+  input [$clog2(RAM_DEPTH)-1:0] addra,  // Address bus, width determined from RAM_DEPTH
   input [RAM_WIDTH-1:0] dina,           // RAM input data
   input clka,                           // Clock
   input wea,                            // Write enable
@@ -32,9 +32,10 @@ module single_port_ram_read_first #(
         $readmemh(INIT_FILE, BRAM, 0, RAM_DEPTH-1);
     end else begin: init_bram_to_zero
       integer ram_index;
+      localparam RAM_ADDR = $clog2(RAM_DEPTH);
       initial
-        for (ram_index = 0; ram_index < RAM_DEPTH; ram_index = ram_index + 1)
-          BRAM[ram_index] = {RAM_WIDTH{1'b0}};
+      for (ram_index = 0; ram_index < $pow(2,RAM_ADDR); ram_index = ram_index + 1)
+            BRAM[ram_index] = 0;
     end
   endgenerate
 

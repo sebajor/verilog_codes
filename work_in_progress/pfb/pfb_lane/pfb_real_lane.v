@@ -19,7 +19,7 @@ module pfb_real_lane #(
     parameter DOUT_POINT = 17,
     parameter PRE_MULT_LATENCY = 2,
     parameter MULT_LATENCY = 1,
-    parameter DOUT_SHIFT = 0,
+    parameter DOUT_SHIFT = -1,
     parameter DOUT_DELAY = 0,
     parameter DEBUG = 0
 ) (
@@ -34,7 +34,7 @@ module pfb_real_lane #(
     output wire ovf_flag
 );
 
-reg [$clog2(PFB_SIZE*TAPS)-1:0] rom_addr=0, rom_addr_r=0;
+reg [$clog2(PFB_SIZE)-1:0] rom_addr=0, rom_addr_r=0;
 
 always@(posedge clk)begin
     rom_addr_r <= rom_addr;
@@ -52,17 +52,17 @@ wire signed [TAPS*COEFF_WIDTH-1:0] coeffs;
 genvar j;
 generate 
     for(j=0; j<TAPS; j=j+1)begin
-        localparam integer temp=48+i;   //
+        localparam integer temp=48+j;   //
         localparam rom_text = {COEFF_FILE,"_",temp};
         rom #(
             .N_ADDR(PFB_SIZE),
             .DATA_WIDTH(COEFF_WIDTH),
-            .INIT_VALS(COEFF_FILE)
+            .INIT_VALS(rom_text)
         ) coeff_rom (
             .clk(clk),
             .ren(1'b1),
             .radd(rom_addr_r),
-            .wout(coeffs[COEFF_WIDTH*j+:COEFF_WIDTH])
+            .wout(coeffs[COEFF_WIDTH*(TAPS-1-j)+:COEFF_WIDTH])
         );
     end
 endgenerate

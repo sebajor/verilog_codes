@@ -1,4 +1,4 @@
-`include "../../../xlx_templates/rom.v"
+`include "../../../xlx_templates/rom_bin_init.v"
 `include "../../../xlx_templates/ram/simple_single_port/single_port_ram_read_first.v"
 `include "../../../dsp/adder_tree/adder_tree.v"
 `include "../../../dsp/resize_data/resize_data.v"

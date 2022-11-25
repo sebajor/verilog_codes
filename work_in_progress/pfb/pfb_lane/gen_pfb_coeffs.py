@@ -3,6 +3,7 @@ import scipy as sp
 import sys, os, argparse
 sys.path.append('../../../cocotb_python')
 from two_comp import two_comp_pack
+import ipdb
 
 
 def compute_pfb_coeffs(M,P,lanes,window_fn="hamming"):
@@ -10,19 +11,22 @@ def compute_pfb_coeffs(M,P,lanes,window_fn="hamming"):
     M           :Filter size 
     P           :taps
     lanes       :number of parallel lanes
-    lane_number :number of the actual lane
     window_fn   :window function
     """
     win_coeff = sp.signal.get_window(window_fn, M*P)
     sinc = np.sinc(np.arange(M*P)/M-P/2)
     coeffs = win_coeff*sinc
+    ##if there is a 1 in the data overwrite it
+    ind = np.where(np.abs(coeffs-1)<1e-15)[0]
+    coeffs[ind] = 1-(1e-4)
+    #ipdb.set_trace()
     #now we reorder this coefficients, it supose that is divisible
     ##the index are lane, tap, values
-    sub_coeffs = np.swapaxes(coeffs.reshape((lanes, -1, P)),1,2)
+    sub_coeffs = np.swapaxes(np.swapaxes(coeffs.reshape((P, -1, lanes)),1,2),0,1)
     return sub_coeffs
     
 
-def quantize_data(folder_path, data, data_width, data_point, debug=True):
+def quantize_data(folder_path, data, data_width, data_point, debug=True, mode='near'):
     """
     Quantize the coefficients and save each in a file inside the folder_path
     The name of each file is pfb_coeff_{lane}_{tap}
@@ -42,9 +46,9 @@ def quantize_data(folder_path, data, data_width, data_point, debug=True):
             f.close()
 
 def generate_pfb_coeffs(M,P,lanes,folder_path, coeff_width, 
-        coeff_point,window_fn="hamming", debug=True):
+        coeff_point,window_fn="hamming", debug=True, mode='near'):
     coeffs =  compute_pfb_coeffs(M,P,lanes,window_fn=window_fn)
-    quantize_data(folder_path, coeffs, coeff_width, coeff_point, debug=debug)
+    quantize_data(folder_path, coeffs, coeff_width, coeff_point, debug=debug, mode='near')
 
 
 ##
