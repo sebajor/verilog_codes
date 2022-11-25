@@ -1,0 +1,18 @@
+//
+// The following instructions describe how to prepare Vivado to use the XPM libraries:
+// 1. Ensure Vivado can identify the XPMs:
+//    Flow 1: Using the Vivado IDE and/or Project Flow
+//            When using the IDE and/or the project flow, you do not need to take any additional steps.
+//            The tools will parse the files added to the project and setup Vivado to recognize the XPMs
+//    Flow 2: Using the non-Project based flow
+//            When using the non-project flow, the following command must be issued:
+//            auto_detect_xpm
+//
+// 2. Select the XPM template that you wish to use from below
+// 3. Copy the contents of the template and paste into your own source file.
+//    Set parameters/generics, and wire ports according to the documentation provided as code comments.
+//
+// Note: Be sure to read and comply with all code comments to properly use the XPMs.
+//
+//
+
