@@ -24,7 +24,7 @@ async def pfb_real_lane_test(dut, iters=1024, din_width=8, din_point=7, dout_wid
 
     await ClockCycles(dut.clk, 10)
     np.random.seed(10)
-    din = 0.75*np.sin(2*np.pi*np.arange(iters)/iters*130)#np.ones(iters)*0.5#-0.5    #the most simple test to compare the matlab output
+    din = 0.75*np.sin(2*np.pi*np.arange(iters)/iters*101)#np.ones(iters)*0.5#-0.5    #the most simple test to compare the matlab output
     din_b = two_comp_pack(din, din_width, din_point)
 
     cocotb.fork(write_data(dut, din_b))

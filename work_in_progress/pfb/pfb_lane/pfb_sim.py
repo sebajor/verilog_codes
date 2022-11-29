@@ -9,19 +9,23 @@ import copy
 class pfb_lane_sim():
     def __init__(self, coeff_file, stream_number, buffer_size):
         """
-        My current guess is that the buffer size should be n_coeffs-1.. but not sure
+        the buffer size must be equal to the n_coeffs!!!!
         """
         ##the axis are number streams, taps, coeff values
         coeffs = np.load(coeff_file)
         self.n_streams, self.n_taps, self.n_coeffs = coeffs.shape
         self.coeffs = coeffs[stream_number,:,:]
         self.buffer_size = buffer_size#self.n_coeffs-3   ##2**(M*P)-bram_latency
-        self.coeffs = self.coeffs[:,::-1]    
+        #self.coeffs = self.coeffs[:,::-1]    
+        self.coeffs = self.coeffs[::-1,:]    
         self.buffers = np.zeros([self.n_taps, self.buffer_size])
+        ##just to match the simulation
+        self.coeffs = np.roll(self.coeffs, 2, axis=1) #?
     
     def compute_outputs(self,data):
         output = np.zeros(len(data))
         deb = np.zeros((len(data), self.n_taps, self.buffer_size))
+        deb2 = np.zeros((len(data), self.n_taps))
         for i in range(len(data)):
             ##make all the shiftings
             self.buffers[0,:] = np.roll(self.buffers[0,:], 1)
@@ -32,10 +36,12 @@ class pfb_lane_sim():
                 aux = self.buffers[j,0].copy()
                 self.buffers[j,0] = dout_tap
                 dout_tap = aux
+            ##dont ask me why
             deb[i,:,:] = self.buffers
+            deb2[i,:] = self.coeffs[:,0]
             output[i] = np.sum(self.coeffs[:,0]*self.buffers[:,0])
             self.coeffs = np.roll(self.coeffs, -1, axis=1) #?
-        return output, deb
+        return output, deb, deb2
 
 
 def pfb_fir_frontend(x, win_coeffs, M, P):
