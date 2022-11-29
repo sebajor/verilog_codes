@@ -7,12 +7,15 @@ import copy
 #
 
 class pfb_lane_sim():
-    def __init__(self, coeff_file, stream_number):
+    def __init__(self, coeff_file, stream_number, buffer_size):
+        """
+        My current guess is that the buffer size should be n_coeffs-1.. but not sure
+        """
         ##the axis are number streams, taps, coeff values
         coeffs = np.load(coeff_file)
         self.n_streams, self.n_taps, self.n_coeffs = coeffs.shape
         self.coeffs = coeffs[stream_number,:,:]
-        self.buffer_size = self.n_coeffs-1   ##2**(M*P)-bram_latency
+        self.buffer_size = buffer_size#self.n_coeffs-3   ##2**(M*P)-bram_latency
         self.coeffs = self.coeffs[:,::-1]    
         self.buffers = np.zeros([self.n_taps, self.buffer_size])
     
