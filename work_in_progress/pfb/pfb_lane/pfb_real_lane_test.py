@@ -11,7 +11,7 @@ from two_comp import two_comp_pack, two_comp_unpack
 ###
 
 @cocotb.test()
-async def pfb_real_lane_test(dut, iters=512, din_width=8, din_point=7, dout_width=18,
+async def pfb_real_lane_test(dut, iters=1024, din_width=8, din_point=7, dout_width=18,
         dout_point=17, coeffs='pfb_coeffs/coeffs.npy', tresh=0.5):
 
     #setup dut
@@ -23,7 +23,8 @@ async def pfb_real_lane_test(dut, iters=512, din_width=8, din_point=7, dout_widt
     dut.din_valid.value = 0
 
     await ClockCycles(dut.clk, 10)
-    din = np.ones(iters)-0.5    #the most simple test to compare the matlab output
+    np.random.seed(10)
+    din = 0.75*np.sin(2*np.pi*np.arange(iters)/iters*10)#np.ones(iters)*0.5#-0.5    #the most simple test to compare the matlab output
     din_b = two_comp_pack(din, din_width, din_point)
 
     cocotb.fork(write_data(dut, din_b))
@@ -44,8 +45,12 @@ async def collect_output(dut, iters, dout_width, dout_point):
     count =0;
     out = np.zeros(iters)
     ok = 0
+    debug = []
     while(count<iters):
         valid = dut.sync_out.value
+        dout = int(dut.dout.value)
+        dout = two_comp_unpack(np.array(dout), dout_width, dout_point)
+        debug.append(dout)
         if(valid|ok):
             ok = True
             dout = int(dut.dout.value)
@@ -54,4 +59,5 @@ async def collect_output(dut, iters, dout_width, dout_point):
             count +=1
         await ClockCycles(dut.clk,1)
     np.save('rtl_out.npy', out)
+    np.save('debug.npy', debug)
     return 1

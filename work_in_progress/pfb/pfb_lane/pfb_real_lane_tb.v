@@ -9,7 +9,7 @@ module pfb_real_lane_tb #(
     parameter PFB_SIZE = 8, ///this should be FFT_SIZE/LANES
     parameter COEFF_WIDTH = 18,
     parameter COEFF_POINT = 17,
-    parameter COEFF_FILE = "pfb_coeff/pfb_coeff_3",
+    parameter COEFF_FILE = "pfb_coeff/pfb_coeff_0",
     parameter DOUT_WIDTH = 18,
     parameter DOUT_POINT = 17,
     parameter PRE_MULT_LATENCY = 1,
@@ -55,5 +55,18 @@ pfb_real_lane #(
     .sync_out(sync_out),
     .ovf_flag(ovf_flag)
 );
+
+reg [31:0] debug=0;
+reg flag =0;
+always@(posedge clk)begin
+    if(sync_in)
+        flag <= 1;
+    else  if(sync_out)
+        flag <=0;
+end
+always@(posedge clk)begin
+    if(flag)
+        debug<= debug+1;
+end 
 
 endmodule

@@ -124,7 +124,11 @@ generate
         //if the stage its not even
         reg [DATA_WIDTH:0] dout_r =0;
         always@(posedge clk)begin
-            dout_r <= din[(STAGE_N-1)*DATA_WIDTH+:DATA_WIDTH];
+            if(DATA_TYPE == "signed")begin
+                dout_r <= $signed(din[(STAGE_N-1)*DATA_WIDTH+:DATA_WIDTH]);
+            end
+            else
+                dout_r <= $unsigned(din[(STAGE_N-1)*DATA_WIDTH+:DATA_WIDTH]);
         end
         assign dout[STAGE_N/2*(DATA_WIDTH+1)+:DATA_WIDTH+1] = dout_r;
     end

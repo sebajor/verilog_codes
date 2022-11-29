@@ -72,7 +72,7 @@ wire signed [DIN_WIDTH-1:0] din_r;
 wire sync_rom;
 delay #(
     .DATA_WIDTH(DIN_WIDTH+1),
-    .DELAY_VALUE(2) //check
+    .DELAY_VALUE(3)
 ) rom_delay (
     .clk(clk),
     .din({din, sync_in}),
@@ -223,7 +223,7 @@ resize_data #(
     .dout(dout),
     .dout_valid(),
     .sync_out(sync_out),
-    .warning(ovf_flag)
+    .warning()
 );
 
 

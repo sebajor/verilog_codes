@@ -61,24 +61,17 @@ delay #(
 //delay of the sync signal
 delay #(
     .DATA_WIDTH(1),
-    //.DELAY_VALUE(TOTAL_TAPS*PFB_SIZE)   //check!
-    .DELAY_VALUE(PFB_SIZE)
+    .DELAY_VALUE(TOTAL_TAPS*PFB_SIZE)   //check!
 ) sync_delay(
     .clk(clk),
     .din(sync_in),
     .dout(sync_out)
 );
 
-//buffer counter.. it should count until 2**(M*P)-bram_latency-1
-//as we use the high performanece bram_lat = 2;
-
+//buffer
 reg [$clog2(PFB_SIZE)-1:0] buffer_counter=0;
-always@(posedge clk)begin
-    if(buffer_counter==(PFB_SIZE-3))
-        buffer_counter <=0;
-    else
-        buffer_counter <= buffer_counter+1;
-end
+always@(posedge clk)
+    buffer_counter <= buffer_counter+1;
 
 single_port_ram_read_first #(
     .RAM_WIDTH(DIN_WIDTH),

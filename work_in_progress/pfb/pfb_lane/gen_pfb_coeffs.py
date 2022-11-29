@@ -48,7 +48,7 @@ def quantize_data(folder_path, data, data_width, data_point, debug=True, mode='n
 def generate_pfb_coeffs(M,P,lanes,folder_path, coeff_width, 
         coeff_point,window_fn="hamming", debug=True, mode='near'):
     coeffs =  compute_pfb_coeffs(M,P,lanes,window_fn=window_fn)
-    quantize_data(folder_path, coeffs, coeff_width, coeff_point, debug=debug, mode='near')
+    quantize_data(folder_path, coeffs, coeff_width, coeff_point, debug=debug, mode=mode)
 
 
 ##
