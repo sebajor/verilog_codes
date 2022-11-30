@@ -10,9 +10,9 @@ MODULE = $(dut)_test
 
 #coeff generation
 COEFF_FOLDER = pfb_coeff
-PFB_SIZE = 32
-TAPS = 5
-LANES = 4
+PFB_SIZE = 1024
+TAPS = 4
+LANES = 8
 DATAWIDTH = 18
 DATAPOINT = 17
 WINDOW = hamming

@@ -36,7 +36,7 @@ def quantize_data(folder_path, data, data_width, data_point, debug=True, mode='n
         np.save(os.path.join(folder_path,'coeffs.npy'), data)
     for i in range(data.shape[0]):
         for j in range(data.shape[1]):
-            name = os.path.join(folder_path,"pfb_coeff_"+str(i)+"_"+str(j))
+            name = os.path.join(folder_path,"pfb_coeff_"+chr(i+48)+"_"+chr(j+48))
             quant = two_comp_pack(data[i,j,:], data_width, data_point)
             f = open(name, 'w')
             for val in quant:

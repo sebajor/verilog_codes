@@ -12,9 +12,9 @@ from pfb_sim import pfb_lane_sim
 ###
 
 @cocotb.test()
-async def pfb_real_lane_test(dut, iters=1024, din_width=8, din_point=7, dout_width=18,
-        dout_point=17, coeffs='pfb_coeff/coeffs.npy', lane=0, lanes=4,pfb_size=32, taps=5,
-        shift=-1,wait=10,thresh=0.05):
+async def pfb_real_lane_test(dut, iters=8192, din_width=8, din_point=7, dout_width=18,
+        dout_point=17, coeffs='pfb_coeff/coeffs.npy', lane=0, lanes=8,pfb_size=1024, taps=4,
+        shift=-1,wait=9,thresh=0.05):
     """
     lane    :   lane number that is being simulated
     lanes   :   total number of lanes
@@ -33,7 +33,7 @@ async def pfb_real_lane_test(dut, iters=1024, din_width=8, din_point=7, dout_wid
 
     await ClockCycles(dut.clk, 10)
     np.random.seed(10)
-    #din = 0.8*np.sin(2*np.pi*np.arange(iters)/iters*10)#np.ones(iters)*0.5#-0.5    #the most simple test to compare the matlab output
+    #din = 0.75*np.sin(2*np.pi*np.arange(iters)/iters*130)#np.ones(iters)*0.5#-0.5    #the most simple test to compare the matlab output
     din = np.random.random(iters)-0.5
     
     din_b = two_comp_pack(din, din_width, din_point)
