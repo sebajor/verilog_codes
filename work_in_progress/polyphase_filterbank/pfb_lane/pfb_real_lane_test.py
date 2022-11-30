@@ -4,6 +4,7 @@ from cocotb.triggers import ClockCycles, RisingEdge
 from cocotb.clock import Clock
 sys.path.append('../../../cocotb_python')
 from two_comp import two_comp_pack, two_comp_unpack
+from pfb_sim import pfb_lane_sim
 
 
 ###
@@ -12,7 +13,15 @@ from two_comp import two_comp_pack, two_comp_unpack
 
 @cocotb.test()
 async def pfb_real_lane_test(dut, iters=1024, din_width=8, din_point=7, dout_width=18,
-        dout_point=17, coeffs='pfb_coeffs/coeffs.npy', tresh=0.5):
+        dout_point=17, coeffs='pfb_coeff/coeffs.npy', lane=0, lanes=4,pfb_size=32, taps=5,
+        shift=-1,wait=10,thresh=0.05):
+    """
+    lane    :   lane number that is being simulated
+    lanes   :   total number of lanes
+    pfb_size:   
+    taps    :
+    wait    :   cycles to wait since the sim started to compare with the gold values
+    """
 
     #setup dut
     clk = Clock(dut.clk, 10, units='ns')
@@ -24,11 +33,17 @@ async def pfb_real_lane_test(dut, iters=1024, din_width=8, din_point=7, dout_wid
 
     await ClockCycles(dut.clk, 10)
     np.random.seed(10)
-    din = 0.75*np.sin(2*np.pi*np.arange(iters)/iters*101)#np.ones(iters)*0.5#-0.5    #the most simple test to compare the matlab output
+    #din = 0.8*np.sin(2*np.pi*np.arange(iters)/iters*10)#np.ones(iters)*0.5#-0.5    #the most simple test to compare the matlab output
+    din = np.random.random(iters)-0.5
+    
     din_b = two_comp_pack(din, din_width, din_point)
+    pfb = pfb_lane_sim(coeffs, lane, pfb_size//lanes)
+    gold, buffs, coeffs = pfb.compute_outputs(din)
+    gold = gold*2**shift
 
     cocotb.fork(write_data(dut, din_b))
-    await collect_output(dut, iters, dout_width,dout_point)
+    #await collect_output(dut, iters, dout_width,dout_point)
+    await read_data(dut, gold, dout_width, dout_point,thresh, wait)
     
     
 
@@ -40,6 +55,18 @@ async def write_data(dut, din_b):
     for dat in din_b:
         dut.din.value = int(dat)
         await ClockCycles(dut.clk,1)
+
+
+async def read_data(dut, gold, dout_width, dout_point,thresh, wait):
+    await ClockCycles(dut.clk, wait)
+    for i in range(len(gold)):
+        dout = int(dut.dout.value)
+        dout = two_comp_unpack(np.array(dout), dout_width, dout_point)
+        print("rtl: %.4f \t python:%.4f" %(dout, gold[i]))
+        assert (np.abs(dout-gold[i])<thresh)
+        await ClockCycles(dut.clk,1)
+
+
 
 async def collect_output(dut, iters, dout_width, dout_point):
     count =0;
