@@ -23,6 +23,9 @@ class pfb_lane_sim():
         self.coeffs = np.roll(self.coeffs, 2, axis=1) #?
     
     def compute_outputs(self,data):
+        """
+        I think the valid output starts at (lanes-1)*log2(pfb_size/lanes)+2
+        """
         output = np.zeros(len(data))
         deb = np.zeros((len(data), self.n_taps, self.buffer_size))
         deb2 = np.zeros((len(data), self.n_taps))

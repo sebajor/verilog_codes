@@ -5,7 +5,7 @@
 module pfb_real_lane_tb #(
     parameter DIN_WIDTH = 8,
     parameter DIN_POINT = 7,
-    parameter TAPS = 4,
+    parameter TAPS = 7,
     parameter PFB_SIZE = 1024/8, ///this should be FFT_SIZE/LANES
     parameter COEFF_WIDTH = 18,
     parameter COEFF_POINT = 17,

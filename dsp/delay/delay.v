@@ -9,6 +9,8 @@ module delay #(
     output wire [DATA_WIDTH-1:0] dout
 );
 
+wire [31:0] debug = DELAY_VALUE;
+
 generate 
     if(DELAY_VALUE==0)begin
         assign dout =  din;
