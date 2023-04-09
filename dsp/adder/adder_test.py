@@ -2,21 +2,26 @@ import os
 import pytest
 import cocotb
 from cocotb.clock import Clock
-from cocotb.triggers import ClockCycles
+from cocotb.triggers import ClockCycles, RisingEdge
 import numpy as np
 import cocotb_test.simulator
+import logging 
 
 
 
 @cocotb.test()
 async def adder_test(dut):
+    #dut._log.error("sdasd!")
     #, din_width=16, iters=1024):
     #din_width = 16
     din_width = len(dut.din0)
+    din_width = int(dut.DIN_WIDTH)
+    cocotb.log.error("Starting test din_width:%.2f"%din_width)
     #os.system("echo "+din_width+">> file")
     iters = 1024
     clk = Clock(dut.clk, 10, units='ns')
-    cocotb.fork(clk.start())
+    #cocotb.fork(clk.start())
+    cocotb.start_soon(clk.start())
 
     dut.din0.value =0
     dut.din1.value = 0
@@ -28,7 +33,7 @@ async def adder_test(dut):
     data = [dat0,dat1]
     
     gold = dat0+dat1
-    cocotb.fork(read_data(dut, gold))
+    cocotb.start_soon(read_data(dut, gold))
     await write_data(dut, data)
 
 async def write_data(dut, data):
@@ -51,6 +56,9 @@ async def read_data(dut, gold):
 
 @pytest.mark.parametrize("din_width", [8,16,32])
 def test_adder(request, din_width):
+    #logging.basicConfig()
+    log = logging.getLogger("tb_logger")
+    log.error("din_width: %.4f"%(din_width))
     tests_dir = os.path.abspath(os.path.dirname(__file__))
     dut = 'adder_tb'
     verilog_sources = [

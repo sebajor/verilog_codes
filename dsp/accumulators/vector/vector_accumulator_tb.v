@@ -1,6 +1,4 @@
 `default_nettype none
-`include "vector_accumulator.v"
-`include "rtl/sync_simple_dual_ram.v"
 
 module vector_accumulator_tb #(
     parameter DIN_WIDTH = 16,

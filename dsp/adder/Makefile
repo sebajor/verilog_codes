@@ -1,4 +1,4 @@
-dut=vector_accumulator
+dut=adder
 SIM=icarus
 
 WAVES ?= 0
@@ -6,9 +6,6 @@ WAVES ?= 0
 TOPLEVEL_LANG = verilog
 VERILOG_SOURCES = $(shell pwd)/$(dut)_tb.v
 VERILOG_SOURCES += $(shell pwd)/$(dut).v
-VERILOG_SOURCES += $(shell pwd)/rtl/sync_simple_dual_ram.v
-
-
 TOPLEVEL = $(dut)_tb
 MODULE = $(dut)_test 
 
