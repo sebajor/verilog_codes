@@ -81,7 +81,7 @@ assign ren = (~empty & ((state==IDLE)) & sk_ready);
 
 
 
-reg [$clog2(CYCLES-1):0] time_multiplex=0;
+reg [$clog2(CYCLES):0] time_multiplex=0;
 localparam IDLE = 1'b0;
 localparam BUSY = 1'b1;
 reg state=0, next_state=0;
@@ -112,19 +112,15 @@ reg dout_valid_r=0;
 always@(posedge clk)begin
     case(state)
         IDLE: begin
-            //time_multiplex <={($clog2(CYCLES)+1){1'b1}};
-            if(~empty & sk_ready)
-                dout_valid_r <=1;
-            else
-                dout_valid_r <=0;
+            time_multiplex <={($clog2(CYCLES)+1){1'b1}};
+            dout_valid_r <=0;
         end
         BUSY:begin
-            dout_valid_r <=1;
-            if(~stall) begin 
-                if(time_multiplex==(CYCLES-1))
-                    time_multiplex <=0;
-                else
-                    time_multiplex <= time_multiplex+1;
+            if(stall)
+                dout_valid_r <=1;
+            else begin 
+                time_multiplex <= time_multiplex+1;
+                dout_valid_r <=1;
             end
         end
     endcase

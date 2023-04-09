@@ -1,0 +1,30 @@
+name: Tests
+
+on:
+  push:
+    branches: [ "pytest" ]
+
+jobs:
+  build:
+    name: Python
+    runs-on: ubuntu-22.04
+
+  steps:
+    - uses: actions/checkout@v3
+      with:
+          fetch-depth: 0  ## to consider only the new stuffs
+    - name: get changed files
+      run: |
+        for file in $
+
+    - name: Install Icarus
+      run:  | sudo apt install -y --no-install-recommends iverilog
+    
+    - name: Install Python dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install cocotb cocotb-test pytest numpy cocotbext-axi logging
+
+    - name: Tests
+      run : echo "hello world"
+

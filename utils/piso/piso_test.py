@@ -32,12 +32,12 @@ async def piso_test(dut, iters=200, din_width=512, dout_width=64,multiplex_in=16
     dut.rst.value =0
 
     data = np.arange(iters*multiplex_in)
-    #cocotb.fork(read_data(dut, data, dout_width, multiplex_out))
-    #await simple_write(dut, data, dout_width,  multiplex_in)
-    cocotb.fork(burst_read(dut, data, dout_width, multiplex_out,
-        burst_read_len, sleep_read))
-    await burst_write(dut, data, dout_width, multiplex_in, 
-            multiplex_out, burst_write_len, sleep_write)
+    cocotb.fork(read_data(dut, data, dout_width, multiplex_out))
+    await simple_write(dut, data, dout_width,  multiplex_in, multiplex_out)
+    #cocotb.fork(burst_read(dut, data, dout_width, multiplex_out,
+    #    burst_read_len, sleep_read))
+    #await burst_write(dut, data, dout_width, multiplex_in, 
+    #        multiplex_out, burst_write_len, sleep_write)
 
 
 
@@ -81,12 +81,13 @@ async def burst_read(dut, gold, dout_width, multiplex_out, burst_len, sleep_cycl
                 await ClockCycles(dut.clk,1)
         await ClockCycles(dut.clk,1)
 
-async def simple_write(dut, data, dout_width, multiplex):
+async def simple_write(dut, data, dout_width, multiplex_in, multiplex_out):
     dut.din_valid.value =0
     dut.din.value =0
     await ClockCycles(dut.clk, 2)
-    for i in range(int(len(data)//multiplex)):
-        dat = pack_data(data[i*multiplex:(i+1)*multiplex], multiplex, nbits=dout_width)
+    for i in range(int(len(data)//multiplex_in)):
+        dat = pack_data(data[i*multiplex_in:(i+1)*multiplex_in], multiplex_in, 
+                        nbits=int(dout_width/multiplex_out))
         dut.din.value = dat
         dut.din_valid.value = 1
         await ClockCycles(dut.clk, 1)
