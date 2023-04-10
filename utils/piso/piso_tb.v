@@ -1,6 +1,4 @@
 `default_nettype none
-`include "includes.v"
-`include "piso.v"
 
 /* DIN --> FIFO -->time multiplex -->DOUT
 */

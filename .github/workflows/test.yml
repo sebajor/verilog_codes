@@ -18,7 +18,8 @@ jobs:
         for file in $
 
     - name: Install Icarus
-      run:  | sudo apt install -y --no-install-recommends iverilog
+      run:  | 
+        sudo apt install -y --no-install-recommends iverilog
     
     - name: Install Python dependencies
       run: |

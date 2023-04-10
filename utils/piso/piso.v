@@ -4,9 +4,12 @@
 *   Author: Sebastian Jorquera
 *   
 *   DIN --> FIFO --> time multiplex --> DOUT
-*   
 *   To work properly the output bitwidth must perfectly divide the input 
 *   bitwidth.
+*   
+*   Its not the best implementation... insert a bubble of 1 cycle when has to 
+*   read one sample from the FIFO, I think it could be solved by placing 
+*   another skid buffer after the fifo.
 *
 */
 
