@@ -5,6 +5,10 @@ WAVES ?= 0
 
 TOPLEVEL_LANG = verilog
 VERILOG_SOURCES = $(shell pwd)/$(dut)_tb.v
+VERILOG_SOURCES += $(dut).v
+VERILOG_SOURCES += ../../utils/piso/piso.v
+VERILOG_SOURCES += ../../utils/piso/rtl/bram_infer.v
+VERILOG_SOURCES += ../../utils/skid_buffer/skid_buffer.v
 TOPLEVEL = $(dut)_tb
 MODULE = $(dut)_test 
 

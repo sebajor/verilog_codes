@@ -1,6 +1,4 @@
 `default_nettype none
-`include "../tge_write_packetizer.v"
-`include "includes.v"
 
 module tge_write_packetizer_tb #(
     parameter DIN_WIDTH = 128,
