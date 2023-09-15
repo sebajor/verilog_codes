@@ -14,7 +14,7 @@ from pfb_sim import pfb_lane_sim
 @cocotb.test()
 async def pfb_real_lane_test(dut, iters=8192, din_width=8, din_point=7, dout_width=18,
         dout_point=17, coeffs='pfb_coeff/coeffs.npy', lane=0, lanes=8,pfb_size=1024, taps=7,
-        shift=-1,wait=9,thresh=0.05):
+        shift=-1,wait=10,thresh=0.05):
     """
     lane    :   lane number that is being simulated
     lanes   :   total number of lanes
@@ -33,7 +33,8 @@ async def pfb_real_lane_test(dut, iters=8192, din_width=8, din_point=7, dout_wid
 
     await ClockCycles(dut.clk, 10)
     np.random.seed(10)
-    din = 0.75*np.sin(2*np.pi*np.arange(iters)/iters*130)#np.ones(iters)*0.5#-0.5    #the most simple test to compare the matlab output
+    #din = 0.8*np.sin(2*np.pi*np.arange(iters)/iters*130)#
+    din = np.ones(iters)*0.5#-0.5    #the most simple test to compare the matlab output
     #din = np.random.random(iters)-0.5
     
     din_b = two_comp_pack(din, din_width, din_point)
@@ -44,6 +45,10 @@ async def pfb_real_lane_test(dut, iters=8192, din_width=8, din_point=7, dout_wid
     cocotb.fork(write_data(dut, din_b))
     await collect_output(dut, iters, dout_width,dout_point)
     #await read_data(dut, gold, dout_width, dout_point,thresh, wait)
+    np.savez('debug2.npz', 
+             din=din,
+             gold=gold)
+
     
     
 
@@ -88,4 +93,20 @@ async def collect_output(dut, iters, dout_width, dout_point):
         await ClockCycles(dut.clk,1)
     np.save('rtl_out.npy', out)
     np.save('debug.npy', debug)
+    ##for pfb_size=1024, taps=7, lanes=8
+    ##we got tha steady state at gold[770] and debug[780]
+    #rtl sync cycles=776
+    
+    #for ofb_size=1024, taps=6, lanes=8
+    #steady state gold[642] and debug[652]
+    #rtl sync cycles=648
+    
+    #for ofb_size=1024, taps=5, lanes=8
+    #steady state gold[514] and debug[524]
+    #rtl sync cycles=520
+    
+    #for ofb_size=1024, taps=4, lanes=8
+    #steady state gold[386] and debug[396]
+    #rtl sync cycles=391
+
     return 1

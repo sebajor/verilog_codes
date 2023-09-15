@@ -174,6 +174,7 @@ delay #(
 );
 
 //delay of the sync signal
+//When testing I got a two cycles delay for some reason in the sync out (check if its adder tree delay again)
 wire tap_sync;
 delay #(
     .DATA_WIDTH(1),
@@ -225,7 +226,6 @@ resize_data #(
     .sync_out(sync_out),
     .warning(ovf_flag)
 );
-
 
 
 endmodule

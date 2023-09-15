@@ -1,5 +1,5 @@
 import numpy as np
-import ipdb
+#import ipdb
 import copy
 
 #
@@ -24,7 +24,7 @@ class pfb_lane_sim():
     
     def compute_outputs(self,data):
         """
-        I think the valid output starts at (lanes-1)*log2(pfb_size/lanes)+2
+        I think the valid output starts at (taps-1)*(pfb_size/lanes)+2
         """
         output = np.zeros(len(data))
         deb = np.zeros((len(data), self.n_taps, self.buffer_size))

@@ -1,0 +1,8 @@
+numpy
+scipy
+matplotlib
+cocotb
+pytest
+cocotb-test
+cocotbext-axi
+

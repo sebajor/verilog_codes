@@ -11,7 +11,7 @@ MODULE = $(dut)_test
 #coeff generation
 COEFF_FOLDER = pfb_coeff
 PFB_SIZE = 1024
-TAPS = 7
+TAPS = 8
 LANES = 8
 DATAWIDTH = 18
 DATAPOINT = 17
@@ -28,7 +28,7 @@ endif
 include $(shell cocotb-config --makefiles)/Makefile.sim
 
 gen_coeffs:
-	rm -r $(COEFF_FOLDER)
+	rm -rf $(COEFF_FOLDER)
 	python3 gen_pfb_coeffs.py --folder $(COEFF_FOLDER) \
 		--pfb_size $(PFB_SIZE) \
 		--taps $(TAPS) \
