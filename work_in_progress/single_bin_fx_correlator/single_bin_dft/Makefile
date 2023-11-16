@@ -14,11 +14,12 @@ TWIDD_NUM = 55
 DFT_SIZE = 128
 TWIDD_FILE = twidd_init.bin
 
-
 ifeq ($(WAVES), 1)
 	VERILOG_SOURCES += iverilog_dump.v
+	PLUSARGS += -fst
 	COMPILE_ARGS += -s iverilog_dump
 endif
+
 
 include $(shell cocotb-config --makefiles)/Makefile.sim
 
@@ -29,15 +30,16 @@ twidd_gen:
 iverilog_dump.v:
 	echo 'module iverilog_dump();' > $@
 	echo 'initial begin' >> $@
-	echo '    $$dumpfile("traces.vcd");' >> $@
+	echo '    $$dumpfile("traces.fst");' >> $@
 	echo '    $$dumpvars();' >> $@
 	echo 'end' >> $@
 	echo 'endmodule' >> $@
+
 
 clean::
 	@rm -rf traces.vcd traces.fst
 	@rm -rf results.xml
 	@rm -rf sim_build
 	@rm -rf __pycache__
-	@rm -rf *.del 
+	@rm -rf *.del *.npy *.npz
 	@rm -rf iverilog_dump.v

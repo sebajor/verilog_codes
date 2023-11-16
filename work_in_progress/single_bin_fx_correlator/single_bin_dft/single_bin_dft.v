@@ -6,11 +6,10 @@ module single_bin_dft #(
     parameter DIN_POINT = 15,
     parameter TWIDD_WIDTH = 16,
     parameter TWIDD_POINT = 14,
-    parameter TWIDD_FILE = "twidd.hex",
+    parameter TWIDD_FILE = "twidd_init.bin",
     parameter DFT_LEN = 128,
     parameter DOUT_WIDTH = 32,
     parameter DOUT_POINT = 15,
-    parameter DOUT_SHIFT = 0,
     parameter DOUT_DELAY = 1,
     parameter CAST_WARNING = 1
 ) (
@@ -52,7 +51,6 @@ module single_bin_dft #(
     output wire s_axil_rvalid,
     input wire s_axil_rready
 );
-
 reg [31:0] delay_line_r=(2**$clog2(DFT_LEN)-1);
 always@(posedge clk)begin
     delay_line_r <= delay_line;
@@ -68,6 +66,8 @@ reg twidd_valid=0;
 
 
 always@(posedge clk)begin
+    din_re_r <= din_re;
+    din_im_r <= din_im;
     twidd_valid <= din_valid;
     if(rst)
         twidd_addr <= 0;
@@ -180,25 +180,29 @@ scalar_accumulator #(
 );
 
 
-resize_data #(
+wire [DOUT_WIDTH-1:0] dout_cast_re, dout_cast_im;
+wire dout_cast_valid;
+
+signed_cast #(
     .DIN_WIDTH(ACC_WIDTH),
     .DIN_POINT(MULT_POINT),
-    .DATA_TYPE("signed"),
-    .PARALLEL(2),
-    .SHIFT(DOUT_SHIFT),
-    .DELAY(DOUT_DELAY),
     .DOUT_WIDTH(DOUT_WIDTH),
-    .DOUT_POINT(DOUT_POINT),
-    .DEBUG(CAST_WARNING)
-) resize_acc_inst (
+    .DOUT_POINT(DOUT_POINT)
+) dout_cast [1:0] (
     .clk(clk), 
     .din({acc_re, acc_im}),
-    .din_valid(acc_valid),
-    .sync_in(),
-    .dout({dout_re, dout_im}),
-    .dout_valid(dout_valid),
-    .sync_out(),
-    .warning(cast_warning)
+    .din_valid(acc_out_valid),
+    .dout({dout_cast_re, dout_cast_im}),
+    .dout_valid(dout_cast_valid)
+);
+
+delay #(
+    .DATA_WIDTH(2*DOUT_WIDTH+1),
+    .DELAY_VALUE(DOUT_DELAY)
+) dout_delay (
+    .clk(clk),
+    .din({dout_cast_re, dout_cast_im, dout_cast_valid}),
+    .dout({dout_re, dout_im, dout_valid})
 );
 
 

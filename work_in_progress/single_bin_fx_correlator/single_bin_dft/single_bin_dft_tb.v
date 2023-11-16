@@ -8,7 +8,7 @@ module single_bin_dft_tb #(
     parameter DIN_POINT = 15,
     parameter TWIDD_WIDTH = 16,
     parameter TWIDD_POINT = 14,
-    parameter TWIDD_FILE = "twidd.hex",
+    parameter TWIDD_FILE = "twidd_init.bin",
     parameter DFT_LEN = 128,
     parameter DOUT_WIDTH = 32,
     parameter DOUT_POINT = 15,
@@ -100,5 +100,4 @@ single_bin_dft #(
     .s_axil_rvalid(s_axil_rvalid),
     .s_axil_rready(s_axil_rready)
 );
-
 endmodule

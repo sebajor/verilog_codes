@@ -66,7 +66,7 @@ async def axil_msdft_test(dut, iters=180, dft_len=128, k=55, din_width=8, din_pt
     await ClockCycles(dut.clk, 1)
     angle = 0
 
-    ###charge a new twiddle factor with a new dft len
+    ###load a new twiddle factor with a new dft len
     dut.rst <=1
     dut.din_valid <=0
     dft_len = 72
@@ -84,7 +84,7 @@ async def axil_msdft_test(dut, iters=180, dft_len=128, k=55, din_width=8, din_pt
     din_im = two_comp_pack(dat_im, din_width, din_pt)
     gold = msdft.msdft(dat_re+1j*dat_im, dft_len,k)
 
-    ##after charge the wights rst to match the gold values
+    ##after load the wights rst to match the gold values
     dut.rst <= 1
     dut.din_valid <=0
     await ClockCycles(dut.clk,5)
