@@ -12,6 +12,7 @@
 `include "../../utils/skid_buffer/skid_buffer.v"
 `include "../../axi/axil_bram/axil_bram_arbiter.v"
 `include "../../axi/axil_bram/axil_bram.v"
+`include "../../dsp/dsp48_macc/dsp48_macc.v"
 
 `include "dft_bin_multiple_inputs/dft_bin_multiple_inputs.v"
 `include "../../dsp/correlator/correlation_mults.v"

@@ -11,13 +11,16 @@ module single_bin_fx_correlator_tb #(
     parameter TWIDD_DELAY = 1,
     parameter DFT_ACC_DELAY = 0,
     parameter DFT_LEN = 128,
-    parameter DFT_DOUT_WIDTH = 32,
+    parameter DFT_DOUT_WIDTH = 22,
     parameter DFT_DOUT_POINT = 15,
     parameter DFT_DOUT_DELAY = 1,
     parameter CORR_OUT_DELAY = 0,
-    parameter DOUT_WIDTH = 64,
+    parameter ACC_WIDTH = 32,
+    parameter ACC_POINT = 16,
+    parameter DOUT_WIDTH = 32,
     
-    parameter CAST_WARNING = 1
+    parameter REAL_INPUT_ONLY=0,
+    parameter CAST_WARNING = 0
 ) (
     input wire clk,
     input wire rst, 
@@ -74,7 +77,10 @@ single_bin_fx_correlator #(
     .DFT_DOUT_POINT(DFT_DOUT_POINT),
     .DFT_DOUT_DELAY(DFT_DOUT_DELAY),
     .CORR_OUT_DELAY(CORR_OUT_DELAY),
+    .ACC_WIDTH(ACC_WIDTH),
+    .ACC_POINT(ACC_POINT),
     .DOUT_WIDTH(DOUT_WIDTH),
+    .REAL_INPUT_ONLY(REAL_INPUT_ONLY),
     .CAST_WARNING(CAST_WARNING)
 ) single_bin_fx_correlator_inst (
     .clk(clk),

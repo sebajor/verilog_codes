@@ -214,18 +214,21 @@ for(i=0; i<PARALLEL_INPUTS; i=i+1)begin: loop
 
         wire [DOUT_WIDTH-1:0] dout_cast_re, dout_cast_im;
         wire dout_cast_valid;
+        wire [1:0] dout_re_cast_ovf, dout_im_cast_ovf;
 
         signed_cast #(
             .DIN_WIDTH(ACC_WIDTH),
             .DIN_POINT(MULT_POINT),
             .DOUT_WIDTH(DOUT_WIDTH),
-            .DOUT_POINT(DOUT_POINT)
+            .DOUT_POINT(DOUT_POINT),
+            .OVERFLOW_WARNING(CAST_WARNING)
         ) dout_cast [1:0] (
             .clk(clk), 
             .din({acc_re, acc_im}),
             .din_valid(acc_out_valid && valid_macc_data),
             .dout({dout_cast_re, dout_cast_im}),
-            .dout_valid(dout_cast_valid)
+            .dout_valid(dout_cast_valid),
+            .warning({dout_re_cast_ovf, dout_im_cast_ovf})
         );
         wire [DOUT_WIDTH-1:0] dout_re_aux, dout_im_aux;
 
@@ -313,18 +316,21 @@ for(i=0; i<PARALLEL_INPUTS; i=i+1)begin: loop
 
         wire [DOUT_WIDTH-1:0] dout_cast_re, dout_cast_im;
         wire dout_cast_valid;
+        wire [1:0] dout_re_cast_ovf, dout_im_cast_ovf;
 
         signed_cast #(
             .DIN_WIDTH(ACC_WIDTH),
             .DIN_POINT(MULT_POINT),
             .DOUT_WIDTH(DOUT_WIDTH),
-            .DOUT_POINT(DOUT_POINT)
+            .DOUT_POINT(DOUT_POINT),
+            .OVERFLOW_WARNING(CAST_WARNING)
         ) dout_cast [1:0] (
             .clk(clk), 
             .din({acc_re, acc_im}),
             .din_valid(acc_out_valid),
             .dout({dout_cast_re, dout_cast_im}),
-            .dout_valid(dout_cast_valid)
+            .dout_valid(dout_cast_valid),
+            .warning({dout_re_cast_ovf, dout_im_cast_ovf})
         );
         wire [DOUT_WIDTH-1:0] dout_re_aux, dout_im_aux;
 

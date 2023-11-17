@@ -17,12 +17,13 @@
 *   it gets diminish..but at least your saturation goes up to
 *    -(2**(dout_int-1)-1+frac) and when you dont have fractional part the
 *   saturation goes to -2**(dout_int-1)
+*
+*   I didnt fix it because the if-else conditions are horrible enough to also
+*   make them in just one generate statment aagg
 *   
 *   If OVERFLOW_WARNING is 1 the warning output will be 1 if there is an overflow
 *   2 if there is an underflow and 0 if everything is ok. 
 *
-*   I didnt fix it because the if-else conditions are horrible enough to also
-*   make them in just one generate statment aagg
 */
 
 module signed_cast #(
