@@ -1,5 +1,9 @@
 `default_nettype none
 
+/*
+*   Author: Sebastian Jorquera
+*   Single bin DFT by definition
+*/
 
 module single_bin_dft #(
     parameter DIN_WIDTH = 16,
