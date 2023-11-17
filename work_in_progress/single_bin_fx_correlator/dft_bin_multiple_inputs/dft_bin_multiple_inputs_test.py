@@ -79,6 +79,11 @@ async def dft_bin_multiple_inputs_test(dut, iters=128, dft_len=128, k=55, din_wi
     data0  = (np.random.random(size=(iters, dft_len))-0.5)+1j*(np.random.random(size=(iters, dft_len))-0.5)
     data1  = (np.random.random(size=(iters, dft_len))-0.5)+1j*(np.random.random(size=(iters, dft_len))-0.5)
 
+    ##for real only test
+    if(dut.REAL_INPUT_ONLY.value):
+        data0 = data0.real
+        data1 = data1.real
+
     #data = np.repeat(0.5*twidd**-1, iters).reshape(-1,iters).T
     gold0 = data0 @ twidd
     gold1 = data1 @ twidd
@@ -133,13 +138,13 @@ async def read_data(dut, gold, dout_width, dout_point, thresh):
             out_im = int(dut.dout1_im.value)
             out1_re = two_comp_unpack(np.array(out_re), dout_width, dout_point)
             out1_im = two_comp_unpack(np.array(out_im), dout_width, dout_point)
+            print(str(out0_re+1j*out0_im)+'\t'+str(gold0[count]))
+            print(str(out1_re+1j*out1_im)+'\t'+str(gold1[count]))
+            print("\n")
             assert(np.abs(gold0[count].real-out0_re)<thresh)
             assert(np.abs(gold0[count].imag-out0_im)<thresh)
             assert(np.abs(gold1[count].real-out1_re)<thresh)
             assert(np.abs(gold1[count].imag-out1_im)<thresh)
-            print(str(out0_re+1j*out0_im)+'\t'+str(gold0[count]))
-            print(str(out1_re+1j*out1_im)+'\t'+str(gold1[count]))
-            print("\n")
             count += 1
         await ClockCycles(dut.clk,1)
 

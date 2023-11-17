@@ -15,6 +15,7 @@ module dft_bin_multiple_inputs_tb #(
     parameter DOUT_WIDTH = 32,
     parameter DOUT_POINT = 15,
     parameter DOUT_DELAY = 1,
+    parameter REAL_INPUT_ONLY=0,
     parameter CAST_WARNING = 1
 ) (
     input wire clk,
@@ -76,6 +77,7 @@ dft_bin_multiple_inputs #(
     .DOUT_WIDTH(DOUT_WIDTH),
     .DOUT_POINT(DOUT_POINT),
     .DOUT_DELAY(DOUT_DELAY),
+    .REAL_INPUT_ONLY(REAL_INPUT_ONLY),
     .CAST_WARNING(CAST_WARNING)
 ) dft_bin_multiple_inputs_inst (
     .clk(clk),

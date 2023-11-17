@@ -12,3 +12,4 @@
 `include "../../../utils/skid_buffer/skid_buffer.v"
 `include "../../../axi/axil_bram/axil_bram_arbiter.v"
 `include "../../../axi/axil_bram/axil_bram.v"
+`include "../../../dsp/dsp48_macc/dsp48_macc.v"

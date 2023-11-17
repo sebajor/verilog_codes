@@ -19,6 +19,7 @@ module dft_bin_multiple_inputs #(
     parameter DOUT_WIDTH = 32,
     parameter DOUT_POINT = 15,
     parameter DOUT_DELAY = 1,
+    parameter REAL_INPUT_ONLY=0,
     parameter CAST_WARNING = 1
 ) (
     input wire clk,
@@ -150,102 +151,194 @@ localparam ACC_WIDTH = MULT_WIDTH+$clog2(DFT_LEN);
 genvar i;
 generate
 for(i=0; i<PARALLEL_INPUTS; i=i+1)begin: loop
-    wire signed [MULT_WIDTH-1:0] mult_re, mult_im;
-    wire mult_valid;
-
-    complex_mult #(
-        .DIN1_WIDTH(DIN_WIDTH),
-        .DIN2_WIDTH(TWIDD_WIDTH)
-    )complex_mult_inst (
-        .clk(clk),
-        .din1_re(din_re_rr[i*DIN_WIDTH+:DIN_WIDTH]), 
-        .din1_im(din_im_rr[i*DIN_WIDTH+:DIN_WIDTH]),
-        .din2_re(twidd_re_r),
-        .din2_im(twidd_im_r),
-        .din_valid(twidd_valid_r),
-        .dout_re(mult_re),
-        .dout_im(mult_im),
-        .dout_valid(mult_valid)
-    );
-
-    wire signed [ACC_WIDTH-1:0] acc_re, acc_im;
-    reg acc_valid=0;
-    reg [$clog2(DFT_LEN)-1:0] acc_counter=0;
-    wire acc_out_valid;
-
-    always@(posedge clk)begin
-        if(rst)begin
-            acc_counter<=0;
-            acc_valid<=0;
-        end
-        else if(mult_valid)begin
-            if(acc_counter==(delay_line_r))begin
-                //check!!!
-                acc_valid <= 1;
-                acc_counter <= 0;
-            end
-            else begin
-                acc_valid <=0;
-                acc_counter <= acc_counter+1;
-            end
-        end
-    end
-
-    wire signed [MULT_WIDTH-1:0] mult_re_r, mult_im_r;
-    wire mult_valid_r, acc_valid_r;
-
-    delay #(
-        .DATA_WIDTH(2*MULT_WIDTH+2),
-        .DELAY_VALUE(ACC_DELAY)
-    ) acc_delay_inst (
-        .clk(clk),
-        .din({mult_re, mult_im, mult_valid, acc_valid}),
-        .dout({mult_re_r, mult_im_r, mult_valid_r, acc_valid_r})
-    );
-
-
-    scalar_accumulator #(
-        .DIN_WIDTH(MULT_WIDTH),
-        .ACC_WIDTH(ACC_WIDTH),
-        .DATA_TYPE("signed")
-    ) dft_accumulator_inst [1:0](
-        .clk(clk),
-        .din({mult_re_r, mult_im_r}),
-        .din_valid(mult_valid_r),
-        .acc_done(acc_valid_r),
-        .dout({acc_re, acc_im}),
-        .dout_valid(acc_out_valid)
-    );
-
-
-    wire [DOUT_WIDTH-1:0] dout_cast_re, dout_cast_im;
-    wire dout_cast_valid;
-
-    signed_cast #(
-        .DIN_WIDTH(ACC_WIDTH),
-        .DIN_POINT(MULT_POINT),
-        .DOUT_WIDTH(DOUT_WIDTH),
-        .DOUT_POINT(DOUT_POINT)
-    ) dout_cast [1:0] (
-        .clk(clk), 
-        .din({acc_re, acc_im}),
-        .din_valid(acc_out_valid),
-        .dout({dout_cast_re, dout_cast_im}),
-        .dout_valid(dout_cast_valid)
-    );
-    wire [DOUT_WIDTH-1:0] dout_re_aux, dout_im_aux;
     wire dout_valid_aux;
+    if(REAL_INPUT_ONLY)begin
+        //the new acc should be one at the first sample of the new acc frame 
+        //check!
+        reg [$clog2(DFT_LEN)-1:0] acc_counter=0;
+        wire new_acc= (acc_counter==0) & twidd_valid_r;
 
-    delay #(
-        .DATA_WIDTH(2*DOUT_WIDTH+1),
-        .DELAY_VALUE(DOUT_DELAY)
-    ) dout_delay (
-        .clk(clk),
-        .din({dout_cast_re, dout_cast_im, dout_cast_valid}),
-        .dout({dout_re[i*DOUT_WIDTH+:DOUT_WIDTH],
-               dout_im[i*DOUT_WIDTH+:DOUT_WIDTH],
-               dout_valid_aux})
-    );
+        always@(posedge clk)begin
+            if(rst)begin
+                acc_counter<=0;
+            end
+            else if(twidd_valid_r)begin
+                if(acc_counter==(delay_line_r))begin
+                    //check!!!
+                    acc_counter <= 0;
+                end
+                else begin
+                    acc_counter <= acc_counter+1;
+                end
+            end
+        end
+
+        wire signed [ACC_WIDTH-1:0] acc_re, acc_im;
+        wire acc_out_valid;
+        dsp48_macc #(
+            .DIN1_WIDTH(DIN_WIDTH),
+            .DIN2_WIDTH(TWIDD_WIDTH),
+            .DOUT_WIDTH(ACC_WIDTH)
+        ) dsp48_macc_re (
+            .clk(clk),
+            .new_acc(new_acc),
+            .din1(din_re_rr[i*DIN_WIDTH+:DIN_WIDTH]),
+            .din2(twidd_re_r),
+            .din_valid(twidd_valid_r),
+            .dout(acc_re),
+            .dout_valid(acc_out_valid)
+        );
+
+        dsp48_macc #(
+            .DIN1_WIDTH(DIN_WIDTH),
+            .DIN2_WIDTH(TWIDD_WIDTH),
+            .DOUT_WIDTH(ACC_WIDTH)
+        ) dsp48_macc_im (
+            .clk(clk),
+            .new_acc(new_acc),
+            .din1(din_re_rr[i*DIN_WIDTH+:DIN_WIDTH]),
+            .din2(twidd_im_r),
+            .din_valid(twidd_valid_r),
+            .dout(acc_im),
+            .dout_valid()
+        );
+        //the first frame always is garbage, bcs is cleaning what happend before
+        reg valid_macc_data =0;
+        always@(posedge clk)begin
+            if(rst)
+                valid_macc_data  <=0;
+            else if(acc_out_valid)
+                valid_macc_data <= 1;
+        end
+
+
+        wire [DOUT_WIDTH-1:0] dout_cast_re, dout_cast_im;
+        wire dout_cast_valid;
+
+        signed_cast #(
+            .DIN_WIDTH(ACC_WIDTH),
+            .DIN_POINT(MULT_POINT),
+            .DOUT_WIDTH(DOUT_WIDTH),
+            .DOUT_POINT(DOUT_POINT)
+        ) dout_cast [1:0] (
+            .clk(clk), 
+            .din({acc_re, acc_im}),
+            .din_valid(acc_out_valid && valid_macc_data),
+            .dout({dout_cast_re, dout_cast_im}),
+            .dout_valid(dout_cast_valid)
+        );
+        wire [DOUT_WIDTH-1:0] dout_re_aux, dout_im_aux;
+
+        delay #(
+            .DATA_WIDTH(2*DOUT_WIDTH+1),
+            .DELAY_VALUE(DOUT_DELAY)
+        ) dout_delay (
+            .clk(clk),
+            .din({dout_cast_re, dout_cast_im, dout_cast_valid}),
+            .dout({dout_re[i*DOUT_WIDTH+:DOUT_WIDTH],
+                   dout_im[i*DOUT_WIDTH+:DOUT_WIDTH],
+                   dout_valid_aux})
+        );
+
+
+    end
+    else begin
+        wire signed [MULT_WIDTH-1:0] mult_re, mult_im;
+        wire mult_valid;
+
+        complex_mult #(
+            .DIN1_WIDTH(DIN_WIDTH),
+            .DIN2_WIDTH(TWIDD_WIDTH)
+        )complex_mult_inst (
+            .clk(clk),
+            .din1_re(din_re_rr[i*DIN_WIDTH+:DIN_WIDTH]), 
+            .din1_im(din_im_rr[i*DIN_WIDTH+:DIN_WIDTH]),
+            .din2_re(twidd_re_r),
+            .din2_im(twidd_im_r),
+            .din_valid(twidd_valid_r),
+            .dout_re(mult_re),
+            .dout_im(mult_im),
+            .dout_valid(mult_valid)
+        );
+
+        wire signed [ACC_WIDTH-1:0] acc_re, acc_im;
+        reg acc_valid=0;
+        reg [$clog2(DFT_LEN)-1:0] acc_counter=0;
+        wire acc_out_valid;
+
+        always@(posedge clk)begin
+            if(rst)begin
+                acc_counter<=0;
+                acc_valid<=0;
+            end
+            else if(mult_valid)begin
+                if(acc_counter==(delay_line_r))begin
+                    //check!!!
+                    acc_valid <= 1;
+                    acc_counter <= 0;
+                end
+                else begin
+                    acc_valid <=0;
+                    acc_counter <= acc_counter+1;
+                end
+            end
+        end
+
+        wire signed [MULT_WIDTH-1:0] mult_re_r, mult_im_r;
+        wire mult_valid_r, acc_valid_r;
+
+        delay #(
+            .DATA_WIDTH(2*MULT_WIDTH+2),
+            .DELAY_VALUE(ACC_DELAY)
+        ) acc_delay_inst (
+            .clk(clk),
+            .din({mult_re, mult_im, mult_valid, acc_valid}),
+            .dout({mult_re_r, mult_im_r, mult_valid_r, acc_valid_r})
+        );
+
+
+        scalar_accumulator #(
+            .DIN_WIDTH(MULT_WIDTH),
+            .ACC_WIDTH(ACC_WIDTH),
+            .DATA_TYPE("signed")
+        ) dft_accumulator_inst [1:0](
+            .clk(clk),
+            .din({mult_re_r, mult_im_r}),
+            .din_valid(mult_valid_r),
+            .acc_done(acc_valid_r),
+            .dout({acc_re, acc_im}),
+            .dout_valid(acc_out_valid)
+        );
+
+
+        wire [DOUT_WIDTH-1:0] dout_cast_re, dout_cast_im;
+        wire dout_cast_valid;
+
+        signed_cast #(
+            .DIN_WIDTH(ACC_WIDTH),
+            .DIN_POINT(MULT_POINT),
+            .DOUT_WIDTH(DOUT_WIDTH),
+            .DOUT_POINT(DOUT_POINT)
+        ) dout_cast [1:0] (
+            .clk(clk), 
+            .din({acc_re, acc_im}),
+            .din_valid(acc_out_valid),
+            .dout({dout_cast_re, dout_cast_im}),
+            .dout_valid(dout_cast_valid)
+        );
+        wire [DOUT_WIDTH-1:0] dout_re_aux, dout_im_aux;
+
+        delay #(
+            .DATA_WIDTH(2*DOUT_WIDTH+1),
+            .DELAY_VALUE(DOUT_DELAY)
+        ) dout_delay (
+            .clk(clk),
+            .din({dout_cast_re, dout_cast_im, dout_cast_valid}),
+            .dout({dout_re[i*DOUT_WIDTH+:DOUT_WIDTH],
+                   dout_im[i*DOUT_WIDTH+:DOUT_WIDTH],
+                   dout_valid_aux})
+        );
+    end
 end
 endgenerate
 

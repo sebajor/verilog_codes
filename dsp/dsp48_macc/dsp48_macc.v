@@ -6,6 +6,9 @@
 *   25x18 multiplier that then goes into an 48 accumulator
 *   The code is wrote to infer a dsp48e2
 *
+*   The new acc should be 1 at the first sample of the new accumulation frame,
+*   and after two cycles the output of the previous frame will be out with the 
+*   dout_valid signal at 1
 */
 
 
