@@ -191,7 +191,7 @@ reg [31:0] acc_counter=0;
 reg acc_valid;
 always@(posedge clk)begin
     if(rst)begin
-        acc_counter <=0;
+        acc_counter <= {32{1'b1}};//0; //the first frame  has a one iter off
         acc_valid <=0;
     end
     else if(corr_cast_valid)begin

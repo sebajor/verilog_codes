@@ -57,9 +57,9 @@ async def write_continous(dut, data, axil_master):
 
 
 @cocotb.test()
-async def single_bin_fx_correlator_test(dut, iters=12, dft_len=128, k=55, acc_len=2,
+async def single_bin_fx_correlator_test(dut, iters=12, dft_len=128, k=55, acc_len=32,
                                         din_width=16, din_point=15, dout_width=32, 
-                                        dout_point=16, thresh=0.1):
+                                        dout_point=14, thresh=0.1):
     axil_master = setup_dut(dut)
     
     dut.delay_line.value =  dft_len-1
@@ -81,6 +81,9 @@ async def single_bin_fx_correlator_test(dut, iters=12, dft_len=128, k=55, acc_le
     twidd = np.exp(-1j*2*np.pi*np.arange(dft_len)*k/dft_len)
     data0  = (np.random.random(size=(iters*acc_len, dft_len))-0.5)+1j*(np.random.random(size=(iters*acc_len, dft_len))-0.5)
     data1  = (np.random.random(size=(iters*acc_len, dft_len))-0.5)+1j*(np.random.random(size=(iters*acc_len, dft_len))-0.5)
+    
+    #data0 = np.repeat(np.random.random(dft_len)+1j*np.random.random(dft_len), iters*acc_len).reshape(-1,iters*acc_len).T
+    #data1 = np.repeat(np.random.random(dft_len)+1j*np.random.random(dft_len), iters*acc_len).reshape(-1,iters*acc_len).T
 
     #data0 = np.repeat(0.5*twidd**-1, iters*acc_len).reshape(-1,iters*acc_len).T
     #data1 = np.repeat(0.25*twidd**-1, iters*acc_len).reshape(-1,iters*acc_len).T*np.exp(1j*np.pi/6)
@@ -99,9 +102,9 @@ async def single_bin_fx_correlator_test(dut, iters=12, dft_len=128, k=55, acc_le
     pow1 = (dft1*np.conj(dft1)).real
     
     ##accumulation, check
-    pow0_acc = np.sum(pow0.reshape((-1, iters)), axis=0)
-    pow1_acc = np.sum(pow1.reshape((-1, iters)), axis=0)
-    corr_acc = np.sum(corr.reshape((-1, iters)), axis=0)
+    pow0_acc = np.sum(pow0.reshape((-1, acc_len)), axis=1)
+    pow1_acc = np.sum(pow1.reshape((-1, acc_len)), axis=1)
+    corr_acc = np.sum(corr.reshape((-1, acc_len)), axis=1)
     gold = [pow0_acc, pow1_acc, corr_acc]
     
     dat0_re = two_comp_pack(data0.real.flatten(), din_width, din_point)
