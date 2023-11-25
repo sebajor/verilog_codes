@@ -161,27 +161,27 @@ module MMCME4_BASE #(
     parameter CLKOUT0_PHASE=0.0,       // Phase offset for each CLKOUT (-360.000-360.000).
     parameter CLKOUT0_DUTY_CYCLE=0.5,
 
-    parameter CLKOUT1_DIVIDE_F=1,    // Divide amount for CLKOUT0 (1.000-128.000).
+    parameter CLKOUT1_DIVIDE=1,    // Divide amount for CLKOUT0 (1.000-128.000).
     parameter CLKOUT1_PHASE=0.0,       // Phase offset for each CLKOUT (-360.000-360.000).
     parameter CLKOUT1_DUTY_CYCLE=0.5,
 
-    parameter CLKOUT2_DIVIDE_F=1,    // Divide amount for CLKOUT0 (1.000-128.000).
+    parameter CLKOUT2_DIVIDE=1,    // Divide amount for CLKOUT0 (1.000-128.000).
     parameter CLKOUT2_PHASE=0.0,       // Phase offset for each CLKOUT (-360.000-360.000).
     parameter CLKOUT2_DUTY_CYCLE=0.5,
 
-    parameter CLKOUT3_DIVIDE_F=1,    // Divide amount for CLKOUT0 (1.000-128.000).
+    parameter CLKOUT3_DIVIDE=1,    // Divide amount for CLKOUT0 (1.000-128.000).
     parameter CLKOUT3_PHASE=0.0,       // Phase offset for each CLKOUT (-360.000-360.000).
     parameter CLKOUT3_DUTY_CYCLE=0.5,
 
-    parameter CLKOUT4_DIVIDE_F=1,    // Divide amount for CLKOUT0 (1.000-128.000).
+    parameter CLKOUT4_DIVIDE=1,    // Divide amount for CLKOUT0 (1.000-128.000).
     parameter CLKOUT4_PHASE=0.0,       // Phase offset for each CLKOUT (-360.000-360.000).
     parameter CLKOUT4_DUTY_CYCLE=0.5,
 
-    parameter CLKOUT5_DIVIDE_F=1,    // Divide amount for CLKOUT0 (1.000-128.000).
+    parameter CLKOUT5_DIVIDE=1,    // Divide amount for CLKOUT0 (1.000-128.000).
     parameter CLKOUT5_PHASE=0.0,       // Phase offset for each CLKOUT (-360.000-360.000).
     parameter CLKOUT5_DUTY_CYCLE=0.5,
 
-    parameter CLKOUT6_DIVIDE_F=1,    // Divide amount for CLKOUT0 (1.000-128.000).
+    parameter CLKOUT6_DIVIDE=1,    // Divide amount for CLKOUT0 (1.000-128.000).
     parameter CLKOUT6_PHASE=0.0,       // Phase offset for each CLKOUT (-360.000-360.000).
     parameter CLKOUT6_DUTY_CYCLE=0.5,
 

@@ -1,9 +1,10 @@
 `default_nettype none
-`include "../primitives.v"
 
 module clock_alignment #(
     parameter ADC_BITS = 14,
-    parameter IOSTANDARD = "LVDS"
+    parameter IOSTANDARD = "LVDS",
+    parameter CLKIN1_PERIOD = 8,//2 this is the good value for having 125mhz wiht the configuration
+    parameter CLKFBOUT_PHASE = -126//-126
 )(
     input wire data_clock_p, data_clock_n,
     input wire frame_clock_p, frame_clock_n,
@@ -15,7 +16,9 @@ module clock_alignment #(
 
     output wire data_clk_bufio,
     output wire data_clk_div,
+    output wire mmcm_locked,
 
+    output wire [7:0] iserdes_dout,
     output wire iserdes2_bitslip,
     output wire [3:0] bitslip_count,
     output wire frame_valid
@@ -50,10 +53,10 @@ generate
         MMCME4_BASE #(
             .BANDWIDTH("OPTIMIZED"),   // Jitter programming (OPTIMIZED, HIGH, LOW)
             .CLKFBOUT_MULT_F(2.5),     // Multiply value for all CLKOUT (2.000-64.000).
-            .CLKFBOUT_PHASE(-126.000), // Phase offset in degrees of CLKFB (-360.000-360.000).
-            .CLKIN1_PERIOD(2),         // Input clock period in ns to ps resolution (i.e. 33.333 is 30 MHz).
+            .CLKFBOUT_PHASE(-126.000), // Phase offset in degrees of CLKFB (-360.000-360.000).  ///for the used numbers this is a shift in 1/4 of the data clock frequency
+            .CLKIN1_PERIOD(CLKIN1_PERIOD),         // Input clock period in ns to ps resolution (i.e. 33.333 is 30 MHz).
             .CLKOUT0_DIVIDE_F(2.5),    // Divide amount for CLKOUT0 (1.000-128.000).
-            .CLKOUT1_DIVIDE(10),       // Divide amount for CLKOUT1
+            .CLKOUT1_DIVIDE(10.0),       // Divide amount for CLKOUT1
             .CLKOUT0_PHASE(0.0),       // Phase offset for each CLKOUT (-360.000-360.000).
             .DIVCLK_DIVIDE(1),         // Master division value (1-106)
             .REF_JITTER1(0.0),         // Reference input jitter in UI (0.000-0.999).
@@ -62,7 +65,7 @@ generate
             .CLKOUT0(data_clk_bufio_internal),   // 1-bit output: CLKOUT0
             .CLKOUT1(data_clk_div_internal),     // 1-bit output: CLKOUT0
             .CLKFBOUT(mmcm_clkfb),    // 1-bit output: Feedback clock
-            .LOCKED(),                 // 1-bit output: LOCK
+            .LOCKED(mmcm_locked),                 // 1-bit output: LOCK
             .CLKIN1(ibufds_clk),      // 1-bit input: Clock
             .RST(1'b0),                // 1-bit input: Reset
             .CLKFBIN(mmcm_clkfb_bufg) // 1-bit input: Feedback clock
@@ -85,7 +88,7 @@ generate
             .CLKOUT0(data_clk_bufio_internal),   // 1-bit output: CLKOUT0
             .CLKOUT1(data_clk_div_internal),     // 1-bit output: CLKOUT0
             .CLKFBOUT(mmcm_clkfb),    // 1-bit output: Feedback clock
-            .LOCKED(),                 // 1-bit output: LOCK
+            .LOCKED(mmcm_locked),                 // 1-bit output: LOCK
             .CLKIN1(ibufds_clk),      // 1-bit input: Clock
             .RST(1'b0),                // 1-bit input: Reset
             .CLKFBIN(mmcm_clkfb_bufg) // 1-bit input: Feedback clock
@@ -107,6 +110,7 @@ assign data_clk_div = data_clk_div_internal;
 //we have to wait at 4 cycles between bitslip
 reg [2:0] wait_counter =0;
 reg frame_valid_r=0;
+assign frame_valid = frame_valid_r;
 
 
 always@(posedge data_clk_div_internal or posedge sync_rst)begin
@@ -174,6 +178,8 @@ bitslip_detect bitslip_detect_inst (
     .bitslip_count(bitslip_count)
 );
 
+assign iserdes_dout = frame_clk_data;
+
 endmodule
 
 module bitslip_detect (
@@ -181,30 +187,32 @@ module bitslip_detect (
     input wire [7:0]    data_in,
     input wire          ena,
     input wire          reset,
-    output reg [3:0]    bitslip_count
+    output wire [3:0]    bitslip_count
     );
 
 reg [7:0] stage_one, stage_two;
+reg [3:0] bitslip_count_r =0;
+assign bitslip_count = bitslip_count_r;
 
 always @ (posedge clk_div or posedge reset) begin
     if (reset) begin
         stage_one <= 8'd0;
         stage_two <= 8'd0;
-        bitslip_count <= 4'd0;
+        bitslip_count_r <= 4'd0;
     end
     else if (ena) begin
         stage_one <= data_in;
         stage_two <= stage_one;
         case (stage_two)
-            8'b00001111: bitslip_count <= 4'd0;
-            8'b00011110: bitslip_count <= 4'd1;
-            8'b00111100: bitslip_count <= 4'd2;
-            8'b01111000: bitslip_count <= 4'd3;
-            8'b11110000: bitslip_count <= 4'd4;
-            8'b11100001: bitslip_count <= 4'd5;
-            8'b11000011: bitslip_count <= 4'd6;
-            8'b10000111: bitslip_count <= 4'd7;
-            default: bitslip_count <= 4'd15;
+            8'b00001111: bitslip_count_r <= 4'd0;
+            8'b00011110: bitslip_count_r <= 4'd1;
+            8'b00111100: bitslip_count_r <= 4'd2;
+            8'b01111000: bitslip_count_r <= 4'd3;
+            8'b11110000: bitslip_count_r <= 4'd4;
+            8'b11100001: bitslip_count_r <= 4'd5;
+            8'b11000011: bitslip_count_r <= 4'd6;
+            8'b10000111: bitslip_count_r <= 4'd7;
+            default: bitslip_count_r <= 4'd15;
         endcase
     end
 end
