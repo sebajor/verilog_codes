@@ -79,3 +79,22 @@ pin     signal name     schematic net
 34      C2P_CLKp        ENC+
 36      C2P_CLKn        ENC-
 
+
+----------------------------------------------------------------------------------
+Notes xapp524:
+
+High speed ADCs uses one or two physical serial outputs. One data lane is used in single mode (1wire) two data laes are 2 wire mode.
+1 wire mode can be used in SDR or DDR, 2 wire is always DDR.
+
+For every configuration there is always one high speed bit clock and one sample rate frame clock.
+
+For DDR signals he uses 2 iserdes in SDR mode, one capture data in the risign bit clk and the other at the falling edge. As each iserdes can handle 8 bits you could get up to 16 bits.
+
+In 7 series fpgas the HR support up to 2.5V and HP up to 1.8V
+
+frame clock (FCLK) contain the frame data in one clock cycle, the bit clock is phase shifted 90 deg with respect the data (the rising/falling is in the middle of the data point) he calls it DCLK.
+
+
+The first stuff is to place a IDELAY in variable mode for the DCLK, followed by a BUFIO and BUFR to align it with the data.
+
+A bitslip operation should be done to get a good frame.. The stamdard is to shift one bit at the time data and send a known pattern until you got it right.. But the easy way is to use the frame clock until you got 11110000

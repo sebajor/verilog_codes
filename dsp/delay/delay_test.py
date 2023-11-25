@@ -16,6 +16,8 @@ async def delay_test(dut):
     
     ##get the actual parameters
     DELAY_VALUE =(os.environ.get("DELAY_VALUE"), "8")
+    #print(dir(dut))
+    #print(getattr(dut, 'din').value)
     print("asda")
     print(DELAY_VALUE)
 
