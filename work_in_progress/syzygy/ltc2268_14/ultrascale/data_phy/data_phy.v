@@ -1,5 +1,8 @@
 `default_nettype none
 
+/*
+*   Note that the adc adds two zeros in bits 0 and 1
+*/
 
 module data_phy (
     input wire sync_rst,
@@ -10,7 +13,9 @@ module data_phy (
     input wire data_clk_div,
     input wire [3:0] bitslip_count,
 
-    output wire [15:0] adc_data
+    output wire [15:0] adc_data,
+    //debuging signals
+    output wire [7:0] iserdes0_dout, iserdes1_dout
 );
 
 
@@ -78,9 +83,32 @@ ISERDESE3 #(
 
 //shift serdes dout by the bitslip
 
+bitslip_shift #(
+    .DIN_WIDTH(8)
+)bitslip_shift_inst0  (
+    .clk(data_clk_div),
+    .din(serdes0_dout),
+    .rst(sync_rst), 
+    .bitslip_count(bitslip_count),
+    .dout({adc_data[1], adc_data[3], adc_data[5], adc_data[7],
+           adc_data[9], adc_data[11], adc_data[13], adc_data[15]})
+);
 
 
+bitslip_shift #(
+    .DIN_WIDTH(8)
+)bitslip_shift_inst1  (
+    .clk(data_clk_div),
+    .din(serdes1_dout),
+    .rst(sync_rst), 
+    .bitslip_count(bitslip_count),
+    .dout({adc_data[0], adc_data[2], adc_data[4], adc_data[6],
+           adc_data[8], adc_data[10], adc_data[12], adc_data[14]})
+);
 
+
+assign iserdes0_dout = serdes0_dout;
+assign iserdes1_dout = serdes1_dout;
 
 
 endmodule

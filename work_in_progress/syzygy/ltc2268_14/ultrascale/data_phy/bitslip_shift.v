@@ -5,7 +5,6 @@ module bitslip_shift #(
 ) (
     input wire clk,
     input wire [DIN_WIDTH-1:0] din,
-    input wire enable,
     input wire rst, 
     input wire [$clog2(DIN_WIDTH)-1:0] bitslip_count,
     output wire [DIN_WIDTH-1:0] dout
@@ -16,12 +15,12 @@ reg [DIN_WIDTH-1:0] dout_r=0;
 
 
 integer i;
-always@(posedge clk or posedge rst)begin
+always@(posedge clk)begin
     if(rst)begin
         stages <= 0;
         dout_r <= 0;
     end
-    else if(enable)begin
+    else begin
         /*
         for(i=0; i<DIN_WIDTH; i=i+1)begin
             stages[DIN_WIDTH+i] <= stages[i];
@@ -32,6 +31,8 @@ always@(posedge clk or posedge rst)begin
         dout_r <= stages[bitslip_count+:DIN_WIDTH];
     end
 end
+
+assign dout = dout_r;
 
 endmodule
 

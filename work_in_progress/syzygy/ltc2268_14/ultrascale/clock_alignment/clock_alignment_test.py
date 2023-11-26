@@ -35,13 +35,15 @@ async def clock_alignment_test(dut, bitslip=3/4, precision=3):
 
     ## and the frame clock also...
     ## The data clock should be 90deg from the frame clock and the data
-    frame_clk = Clock(dut.frame_clock_p, bit_clk*4, units='ns')
+    #frame_clk = Clock(dut.frame_clock_p, bit_clk*4, units='ns')
     await Timer(np.round(bit_clk/4., precision), units='ns')
     if(bitslip!=0):
         bitslip_delay = np.round(bit_clk*bitslip, precision)
         print(bitslip_delay)
         await Timer(bitslip_delay, units='ns') 
-    await cocotb.start(frame_clk.start())
+    #await cocotb.start(frame_clk.start())
+    await cocotb.start(custom_clock(dut.frame_clock_p, bit_clk*4))
+    #await Timer(8, units='ns')
     
     ##start the clocks of the mmcm
     await mmcm.start_output_clocks()
@@ -52,4 +54,19 @@ async def clock_alignment_test(dut, bitslip=3/4, precision=3):
     print(dut.iserdes_dout.value)
     print(int(dut.bitslip_count.value))
 
+
+async def custom_clock(interface, period):
+    """
+    period in ns
+    """
+    print(period)
+    high_timer = Timer(period/2, units='ns')
+    low_timer =  Timer(period/2, units='ns')
+    while(True):
+        interface.value = 1
+        await high_timer
+        interface.value = 0
+        await low_timer
+
+        
 
