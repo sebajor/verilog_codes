@@ -13,6 +13,8 @@
 `include "../../axi/axil_bram/axil_bram_arbiter.v"
 `include "../../axi/axil_bram/axil_bram.v"
 `include "../../dsp/dsp48_macc/dsp48_macc.v"
+`include "../../xlx_templates/ram/true_dual_port/async/unbalanced_bram/unbalanced_ram.v"
+`include "../../axi/axil_bram_unbalanced/axil_bram_unbalanced.v"
 
 `include "dft_bin_multiple_inputs/dft_bin_multiple_inputs.v"
 `include "../../dsp/correlator/correlation_mults.v"

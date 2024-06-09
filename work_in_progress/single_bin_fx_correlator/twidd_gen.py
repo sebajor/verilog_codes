@@ -2,14 +2,19 @@ import argparse
 import numpy as np
 import matplotlib.pyplot as plt
 import sys
-sys.path.append('../../../cocotb_python')
+sys.path.append('../../cocotb_python')
 from two_comp import two_comp_pack
 
 ###
 ### Author: Sebastian Jorquera
 ###
 
+
 def twidd_gen(dft_size, dft_twidd, bin_width, bin_pt, filename='twidd_init.bin', plot=0):
+    """
+    This one assumes that the twiddle factor will be any number and the bram will be
+    two times that size.
+    """
     f = open(filename, 'w')
     n = np.arange(dft_size)
     data = np.exp(-1j*2*np.pi*dft_twidd/dft_size*n)

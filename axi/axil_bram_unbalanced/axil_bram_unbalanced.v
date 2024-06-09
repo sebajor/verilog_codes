@@ -43,7 +43,9 @@ module axil_bram_unbalanced #(
     input wire bram_we,
     output wire [FPGA_DATA_WIDTH-1:0] bram_dout
 );
-
+initial begin
+    $display("AXI BRAM UNBALANCED ADDR: %d", AXI_ADDR_WIDTH);
+end
 
 
 generate

@@ -34,9 +34,9 @@ async def dedispersor_test(dut, n_channels=64, cont=0, back=2, read_iters=8192):
     din = dat.reshape([n_channels,-1])
     dout = dout[4096:8192]  ##i think here appears
     dout = dout.reshape([n_channels,-1])
-    ax1.imshow(din, origin='bottom')
+    ax1.imshow(din, origin='lower')
     ax1.set_title('DIN')
-    ax2.imshow(dout, origin='bottom')
+    ax2.imshow(dout, origin='lower')
     ax2.set_title('Dedispersed')
     plt.savefig('dedisp.png')
 

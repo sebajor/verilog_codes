@@ -65,7 +65,7 @@ async def dedispersor_test(dut, n_chann=64, cont=0, back=4,
 
     din = dat.reshape([64,-1])
     
-    plt.imshow(dout.reshape([-1, 64]), origin='bottom')
+    plt.imshow(dout.reshape([-1, 64]), origin='lower')
     plt.title('dedispersor output')
     plt.savefig('dedisp_out.png')
     plt.close()
@@ -76,9 +76,9 @@ async def dedispersor_test(dut, n_chann=64, cont=0, back=4,
 
     fig = plt.figure()
     ax1 = fig.add_subplot(121); ax2 = fig.add_subplot(122)
-    ax1.imshow(din, origin='bottom')
+    ax1.imshow(din, origin='lower')
     ax1.set_title('Input data')
-    ax2.imshow(dout[4096:8192].reshape([64,-1]), origin='bottom')
+    ax2.imshow(dout[4096:8192].reshape([64,-1]), origin='lower')
     ax2.set_title('Dedispersed')
     plt.savefig('dedisp.png')
     plt.close()

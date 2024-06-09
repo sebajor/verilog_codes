@@ -31,5 +31,5 @@ clean::
 	@rm -rf results.xml
 	@rm -rf sim_build
 	@rm -rf __pycache__
-	@rm -rf *.del 
+	@rm -rf *.del *.png
 	@rm -rf iverilog_dump.v

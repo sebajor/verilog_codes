@@ -2,7 +2,8 @@
 
 /*
 *   Author: Sebastian Jorquera
-*   Single bin DFT by definition
+*   Single bin DFT by definition... This module assumes that the twiddle factor are
+*   at most 16 bit wide, so they are save in a single bram
 */
 
 module single_bin_dft #(

@@ -1,7 +1,7 @@
 import numpy as np
 import cocotb
 from cocotb.clock import Clock
-from cocotb.triggers import ClockCycles
+from cocotb.triggers import ClockCycles, Timer
 from cocotbext.axi import AxiLiteBus, AxiLiteMaster, AxiLiteRam
 import struct, sys
 sys.path.append('../../../cocotb_python')
@@ -36,13 +36,14 @@ def setup_dut(dut):
     dut.s_axil_wstrb.value = 0
     return axil_master
 
-async def write_twidd_factor(dut, axil_master, dft_len, k):
+async def write_twidd_factor(dut, axil_master, dft_len, k, twidd_binpt=14):
     n =np.arange(dft_len)
     twidd = np.exp(-1j*2*np.pi*n*k/dft_len)
-    aux = np.array([twidd.imag, twidd.real]).T.flatten()   #check order !!! im is the low, re is high
-    aux = (aux*2**14).astype(int)
-    aux_bin = struct.pack(str(2*dft_len)+'h', *(aux))
-    aux2 = struct.unpack(str(dft_len)+'I', aux_bin)
+    aux = np.array([twidd.real, twidd.imag]).T.flatten()   #check order !!! im is the low, re is high
+    aux = (aux*2**twidd_binpt).astype(int)
+    aux_bin = struct.pack(str(2*dft_len)+'i', *(aux))
+    aux2 = struct.unpack(str(2*dft_len)+'I', aux_bin)
+    print(len(aux2))
     #dut.din_valid.value = 1;
     #dut.din_re.value = 0; dut.din_im.value =  0;    ##this is better to reset everything
     dut.rst.value =  0;
@@ -62,6 +63,8 @@ async def dft_bin_multiple_inputs_test(dut, iters=128, dft_len=128, k=55, din_wi
     
     dut.delay_line.value =  dft_len-1
     dut.rst.value =  1
+    dut.din_valid.value = 0
+    await Timer(10, 'ns')
     await ClockCycles(dut.clk, 1)
 
     ###load a new twiddle factor with a new dft len
@@ -83,7 +86,7 @@ async def dft_bin_multiple_inputs_test(dut, iters=128, dft_len=128, k=55, din_wi
     if(dut.REAL_INPUT_ONLY.value):
         data0 = data0.real
         data1 = data1.real
-
+    print(data0[0])
     #data = np.repeat(0.5*twidd**-1, iters).reshape(-1,iters).T
     gold0 = data0 @ twidd
     gold1 = data1 @ twidd
@@ -138,8 +141,8 @@ async def read_data(dut, gold, dout_width, dout_point, thresh):
             out_im = int(dut.dout1_im.value)
             out1_re = two_comp_unpack(np.array(out_re), dout_width, dout_point)
             out1_im = two_comp_unpack(np.array(out_im), dout_width, dout_point)
-            print(str(out0_re+1j*out0_im)+'\t'+str(gold0[count]))
-            print(str(out1_re+1j*out1_im)+'\t'+str(gold1[count]))
+            print("fpga:"+str(out0_re+1j*out0_im)+'\tgold:'+str(gold0[count]))
+            print("fpga:"+str(out1_re+1j*out1_im)+'\tgold:'+str(gold1[count]))
             print("\n")
             assert(np.abs(gold0[count].real-out0_re)<thresh)
             assert(np.abs(gold0[count].imag-out0_im)<thresh)

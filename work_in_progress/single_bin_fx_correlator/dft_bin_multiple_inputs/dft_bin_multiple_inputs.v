@@ -1,8 +1,9 @@
 `default_nettype none
 
+
 /*
-*   Author: Sebastian Jorquera
-*   single bin DFT implemetnation by definition. This implementation allows the computation of several DFT sharing the twiddle factors.
+*   Note: by default we use 64 bits bram to store real-imag part of the twiddle 
+*   factors. When reading from the fpga they are resized
 */
 
 
@@ -14,6 +15,7 @@ module dft_bin_multiple_inputs #(
     parameter TWIDD_POINT = 14,
     parameter TWIDD_FILE = "twidd_init.bin",
     parameter TWIDD_DELAY = 1,
+    parameter AXI_DATA_WIDTH = 32,
     parameter ACC_DELAY = 0,
     parameter DFT_LEN = 128,
     parameter DOUT_WIDTH = 32,
@@ -36,13 +38,13 @@ module dft_bin_multiple_inputs #(
     input wire axi_clock,
     input wire axil_rst,
     //write address channel
-    input wire [$clog2(DFT_LEN)+1:0] s_axil_awaddr,
+    input wire [$clog2(DFT_LEN)+2:0] s_axil_awaddr,
     input wire [2:0] s_axil_awprot,
     input wire s_axil_awvalid,
     output wire s_axil_awready,
     //write data channel
-    input wire [2*TWIDD_WIDTH-1:0] s_axil_wdata,
-    input wire [(2*TWIDD_WIDTH)/8-1:0] s_axil_wstrb,
+    input wire [AXI_DATA_WIDTH-1:0] s_axil_wdata,
+    input wire [(AXI_DATA_WIDTH)/8-1:0] s_axil_wstrb,
     input wire s_axil_wvalid,
     output wire s_axil_wready,
     //write response channel
@@ -50,29 +52,28 @@ module dft_bin_multiple_inputs #(
     output wire s_axil_bvalid,
     input wire s_axil_bready,
     //read address channel
-    input wire [$clog2(DFT_LEN)+1:0] s_axil_araddr,
+    input wire [$clog2(DFT_LEN)+2:0] s_axil_araddr,
     input wire s_axil_arvalid,
     output wire s_axil_arready,
     input wire [2:0] s_axil_arprot,
     //read data channel
-    output wire [(2*TWIDD_WIDTH)-1:0] s_axil_rdata,
+    output wire [(AXI_DATA_WIDTH)-1:0] s_axil_rdata,
     output wire [1:0] s_axil_rresp,
     output wire s_axil_rvalid,
     input wire s_axil_rready
 );
-reg [31:0] delay_line_r=(2**$clog2(DFT_LEN)-1);
+
+reg [31:0] delay_line_r = DFT_LEN-1;
+
+
 always@(posedge clk)begin
     delay_line_r <= delay_line;
 end
 
-//axil bram with the twiddle factors
 
-//signals to read twiddle factors
-reg [PARALLEL_INPUTS*DIN_WIDTH-1:0] din_re_r=0, din_im_r=0;
-reg [$clog2(DFT_LEN)-1:0] twidd_addr=0;
-wire [TWIDD_WIDTH-1:0] twidd_re, twidd_im;
-reg twidd_valid=0;
-
+reg [PARALLEL_INPUTS*DIN_WIDTH-1:0]  din_re_r=0, din_im_r=0;
+reg [$clog2(DFT_LEN)-1:0] twidd_addr;
+reg twidd_valid = 0;
 
 always@(posedge clk)begin
     din_re_r <= din_re;
@@ -82,24 +83,25 @@ always@(posedge clk)begin
         twidd_addr <= 0;
     else if(din_valid)begin
         if(twidd_addr==delay_line_r)
-            twidd_addr <= 0;
+            twidd_addr<= 0;
         else
-            twidd_addr <= twidd_addr+1;
+            twidd_addr<= twidd_addr+1;
     end
-    else 
-        twidd_addr <= twidd_addr;
 end
 
+//we are going to use an unbalanced bram and need to calculate the compatible axi size
+wire [31:0] bram_re_out, bram_im_out;
+wire signed [TWIDD_WIDTH-1:0] twidd_re, twidd_im;
 
 
-
-axil_bram #(
-    .DATA_WIDTH(2*TWIDD_WIDTH),        
-    .ADDR_WIDTH($clog2(DFT_LEN)),
-    .INIT_FILE(TWIDD_FILE)
-) twidd_ram_inst (
-    .axi_clock(axi_clock),
-    .rst(axil_rst),
+axil_bram_unbalanced #(
+    .FPGA_DATA_WIDTH(64),
+    .FPGA_ADDR_WIDTH($clog2(DFT_LEN)),
+    .AXI_DATA_WIDTH(32),
+	.INIT_FILE(TWIDD_FILE)
+) twiddle_factors_bram (
+    .axi_clock(axi_clock), 
+    .rst(axil_rst), 
     .s_axil_awaddr(s_axil_awaddr),
     .s_axil_awprot(s_axil_awprot),
     .s_axil_awvalid(s_axil_awvalid),
@@ -120,133 +122,39 @@ axil_bram #(
     .s_axil_rvalid(s_axil_rvalid),
     .s_axil_rready(s_axil_rready),
     .fpga_clk(clk),
-    .bram_din(32'd0),
+    .bram_din(),
     .bram_addr(twidd_addr),
     .bram_we(1'b0),
-    .bram_dout({twidd_re, twidd_im})
+    .bram_dout({bram_im_out, bram_re_out})
 );
 
-//complex multiplication, check the sync of the brams
+
+//now we have to cast them to its actual size
+assign twidd_re = bram_re_out[0+:TWIDD_WIDTH];
+assign twidd_im = bram_im_out[0+:TWIDD_WIDTH];
+
+
 localparam MULT_WIDTH = DIN_WIDTH+TWIDD_WIDTH+1;
 localparam MULT_POINT = DIN_POINT+TWIDD_POINT;
-
-wire [PARALLEL_INPUTS*DIN_WIDTH-1:0] din_re_rr, din_im_rr;
-wire [TWIDD_WIDTH-1:0] twidd_re_r, twidd_im_r;
-wire twidd_valid_r;
-    
-
-delay #(
-    .DATA_WIDTH(PARALLEL_INPUTS*2*DIN_WIDTH+2*TWIDD_WIDTH+1),
-    .DELAY_VALUE(TWIDD_DELAY)
-) twidd_delay_inst (
-    .clk(clk),
-    .din({din_re_r, din_im_r, twidd_re, twidd_im, twidd_valid}),
-    .dout({din_re_rr, din_im_rr, twidd_re_r, twidd_im_r, twidd_valid_r})
-);
-
-
-
 localparam ACC_WIDTH = MULT_WIDTH+$clog2(DFT_LEN);
-
 genvar i;
 generate
-for(i=0; i<PARALLEL_INPUTS; i=i+1)begin: loop
-    wire dout_valid_aux;
-    if(REAL_INPUT_ONLY)begin
-        //the new acc should be one at the first sample of the new acc frame 
-        //check!
-        reg [$clog2(DFT_LEN)-1:0] acc_counter=0;
-        wire new_acc= (acc_counter==0) & twidd_valid_r;
-
-        always@(posedge clk)begin
-            if(rst)begin
-                acc_counter<=0;
-            end
-            else if(twidd_valid_r)begin
-                if(acc_counter==(delay_line_r))begin
-                    //check!!!
-                    acc_counter <= 0;
-                end
-                else begin
-                    acc_counter <= acc_counter+1;
-                end
-            end
-        end
-
-        wire signed [ACC_WIDTH-1:0] acc_re, acc_im;
-        wire acc_out_valid;
-        dsp48_macc #(
-            .DIN1_WIDTH(DIN_WIDTH),
-            .DIN2_WIDTH(TWIDD_WIDTH),
-            .DOUT_WIDTH(ACC_WIDTH)
-        ) dsp48_macc_re (
-            .clk(clk),
-            .new_acc(new_acc),
-            .din1(din_re_rr[i*DIN_WIDTH+:DIN_WIDTH]),
-            .din2(twidd_re_r),
-            .din_valid(twidd_valid_r),
-            .dout(acc_re),
-            .dout_valid(acc_out_valid)
-        );
-
-        dsp48_macc #(
-            .DIN1_WIDTH(DIN_WIDTH),
-            .DIN2_WIDTH(TWIDD_WIDTH),
-            .DOUT_WIDTH(ACC_WIDTH)
-        ) dsp48_macc_im (
-            .clk(clk),
-            .new_acc(new_acc),
-            .din1(din_re_rr[i*DIN_WIDTH+:DIN_WIDTH]),
-            .din2(twidd_im_r),
-            .din_valid(twidd_valid_r),
-            .dout(acc_im),
-            .dout_valid()
-        );
-        //the first frame always is garbage, bcs is cleaning what happend before
-        reg valid_macc_data =0;
-        always@(posedge clk)begin
-            if(rst)
-                valid_macc_data  <=0;
-            else if(acc_out_valid)
-                valid_macc_data <= 1;
-        end
-
-
-        wire [DOUT_WIDTH-1:0] dout_cast_re, dout_cast_im;
-        wire dout_cast_valid;
-        wire [1:0] dout_re_cast_ovf, dout_im_cast_ovf;
-
-        signed_cast #(
-            .DIN_WIDTH(ACC_WIDTH),
-            .DIN_POINT(MULT_POINT),
-            .DOUT_WIDTH(DOUT_WIDTH),
-            .DOUT_POINT(DOUT_POINT),
-            .OVERFLOW_WARNING(CAST_WARNING)
-        ) dout_cast [1:0] (
-            .clk(clk), 
-            .din({acc_re, acc_im}),
-            .din_valid(acc_out_valid && valid_macc_data),
-            .dout({dout_cast_re, dout_cast_im}),
-            .dout_valid(dout_cast_valid),
-            .warning({dout_re_cast_ovf, dout_im_cast_ovf})
-        );
-        wire [DOUT_WIDTH-1:0] dout_re_aux, dout_im_aux;
-
+    for(i=0; i<PARALLEL_INPUTS; i=i+1)begin:loop
+        wire signed [DIN_WIDTH-1:0] din_re_internal, din_im_internal;
+        wire signed [TWIDD_WIDTH-1:0] twidd_re_internal, twidd_im_internal;
+        wire twidd_valid_internal;
         delay #(
-            .DATA_WIDTH(2*DOUT_WIDTH+1),
-            .DELAY_VALUE(DOUT_DELAY)
-        ) dout_delay (
+            .DATA_WIDTH(2*TWIDD_WIDTH+2*DIN_WIDTH+1),
+            .DELAY_VALUE(TWIDD_DELAY)
+        ) twidd_delay_inst (
             .clk(clk),
-            .din({dout_cast_re, dout_cast_im, dout_cast_valid}),
-            .dout({dout_re[i*DOUT_WIDTH+:DOUT_WIDTH],
-                   dout_im[i*DOUT_WIDTH+:DOUT_WIDTH],
-                   dout_valid_aux})
+            .din({din_re_r[DIN_WIDTH*i+:DIN_WIDTH], din_im_r[DIN_WIDTH*i+:DIN_WIDTH], 
+                 twidd_re, twidd_im, twidd_valid}),
+            .dout({din_re_internal, din_im_internal,
+                   twidd_re_internal, twidd_im_internal, twidd_valid_internal})
         );
 
-
-    end
-    else begin
-        wire signed [MULT_WIDTH-1:0] mult_re, mult_im;
+        wire [MULT_WIDTH-1:0] mult_re, mult_im;
         wire mult_valid;
 
         complex_mult #(
@@ -254,18 +162,18 @@ for(i=0; i<PARALLEL_INPUTS; i=i+1)begin: loop
             .DIN2_WIDTH(TWIDD_WIDTH)
         )complex_mult_inst (
             .clk(clk),
-            .din1_re(din_re_rr[i*DIN_WIDTH+:DIN_WIDTH]), 
-            .din1_im(din_im_rr[i*DIN_WIDTH+:DIN_WIDTH]),
-            .din2_re(twidd_re_r),
-            .din2_im(twidd_im_r),
-            .din_valid(twidd_valid_r),
+            .din1_re(din_re_internal), 
+            .din1_im(din_im_internal),
+            .din2_re(twidd_re_internal),
+            .din2_im(twidd_im_internal),
+            .din_valid(twidd_valid_internal),
             .dout_re(mult_re),
             .dout_im(mult_im),
             .dout_valid(mult_valid)
         );
 
         wire signed [ACC_WIDTH-1:0] acc_re, acc_im;
-        reg acc_valid=0;
+        reg acc_valid =0;
         reg [$clog2(DFT_LEN)-1:0] acc_counter=0;
         wire acc_out_valid;
 
@@ -286,7 +194,6 @@ for(i=0; i<PARALLEL_INPUTS; i=i+1)begin: loop
                 end
             end
         end
-
         wire signed [MULT_WIDTH-1:0] mult_re_r, mult_im_r;
         wire mult_valid_r, acc_valid_r;
 
@@ -298,7 +205,6 @@ for(i=0; i<PARALLEL_INPUTS; i=i+1)begin: loop
             .din({mult_re, mult_im, mult_valid, acc_valid}),
             .dout({mult_re_r, mult_im_r, mult_valid_r, acc_valid_r})
         );
-
 
         scalar_accumulator #(
             .DIN_WIDTH(MULT_WIDTH),
@@ -313,7 +219,7 @@ for(i=0; i<PARALLEL_INPUTS; i=i+1)begin: loop
             .dout_valid(acc_out_valid)
         );
 
-
+        //THIS PART BROKE THE SIMULATION!!!
         wire [DOUT_WIDTH-1:0] dout_cast_re, dout_cast_im;
         wire dout_cast_valid;
         wire [1:0] dout_re_cast_ovf, dout_im_cast_ovf;
@@ -332,24 +238,12 @@ for(i=0; i<PARALLEL_INPUTS; i=i+1)begin: loop
             .dout_valid(dout_cast_valid),
             .warning({dout_re_cast_ovf, dout_im_cast_ovf})
         );
-        wire [DOUT_WIDTH-1:0] dout_re_aux, dout_im_aux;
-
-        delay #(
-            .DATA_WIDTH(2*DOUT_WIDTH+1),
-            .DELAY_VALUE(DOUT_DELAY)
-        ) dout_delay (
-            .clk(clk),
-            .din({dout_cast_re, dout_cast_im, dout_cast_valid}),
-            .dout({dout_re[i*DOUT_WIDTH+:DOUT_WIDTH],
-                   dout_im[i*DOUT_WIDTH+:DOUT_WIDTH],
-                   dout_valid_aux})
-        );
+        
+        assign dout_re[DOUT_WIDTH*i+:DOUT_WIDTH] = dout_cast_re;
+        assign dout_im[DOUT_WIDTH*i+:DOUT_WIDTH] = dout_cast_im;
     end
-end
 endgenerate
 
-assign dout_valid = loop[0].dout_valid_aux;
-
-
+assign dout_valid = loop[0].dout_cast_valid;
 
 endmodule
