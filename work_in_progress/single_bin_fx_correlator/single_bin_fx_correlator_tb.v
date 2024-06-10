@@ -12,7 +12,7 @@ module single_bin_fx_correlator_tb #(
     parameter TWIDD_FILE = "twidd_init.bin",
     parameter TWIDD_DELAY = 1,
     parameter ACC_DELAY = 0,
-    parameter DFT_LEN = 128,
+    parameter DFT_LEN = 1024,
     parameter DFT_DOUT_WIDTH = 32,
     parameter DFT_DOUT_POINT = 15,
     parameter DFT_DOUT_DELAY = 1,

@@ -58,9 +58,13 @@ async def write_continous(dut, data, axil_master):
 
 
 @cocotb.test()
-async def single_bin_fx_correlator(dut, iters=128, dft_len=128, k=55, acc_len=32,
-                                   din_width=16, din_point=15, dout_width=32, dout_point=15,
-                                   thresh=0.1):
+async def single_bin_fx_correlator(dut, iters=128, k=55, acc_len=32,
+                                   thresh=1):
+    din_width = dut.DIN_WIDTH.value
+    din_point = dut.DIN_POINT.value
+    dout_width = dut.DOUT_WIDTH.value
+    dout_point = dut.ACC_POINT.value
+    dft_len = dut.DFT_LEN.value
     axil_master = setup_dut(dut)
     
     dut.delay_line.value =  dft_len-1
@@ -72,7 +76,7 @@ async def single_bin_fx_correlator(dut, iters=128, dft_len=128, k=55, acc_len=32
     ###load a new twiddle factor with a new dft len
     dut.rst.value = 1
     dut.din_valid.value = 0
-    dft_len = 72
+    dft_len = 512#72
     k = 20
     await ClockCycles(dut.clk,5)
     dut.delay_line.value =  dft_len-1

@@ -175,7 +175,7 @@ generate
         wire signed [ACC_WIDTH-1:0] acc_re, acc_im;
         reg acc_valid =0;
         reg [$clog2(DFT_LEN)-1:0] acc_counter=0;
-        wire acc_out_valid;
+        wire [1:0] acc_out_valid;
 
         always@(posedge clk)begin
             if(rst)begin
@@ -221,7 +221,7 @@ generate
 
         //THIS PART BROKE THE SIMULATION!!!
         wire [DOUT_WIDTH-1:0] dout_cast_re, dout_cast_im;
-        wire dout_cast_valid;
+        wire [1:0] dout_cast_valid;
         wire [1:0] dout_re_cast_ovf, dout_im_cast_ovf;
 
         signed_cast #(
@@ -233,7 +233,7 @@ generate
         ) dout_cast [1:0] (
             .clk(clk), 
             .din({acc_re, acc_im}),
-            .din_valid(acc_out_valid),
+            .din_valid(acc_out_valid[0]),
             .dout({dout_cast_re, dout_cast_im}),
             .dout_valid(dout_cast_valid),
             .warning({dout_re_cast_ovf, dout_im_cast_ovf})
@@ -244,6 +244,6 @@ generate
     end
 endgenerate
 
-assign dout_valid = loop[0].dout_cast_valid;
+assign dout_valid = loop[0].dout_cast_valid[0];
 
 endmodule

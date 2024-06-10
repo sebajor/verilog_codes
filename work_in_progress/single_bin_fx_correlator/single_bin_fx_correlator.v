@@ -234,6 +234,7 @@ delay #(
     .dout({pow0, pow1, corr_re_r, corr_im_r, acc_in_valid})
 );
 
+wire [1:0] acc_dout_valid;
 
 scalar_accumulator #(
     .DIN_WIDTH(ACC_WIDTH),
@@ -245,7 +246,7 @@ scalar_accumulator #(
     .din_valid(acc_in_valid),
     .acc_done(acc_done),
     .dout({ab_re, ab_im}),
-    .dout_valid(dout_valid)
+    .dout_valid(acc_dout_valid)
 );
 
 
@@ -262,5 +263,6 @@ scalar_accumulator #(
     .dout_valid()
 );
 
+assign dout_valid = acc_dout_valid[0];
 
 endmodule
