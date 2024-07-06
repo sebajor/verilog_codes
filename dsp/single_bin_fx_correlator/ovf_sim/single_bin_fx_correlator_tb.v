@@ -1,44 +1,49 @@
 `default_nettype none
 `include "includes.v"
-`include "single_bin_fx_correlator.v"
+`include "../single_bin_fx_correlator.v"
+
 
 module single_bin_fx_correlator_tb #(
-    parameter DIN_WIDTH = 16,
-    parameter DIN_POINT = 15,
+    parameter DIN_WIDTH = 14,
+    parameter DIN_POINT = 13,
+    parameter PARALLEL_INPUTS = 2,
     parameter TWIDD_WIDTH = 16,
     parameter TWIDD_POINT = 14,
     parameter TWIDD_FILE = "twidd_init.bin",
     parameter TWIDD_DELAY = 1,
-    parameter DFT_ACC_DELAY = 0,
-    parameter DFT_LEN = 128,
-    parameter DFT_DOUT_WIDTH = 32,
-    parameter DFT_DOUT_POINT = 14,
+    parameter ACC_DELAY = 0,
+    parameter DFT_LEN =4096,
+    parameter DFT_DOUT_WIDTH = 48,
+    parameter DFT_DOUT_POINT = 25,
     parameter DFT_DOUT_DELAY = 1,
-    parameter CORR_OUT_DELAY = 0,
-    parameter ACC_WIDTH = 32,
-    parameter ACC_POINT = 14,
-    parameter DOUT_WIDTH = 32,
-    
-    parameter REAL_INPUT_ONLY=0,
-    parameter CAST_WARNING = 0
+    parameter DFT_DOUT_SHIFT = 0,
+    parameter ACC_WIDTH = 48,
+    parameter ACC_POINT = 25,
+    parameter ACC_IN_DELAY = 1,
+    parameter ACC_OUT_DELAY = 1,
+    parameter DOUT_WIDTH = 64,      //the bin pt of the output is the same as the ACC
+    parameter REAL_INPUT_ONLY=1,
+    parameter CAST_WARNING = 0 //sim only 
 ) (
     input wire clk,
     input wire rst, 
     input wire signed [DIN_WIDTH-1:0] din0_re, din0_im, din1_re, din1_im,
+
     input wire din_valid,
     
     input wire [31:0] delay_line,   //this controls the DFT size, the one at the parameter is the max value
     input wire [31:0] acc_len,
-
-    output wire signed [DOUT_WIDTH-1:0] correlation_re, correlation_im,
-    output wire [DOUT_WIDTH-1:0] power0, power1,
+    //
+    
+    output wire [DOUT_WIDTH-1:0] aa, bb, 
+    output wire signed [DOUT_WIDTH-1:0] ab_re, ab_im,
     output wire dout_valid,
     output wire cast_warning,
     //axilite interface
     input wire axi_clock,
     input wire axil_rst,
     //write address channel
-    input wire [$clog2(DFT_LEN)+1:0] s_axil_awaddr,
+    input wire [$clog2(DFT_LEN)+2:0] s_axil_awaddr,
     input wire [2:0] s_axil_awprot,
     input wire s_axil_awvalid,
     output wire s_axil_awready,
@@ -52,7 +57,7 @@ module single_bin_fx_correlator_tb #(
     output wire s_axil_bvalid,
     input wire s_axil_bready,
     //read address channel
-    input wire [$clog2(DFT_LEN)+1:0] s_axil_araddr,
+    input wire [$clog2(DFT_LEN)+2:0] s_axil_araddr,
     input wire s_axil_arvalid,
     output wire s_axil_arready,
     input wire [2:0] s_axil_arprot,
@@ -67,22 +72,25 @@ module single_bin_fx_correlator_tb #(
 single_bin_fx_correlator #(
     .DIN_WIDTH(DIN_WIDTH),
     .DIN_POINT(DIN_POINT),
+    .PARALLEL_INPUTS(PARALLEL_INPUTS),
     .TWIDD_WIDTH(TWIDD_WIDTH),
     .TWIDD_POINT(TWIDD_POINT),
     .TWIDD_FILE(TWIDD_FILE),
     .TWIDD_DELAY(TWIDD_DELAY),
-    .DFT_ACC_DELAY(DFT_ACC_DELAY),
-    .DFT_LEN(DFT_LEN),
+    .ACC_DELAY(ACC_DELAY),
+    .DFT_LEN (DFT_LEN ),
     .DFT_DOUT_WIDTH(DFT_DOUT_WIDTH),
     .DFT_DOUT_POINT(DFT_DOUT_POINT),
     .DFT_DOUT_DELAY(DFT_DOUT_DELAY),
-    .CORR_OUT_DELAY(CORR_OUT_DELAY),
+    .DFT_DOUT_SHIFT(DFT_DOUT_SHIFT),
     .ACC_WIDTH(ACC_WIDTH),
     .ACC_POINT(ACC_POINT),
+    .ACC_IN_DELAY(ACC_IN_DELAY),
+    .ACC_OUT_DELAY(ACC_OUT_DELAY),
     .DOUT_WIDTH(DOUT_WIDTH),
     .REAL_INPUT_ONLY(REAL_INPUT_ONLY),
     .CAST_WARNING(CAST_WARNING)
-) single_bin_fx_correlator_inst (
+) single_bin_fx_correlator_inst  (
     .clk(clk),
     .rst(rst), 
     .din0_re(din0_re),
@@ -90,12 +98,12 @@ single_bin_fx_correlator #(
     .din1_re(din1_re),
     .din1_im(din1_im),
     .din_valid(din_valid),
-    .delay_line(delay_line),
+    .delay_line(delay_line),   //this controls the DFT size(), the one at the parameter is the max value
     .acc_len(acc_len),
-    .correlation_re(correlation_re),
-    .correlation_im(correlation_im),
-    .power0(power0),
-    .power1(power1),
+    .aa(aa),
+    .bb(bb), 
+    .ab_re(ab_re),
+    .ab_im(ab_im),
     .dout_valid(dout_valid),
     .cast_warning(cast_warning),
     .axi_clock(axi_clock),

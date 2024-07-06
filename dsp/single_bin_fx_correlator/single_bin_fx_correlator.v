@@ -24,6 +24,7 @@ module single_bin_fx_correlator #(
     parameter DFT_DOUT_WIDTH = 32,
     parameter DFT_DOUT_POINT = 15,
     parameter DFT_DOUT_DELAY = 1,
+    parameter DFT_DOUT_SHIFT = -3,
     parameter ACC_WIDTH = 32,
     parameter ACC_POINT = 15,
     parameter ACC_IN_DELAY = 1,
@@ -134,6 +135,35 @@ dft_bin_multiple_inputs #(
     .s_axil_rready(s_axil_rready)
 );
 
+wire signed [DFT_DOUT_WIDTH-1:0] dft0_re_shift, dft0_im_shift, 
+                                 dft1_re_shift, dft1_im_shift;
+wire dft_shift_valid;
+  
+
+shift #(
+    .DATA_WIDTH(DFT_DOUT_WIDTH),
+    .DATA_TYPE("signed"), //"signed" or "unsigned"
+    .SHIFT_VALUE(DFT_DOUT_SHIFT),      //positive <<, negative >>
+    .ASYNC(0),             // 
+    .OVERFLOW_WARNING(CAST_WARNING)
+) shift_inst [3:0] (
+    .clk(clk),
+    .din({dft0_re, dft0_im, dft1_re, dft1_im}),
+    .dout({dft0_re_shift, dft0_im_shift, dft1_re_shift, dft1_im_shift}),
+    .warning()
+);
+
+delay #(
+    .DATA_WIDTH(1),
+    .DELAY_VALUE(1)
+) dft_shift_delay (
+    .clk(clk),
+    .din(dft_valid),
+    .dout(dft_shift_valid)
+);
+
+
+
 localparam MULT_WIDTH = 2*DFT_DOUT_WIDTH+1;
 localparam MULT_POINT = 2*DFT_DOUT_POINT;
 
@@ -145,11 +175,11 @@ correlation_mults #(
     .DIN_WIDTH(DFT_DOUT_WIDTH)
 ) correlation_mults_inst (
     .clk(clk),
-    .din1_re(dft0_re),
-    .din1_im(dft0_im),
-    .din2_re(dft1_re),
-    .din2_im(dft1_im),
-    .din_valid(dft_valid),
+    .din1_re(dft0_re_shift),
+    .din1_im(dft0_im_shift),
+    .din2_re(dft1_re_shift),
+    .din2_im(dft1_im_shift),
+    .din_valid(dft_shift_valid),
     .din1_pow(din0_pow),
     .din2_pow(din1_pow),
     .corr_re(corr_re),

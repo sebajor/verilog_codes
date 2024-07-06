@@ -11,7 +11,8 @@
 
 module fifo_sync #(
     parameter DIN_WIDTH = 16,
-    parameter FIFO_DEPTH = 3 //address = 2**FIFO_DEPTH
+    parameter FIFO_DEPTH = 3, //address = 2**FIFO_DEPTH
+    parameter RAM_PERFORMANCE = "HIGH_PERFORMANCE"
 ) (
     input wire clk,
     input wire rst,
@@ -50,7 +51,7 @@ end
 sync_simple_dual_ram #(
     .RAM_WIDTH(DIN_WIDTH),
     .RAM_DEPTH(2**FIFO_DEPTH),
-    .RAM_PERFORMANCE("HIGH_PERFORMANCE"),
+    .RAM_PERFORMANCE(RAM_PERFORMANCE),
     .INIT_FILE("")
 ) ram_inst (
     .addra(waddr[FIFO_DEPTH-1:0]),

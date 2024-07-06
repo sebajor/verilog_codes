@@ -4,7 +4,7 @@ from cocotb.clock import Clock
 from cocotb.triggers import ClockCycles, Timer
 from cocotbext.axi import AxiLiteBus, AxiLiteMaster, AxiLiteRam
 import struct, sys
-sys.path.append('../../cocotb_python')
+sys.path.append('../../../cocotb_python')
 from two_comp import two_comp_pack, two_comp_unpack, two_pack_multiple
 
 
@@ -43,7 +43,7 @@ async def write_twidd_factor(dut, axil_master, dft_len, k, twidd_binpt=14):
     aux = (aux*2**twidd_binpt).astype(int)
     aux_bin = struct.pack(str(2*dft_len)+'i', *(aux))
     aux2 = struct.unpack(str(2*dft_len)+'I', aux_bin)
-    print(len(aux2))
+    #print(len(aux2))
     #dut.din_valid.value = 1;
     #dut.din_re.value = 0; dut.din_im.value =  0;    ##this is better to reset everything
     dut.rst.value =  0;
@@ -58,13 +58,16 @@ async def write_continous(dut, data, axil_master):
 
 
 @cocotb.test()
-async def single_bin_fx_correlator(dut, iters=128, k=55, acc_len=32,
-                                   thresh=1):
+async def single_bin_fx_correlator(dut, iters=128, k=102, acc_len=128,
+                                   thresh=10):
+    phase = 10
     din_width = dut.DIN_WIDTH.value
     din_point = dut.DIN_POINT.value
     dout_width = dut.DOUT_WIDTH.value
     dout_point = dut.ACC_POINT.value
     dft_len = dut.DFT_LEN.value
+    print("DFT LEN: %i"%dft_len)
+    shift = dut.DFT_DOUT_SHIFT.value
     axil_master = setup_dut(dut)
     
     dut.delay_line.value =  dft_len-1
@@ -76,7 +79,7 @@ async def single_bin_fx_correlator(dut, iters=128, k=55, acc_len=32,
     ###load a new twiddle factor with a new dft len
     dut.rst.value = 1
     dut.din_valid.value = 0
-    dft_len = 512#72
+    dft_len = 4096#512#72
     k = 20
     await ClockCycles(dut.clk,5)
     dut.delay_line.value =  dft_len-1
@@ -85,18 +88,27 @@ async def single_bin_fx_correlator(dut, iters=128, k=55, acc_len=32,
     
     await write_twidd_factor(dut, axil_master, dft_len, k)
 
+    #random signal
     twidd = np.exp(-1j*2*np.pi*np.arange(dft_len)*k/dft_len)
-    data0  = (np.random.random(size=(iters*acc_len, dft_len))-0.5)+1j*(np.random.random(size=(iters*acc_len, dft_len))-0.5)
-    data1  = (np.random.random(size=(iters*acc_len, dft_len))-0.5)+1j*(np.random.random(size=(iters*acc_len, dft_len))-0.5)
+    #data0  = (np.random.random(size=(iters*acc_len, dft_len))-0.5)+1j*(np.random.random(size=(iters*acc_len, dft_len))-0.5)
+    #data1  = (np.random.random(size=(iters*acc_len, dft_len))-0.5)+1j*(np.random.random(size=(iters*acc_len, dft_len))-0.5)
+    dat0 = 0.95*np.exp(-1j*2*np.pi*np.arange(dft_len)*k/dft_len)
+    dat1 = 2**-11*np.exp(-1j*2*np.pi*np.arange(dft_len)*k/dft_len+1j*np.deg2rad(phase))
+
+    data0 = dat0.repeat(iters*acc_len).reshape((-1, iters*acc_len)).T
+    data1 = dat1.repeat(iters*acc_len).reshape((-1, iters*acc_len)).T
 
     ##for real only test
     if(dut.REAL_INPUT_ONLY.value):
         data0 = data0.real
         data1 = data1.real
-    print(data0[0])
     #data = np.repeat(0.5*twidd**-1, iters).reshape(-1,iters).T
     dft0= data0 @ twidd
     dft1 = data1 @ twidd
+
+
+    dft0 = dft0*(2**shift)
+    dft1 = dft1*(2**shift)
 
     corr = dft0*np.conj(dft1)
     pow0 = (dft0*np.conj(dft0)).real
@@ -157,10 +169,19 @@ async def read_data(dut, gold, dout_width, dout_point, thresh):
             
             pow0_rtl = int(dut.aa.value)/2.**dout_point
             pow1_rtl = int(dut.bb.value)/2.**dout_point
-            print("power0: {:.4f} \t {:.4f}".format(pow0[count], pow0_rtl))
-            print("power1: {:.4f} \t {:.4f}".format(pow1[count], pow1_rtl))
-            print("corr_re: {:.4f} \t {:.4f}".format(corr[count].real, corr_re_rtl))
-            print("corr_im: {:.4f} \t {:.4f}".format(corr[count].imag, corr_im_rtl))
+            print("power0: python:{:.4f} \t rtl:{:.4f}".format(pow0[count], pow0_rtl))
+            print("power1: python:{:.4f} \t rtl:{:.4f}".format(pow1[count], pow1_rtl))
+            print("corr_re: python:{:.4f} \t rtl:{:.4f}".format(corr[count].real, corr_re_rtl))
+            print("corr_im: python{:.4f} \t rtl:{:.4f}".format(corr[count].imag, corr_im_rtl))
+            phase_python = np.rad2deg(np.angle(corr[count]))
+            phase_rtl = np.rad2deg(np.angle(corr_re_rtl+1j*corr_im_rtl))
+            pow_diff_python = pow0[count]-pow1[count]
+            pow_diff_rtl = pow0_rtl-pow1_rtl
+            print("phase: python:{:.4f} \t rtl:{:.4f}".format(phase_python, phase_rtl))
+            print("power diff: python:{:.4f} \t rtl:{:.4f}".format(pow_diff_python, pow_diff_rtl))
+            pow_diff_db_python = 10*(np.log10(pow0[count])-np.log10(pow1[count]))
+            pow_diff_db_rtl = 10*(np.log10(pow0_rtl)-np.log10(pow1_rtl))
+            print("power diff dB: python{:.4f} \t rtl:{:.4f}".format(pow_diff_db_python, pow_diff_db_rtl))
             print("\n")
             
             assert(np.abs(pow0[count]-pow0_rtl)<thresh)

@@ -1,0 +1,21 @@
+`include "../../data_cast/signed_cast/signed_cast.v"
+`include "../../shift/shift.v"
+`include "../../delay/delay.v"
+`include "../../data_cast/unsign_cast/unsign_cast.v"
+`include "../../resize_data/resize_data.v"
+`include "../../accumulators/scalar/scalar_accumulator.v"
+`include "../../../xlx_templates/bram_infer.v"
+
+`include "../../complex_mult/complex_mult.v"
+`include "../../dsp48_mult/dsp48_mult.v"
+`include "../../../xlx_templates/ram/true_dual_port/async/async_true_dual_ram2.v"   //this one initialize with binary
+`include "../../../utils/skid_buffer/skid_buffer.v"
+`include "../../../axi/axil_bram/axil_bram_arbiter.v"
+`include "../../../axi/axil_bram/axil_bram.v"
+`include "../../dsp48_macc/dsp48_macc.v"
+`include "../../../xlx_templates/ram/true_dual_port/async/unbalanced_bram/unbalanced_ram.v"
+`include "../../../axi/axil_bram_unbalanced/axil_bram_unbalanced.v"
+
+`include "../dft_bin_multiple_inputs/dft_bin_multiple_inputs.v"
+`include "../../correlator/correlation_mults.v"
+`include "../../complex_power/complex_power.v"
