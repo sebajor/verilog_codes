@@ -4,6 +4,8 @@ https://github.com/opalkelly-opensource/design-resources/tree/main/ExampleProjec
 
 Brain example with the ltc2264 https://github.com/SYZYGYfpga/brain-sample-hdl/tree/master/pod-adc-ltc2264
 
+So far I just tested the ultrascale version in the zuboard...
+
 --------------------------------------------------------------------------------------
 Each channel output 2bits at the time (2-lane mode) at lower sample rates there is a one bit channel option (1-lane mode).
 You can choose a lot of programming modes via the SPI mode.
