@@ -46,7 +46,7 @@ always@(*)begin
         2'b11:begin
             //this means that the din real and img part are not swap
             dout_re_r = delay_re+din_re;
-            dout_im_r = delay_im+din_re;
+            dout_im_r = delay_im+din_im;
             feedback_din_re = delay_re-din_re;
             feedback_din_im = delay_im-din_im;
         end

@@ -14,9 +14,14 @@ module r22sdf_bf2_tb #(
 ) (
     input wire clk,
     input wire signed [DIN_WIDTH-1:0] din_re, din_im,
-    input wire [1:0] control,
-    output wire signed [DIN_WIDTH-1:0] dout_re, dout_im
+    input wire control0, control1,
+    output wire signed [DIN_WIDTH:0] dout_re, dout_im
 );
+
+reg [31:0] counter =0;
+always@(posedge clk)
+    counter <= counter+1;
+
 
 r22sdf_bf2 #(
     .DIN_WIDTH(DIN_WIDTH),
@@ -28,7 +33,7 @@ r22sdf_bf2 #(
     .clk(clk),
     .din_re(din_re),
     .din_im(din_im),
-    .control(control),
+    .control({control1, control0}),
     .dout_re(dout_re),
     .dout_im(dout_im)
 );
