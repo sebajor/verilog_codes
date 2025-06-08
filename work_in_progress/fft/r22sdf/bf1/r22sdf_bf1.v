@@ -1,59 +1,57 @@
 `default_nettype none
+`include "includes.v"
+`include "../feedback_line.v"
 
 /*
-*   author: Sebastian Jorquera
+*   Author: Sebastian Jorquera
 */
 
 module r22sdf_bf1 #(
     parameter DIN_WIDTH = 16,
     parameter FEEDBACK_SIZE = 8,
-    parameter DELAY_TYPE = "delay",  //delay or bram
-    parameter ROUND_UP = 1,
-    parameter SCALE = 1
-
+    parameter DELAY_TYPE = "delay", //delay or bram
+    parameter MULT_LATENCY = 0
 ) (
     input wire clk,
     input wire signed [DIN_WIDTH-1:0] din_re, din_im,
+    input wire din_valid,
     input wire control,
-    output wire signed [DIN_WIDTH:0] dout_re, dout_im
+    output reg signed [DIN_WIDTH:0] dout_re, dout_im,
+    output wire dout_valid
 );
 
-wire signed [DIN_WIDTH-1:0] delay_re, delay_im;
-reg signed [DIN_WIDTH-1:0] feedback_din_re=0, feedback_din_im=0;
-reg signed [DIN_WIDTH:0] dout_re_r=0, dout_im_r=0;
+reg signed [DIN_WIDTH:0] feedback_din_re=0, feedback_din_im=0;
+wire signed [DIN_WIDTH:0] feedback_dout_re, feedback_dout_im;
 
-//compute butterfly operations
 
-always@(*)begin
-    case(control)
-        0:begin
-            feedback_din_re = din_re;
-            feedback_din_im = din_im;
-            dout_re_r = delay_re;
-            dout_im_r = delay_im;
-        end
-        1:begin
-            feedback_din_re = $signed(din_re)-$signed(delay_re);
-            feedback_din_im = $signed(din_im)-$signed(delay_im);
-            dout_re_r = $signed(delay_re)+$signed(din_re);
-            dout_im_r = $signed(delay_im)+$signed(din_im);
-        end
-    endcase
+
+always@(posedge clk)begin
+    if(control)begin
+        feedback_din_re <= din_re;
+        feedback_din_im <= din_im;
+        dout_re <= feedback_dout_re;
+        dout_im <= feedback_dout_im;
+    end
+    else begin
+        feedback_din_re <= $signed(din_re)-$signed(feedback_dout_re);
+        feedback_din_im <= $signed(din_im)-$signed(feedback_dout_im);
+        dout_re <= $signed(feedback_dout_re)+$signed(din_re);
+        dout_im <= $signed(feedback_dout_im)+$signed(din_im);
+
+    end
 end
-
-assign dout_re = dout_re_r;
-assign dout_im = dout_im_r;
 
 
 feedback_line #(
-    .DIN_WIDTH(2*DIN_WIDTH),
-    .FEEDBACK_SIZE(FEEDBACK_SIZE),
+    .DIN_WIDTH(2*(DIN_WIDTH+1)),
+    .FEEDBACK_SIZE(FEEDBACK_SIZE-1),    //one latency since (CHECK)
     .DELAY_TYPE(DELAY_TYPE)
 ) feedback_line_inst (
     .clk(clk),
     .din({feedback_din_re, feedback_din_im}),
-    .dout({delay_re, delay_im})
+    .dout({feedback_dout_re, feedback_dout_im})
 );
+
 
 
 endmodule
