@@ -4,7 +4,7 @@
 
 module gbe_write_packetizer_tb #(
     parameter DIN_WIDTH = 128,
-    parameter FIFO_DEPTH = 512
+    parameter FIFO_DEPTH = 2048
 ) (
     input wire clk,
     input wire rst,

@@ -1,8 +1,8 @@
 `default_nettype none
 
 module tge_write_packetizer_tb #(
-    parameter DIN_WIDTH = 128,
-    parameter FIFO_DEPTH = 512
+    parameter DIN_WIDTH = 256,
+    parameter FIFO_DEPTH = 32
 ) (
     input wire clk,
     input wire rst,

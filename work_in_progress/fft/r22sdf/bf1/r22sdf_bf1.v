@@ -1,57 +1,103 @@
 `default_nettype none
-`include "includes.v"
-`include "../feedback_line.v"
+
 
 /*
-*   Author: Sebastian Jorquera
+*   Even I put a din valid, this module its designed to have a contant flow of 
+*   input data.
 */
 
 module r22sdf_bf1 #(
     parameter DIN_WIDTH = 16,
-    parameter FEEDBACK_SIZE = 8,
-    parameter DELAY_TYPE = "delay", //delay or bram
-    parameter MULT_LATENCY = 0
+    parameter DIN_POINT = 15,
+    parameter BUFFER_SIZE = 16,
+    parameter DELAY_TYPE = "RAM"    //ram or delay; ram has a 2 cycle read delay too
 ) (
-    input wire clk,
+    input wire clk, 
     input wire signed [DIN_WIDTH-1:0] din_re, din_im,
     input wire din_valid,
-    input wire control,
-    output reg signed [DIN_WIDTH:0] dout_re, dout_im,
+    input wire rst,
+
+    output wire signed [DIN_WIDTH:0] dout_re, dout_im,
     output wire dout_valid
 );
+    reg state =0;
+    reg [$clog2(BUFFER_SIZE)-1:0] counter = 0;
+    reg dout_valid_r =0, dout_valid_rr=0;
+    reg signed [DIN_WIDTH:0] dout_re_r=0, dout_im_r=0;
+    assign dout_re = dout_re_r;
+    assign dout_im = dout_im_r;
+    assign dout_valid =  dout_valid_rr;
 
-reg signed [DIN_WIDTH:0] feedback_din_re=0, feedback_din_im=0;
-wire signed [DIN_WIDTH:0] feedback_dout_re, feedback_dout_im;
-
-
-
-always@(posedge clk)begin
-    if(control)begin
-        feedback_din_re <= din_re;
-        feedback_din_im <= din_im;
-        dout_re <= feedback_dout_re;
-        dout_im <= feedback_dout_im;
+    always@(posedge clk)begin
+        dout_valid_rr <= dout_valid_r;
+        if(rst)begin
+            dout_valid_r<=0;
+            state <= 0;
+        end
+        else if(&counter)begin
+            dout_valid_r <= 1;
+            state <= ~state;
+        end 
     end
-    else begin
-        feedback_din_re <= $signed(din_re)-$signed(feedback_dout_re);
-        feedback_din_im <= $signed(din_im)-$signed(feedback_dout_im);
-        dout_re <= $signed(feedback_dout_re)+$signed(din_re);
-        dout_im <= $signed(feedback_dout_im)+$signed(din_im);
 
+    
+    always@(posedge clk)begin
+        if(rst)
+            counter <= 0;
+        else if(din_valid)
+                counter <= counter+1;
     end
-end
+
+    
+    wire signed [DIN_WIDTH:0] feedback_dout_re, feedback_dout_im;
+    reg signed [DIN_WIDTH:0] feedback_din_re, feedback_din_im=0;
+    reg feedback_din_valid =0;
+    
 
 
-feedback_line #(
-    .DIN_WIDTH(2*(DIN_WIDTH+1)),
-    .FEEDBACK_SIZE(FEEDBACK_SIZE-1),    //one latency since (CHECK)
-    .DELAY_TYPE(DELAY_TYPE)
-) feedback_line_inst (
-    .clk(clk),
-    .din({feedback_din_re, feedback_din_im}),
-    .dout({feedback_dout_re, feedback_dout_im})
-);
+    always@(posedge clk)begin
+        if(state==0)begin
+            feedback_din_re <= din_re;
+            feedback_din_im <= din_im;
+            dout_re_r <= feedback_dout_re;
+            dout_im_r <= feedback_dout_im;
+            feedback_din_valid <= 1;
+        end
+        else begin
+            feedback_din_re <= $signed(feedback_dout_re)-$signed(din_re);
+            feedback_din_im <= $signed(feedback_dout_im)-$signed(din_im);
+            dout_re_r <= $signed(feedback_dout_re)+$signed(din_re);
+            dout_im_r <= $signed(feedback_dout_im)+$signed(din_im);
+            feedback_din_valid <=1;
+        end
+    end
 
-
+    //check the value
+    generate 
+        if(DELAY_TYPE=="RAM")begin
+            feedback_delay_line #(
+                .DIN_WIDTH(2*DIN_WIDTH+2),
+                .FIFO_DEPTH(BUFFER_SIZE-3),
+                .RAM_PERFORMANCE("HIGH_PERFORMANCE")
+            ) feedback_inst (
+                .clk(clk),
+                .rst(rst),
+                .din({feedback_din_re, feedback_din_im}),
+                .din_valid(feedback_din_valid),
+                .dout({feedback_dout_re, feedback_dout_im}),
+                .dout_valid()
+            );
+        end
+        else begin
+            delay #(
+                .DATA_WIDTH(2*DIN_WIDTH+2),
+                .DELAY_VALUE(BUFFER_SIZE-1)
+            ) feedback_inst (
+                .clk(clk),
+                .din({feedback_din_re, feedback_din_im}),
+                .dout({feedback_dout_re, feedback_dout_im})
+            );
+        end
+    endgenerate
 
 endmodule

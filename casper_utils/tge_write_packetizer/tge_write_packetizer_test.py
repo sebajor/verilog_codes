@@ -19,7 +19,6 @@ async def tge_write_packetizer_test(dut, iters=16):
     dout_width = 64
     multiplex = din_width//dout_width
 
-    ###this are a complete mess... always fail bcs of fifo ovf
     sleep_cycles = np.random.randint(low=10, high=64)
     sleep_write = np.random.randint(low=128, high=256)
     pkt_len = np.random.randint(low=128, high=1024)
