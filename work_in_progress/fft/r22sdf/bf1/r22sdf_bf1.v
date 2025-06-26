@@ -2,6 +2,7 @@
 
 
 /*
+*   Author: sebastian jorquera
 *   Even I put a din valid, this module its designed to have a contant flow of 
 *   input data.
 */

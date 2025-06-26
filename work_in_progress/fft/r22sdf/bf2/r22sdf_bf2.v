@@ -1,5 +1,8 @@
 `default_nettype none
 
+/*
+*   Author: sebastian jorquera
+*/
 
 module r22sdf_bf2 #(
     parameter DIN_WIDTH = 16,

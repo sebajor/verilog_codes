@@ -13,7 +13,9 @@ sys.path.append(os.path.abspath('../'))
 from python_test import BF_I, BF_II, bit_reversal_indices
 import subprocess
 
-
+###
+### Author:sebastian jorquera
+###
 def get_stage_twiddle_factors(stage_number):
     N = stage_number*2
     subset_index = stage_number//2

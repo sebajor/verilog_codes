@@ -1,6 +1,7 @@
 `default_nettype none
 
 /*
+*   Author: sebastian jorquera
 *   The twiddle multiplication its divided in 4 different situation
 *   W_n^0, W_n^(2*i), W_n^i, W_n^(3*i) with i belongs to (0, N/4-1)
 *   Since there are several trivial multiplications by 1 this module only 

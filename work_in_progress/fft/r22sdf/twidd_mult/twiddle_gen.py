@@ -6,6 +6,10 @@ import argparse
 import os
 import ipdb
 
+###
+### Author: sebastian jorquera
+### 
+
 parser = argparse.ArgumentParser()
 parser.add_argument("-n", "--stage", type=int, dest="stage")
 parser.add_argument("-bit_width", '--bit_width', type=int, dest="bit_width")

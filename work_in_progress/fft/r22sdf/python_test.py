@@ -1,6 +1,10 @@
 import numpy as np
 import itertools
 
+###
+### author: sebastian jorquera
+###
+
 bf1_test = False
 bf2_test = False
 fft_complete = True

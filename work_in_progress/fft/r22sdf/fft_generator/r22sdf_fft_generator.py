@@ -9,6 +9,9 @@ import subprocess
 import argparse
 import shutil
 
+###
+### Author: sebastian jorquera
+###
 
 parser = argparse.ArgumentParser()
 parser.add_argument("-build_dir", "--build_dir", dest='build', default="build")
