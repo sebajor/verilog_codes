@@ -32,7 +32,8 @@ always@(posedge clk)begin
         dout_valid_r <=0;
         state <= 0;
     end
-    else begin
+    //else begin    //CHEKC!!!
+    else if(din_valid)begin
         if(counter=={2'b00, {$clog2(BUFFER_SIZE){1'b1}}})begin
             state <= 1;
             dout_valid_r <= 1;

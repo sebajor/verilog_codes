@@ -11,6 +11,7 @@ sys.path.append(cocotb_path)
 from two_comp import two_comp_pack, two_comp_unpack
 sys.path.append(os.path.abspath('../'))
 from python_test import BF_I, BF_II, bit_reversal_indices
+import subprocess
 
 
 def get_stage_twiddle_factors(stage_number):
@@ -25,11 +26,14 @@ def get_stage_twiddle_factors(stage_number):
 
 
 @cocotb.test()
-async def r22_sdf_fft_test(dut, thresh=1e-3):
+async def r22_sdf_fft_test(dut, thresh=1e-4):
+    """
+    """
     fft_size = int(dut.FFT_SIZE)
     din_width = int(dut.DIN_WIDTH)
     din_point = int(dut.DIN_POINT)
-    iters = 30
+    iters = 10
+    thresh = thresh*fft_size
     
     clk = Clock(dut.clk, 10, units='ns')
     cocotb.fork(clk.start())
@@ -42,10 +46,10 @@ async def r22_sdf_fft_test(dut, thresh=1e-3):
 
 
 
-    #din_re = np.random.random((fft_size, iters))-0.5
-    din_re = np.ones((fft_size, iters))*0.5
-    #din_im = np.random.random((fft_size, iters))-0.5
-    din_im = np.zeros((fft_size, iters))
+    din_re = np.random.random((iters, fft_size))-0.5
+    #din_re = np.ones((iters, fft_size))*0.5
+    din_im = np.random.random((iters, fft_size))-0.5
+    #din_im = np.zeros((iters, fft_size))
     din =din_re+1j*din_im
 
     din_re_b = two_comp_pack(din_re.flatten(), din_width, din_point)
@@ -53,13 +57,13 @@ async def r22_sdf_fft_test(dut, thresh=1e-3):
 
     din_b = [din_re_b, din_im_b]
     
-    gold_natural = np.fft.fft(din, axis=0)
+    gold_natural = np.fft.fft(din, axis=1)
     bit_ind = bit_reversal_indices(fft_size)
-    gold = gold_natural[bit_ind,:].flatten()    ##CHECK HOW THE FLATTEN REORDERS IT
+    gold = gold_natural[:, bit_ind].flatten()    ##CHECK HOW THE FLATTEN REORDERS IT
 
     cocotb.start_soon(write_data(dut, din_b))
     dout_width = int(din_width+np.log2(fft_size)/2)
-    await read_data(dut, gold, dout_point, din_point, thresh)
+    await read_data(dut, gold, dout_width, din_point, thresh)
 
 
 
@@ -70,7 +74,9 @@ async def write_data(dut, data):
         dut.din_valid.value = 1
         await ClockCycles(dut.clk,1)
 
-async def read_data(dut, gold, dout_width, dout_point, thresh):
+async def read_data(dut, gold, dout_width, dout_point, thresh, 
+                    comp='diff'):
+    margins = [100-thresh, 100+thresh]  ##just if comp='perc'
     count = 0;
     while(count < len(gold)):
         valid = int(dut.dout_valid.value)
@@ -83,9 +89,77 @@ async def read_data(dut, gold, dout_width, dout_point, thresh):
             print("real: gold: %.2f \t rtl:%.2f" %(gold[count].real, dout_re))
             print("imag: gold: %.2f \t rtl:%.2f" %(gold[count].imag, dout_im))
             print("")
-            assert (np.abs(gold[count].real-dout_re)<thresh), "Error real part!"
-            assert (np.abs(gold[count].imag-dout_im)<thresh), "Error imag part!"
+            if(comp=='diff'):
+                error_real = np.abs(gold[count].real-dout_re)
+                error_imag = np.abs(gold[count].imag-dout_im)
+                assert (error_real<thresh), "Error real part!"
+                assert (error_imag<thresh), "Error imag part!"
+            elif(comp=='perc'):
+                error_real = 100*gold[count].real/dout_re
+                error_imag = 100*gold[count].imag/dout_im
+                assert ((margins[0]<error_real) and (error_real<margins[1])), "Error real part!"
+                assert ((margins[0]<error_imag) and (error_imag<margins[1])), "Error imag part!"
             count +=1
         await ClockCycles(dut.clk,1)
+
+
+@pytest.mark.parametrize("fft_size", [16, 64, 256, 1024, 4096])
+#@pytest.mark.parametrize("fft_size", [16])
+def test_r22_fft(request, fft_size):
+    tests_dir = os.path.abspath(os.path.dirname(__file__))
+    prev_dir = os.path.split(os.path.split(tests_dir)[0])[0]
+    #first we need to create the files
+    din_width = 16
+    din_point = 14
+    python_gen_path = os.path.join(tests_dir, "r22sdf_fft_generator.py")
+    cmd = "python {:} --fft_size {:} --din_width {:} --din_point {:} --twiddle_dir {:}".format(
+            python_gen_path,
+            fft_size,
+            din_width,
+            din_point,
+            os.path.join(tests_dir, "twiddles")
+            )
+    out = subprocess.Popen(cmd.split(' '))
+    exit_code = out.wait()
+    ###
+    dut = 'r22sdf_fft'+str(fft_size)
+    main = os.path.join(tests_dir, 'build', dut+'.v')
+    tb = os.path.join(tests_dir, 'build', dut+'_tb.v')
+    verilog_sources = [
+            main,
+            tb,
+            "../fft_stage/r22sdf_fft_stage.v",
+            "../../../../dsp/delay/delay.v",
+            "../../../../xlx_templates/ram/simple_single_port/single_port_ram_read_first.v",
+            "../../../../dsp/complex_mult/complex_mult.v",
+            "../../../../dsp/dsp48_mult/dsp48_mult.v",
+            "../../../../xlx_templates/rom_bin_init.v",
+            "../../../../dsp/data_cast/signed_cast/signed_cast.v",
+            "../feedback_line/feedback_delay_line.v",
+            "../bf1/r22sdf_bf1.v",
+            "../bf2/r22sdf_bf2.v",
+            "../twidd_mult/r22sdf_twiddle_mult.v"
+        ]
+    
+    cocotb_test.simulator.run(
+        module = 'r22sdf_fft_test',
+        verilog_sources = verilog_sources,
+        toplevel = dut+'_tb',
+        timescale="1ns/1ns",    ##sometimes the clock doesnt start
+        force_compile=True,     ##as we change parameters in the hdl we need to compile each time
+        seed=10,
+            )
+
+
+
+
+
+
+
+
+
+
+
+
 
 

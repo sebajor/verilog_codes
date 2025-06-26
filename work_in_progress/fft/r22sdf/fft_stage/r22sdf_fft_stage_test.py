@@ -102,7 +102,7 @@ async def read_data(dut, gold, dout_width, dout_point, thresh):
         await ClockCycles(dut.clk,1)
 
 
-@pytest.mark.parametrize("fft_stage", [8, 32, 128, 512])
+@pytest.mark.parametrize("fft_stage", [2,8, 32, 128, 512])
 def test_fft_stage(request, fft_stage):
     tests_dir = os.path.abspath(os.path.dirname(__file__))
     prev_dir = os.path.split(os.path.split(tests_dir)[0])[0]
@@ -125,6 +125,11 @@ def test_fft_stage(request, fft_stage):
     parameters = {}
     parameters['STAGE_NUMBER'] = fft_stage
     parameters['TWIDDLE_FILE'] = "\""+os.path.abspath(os.path.join(tests_dir, "twiddles/stage"+str(fft_stage)+"_16_14\""))
+    if(fft_stage ==2):
+        parameters['DELAY_TYPE'] = "\"DELAY\""
+    else:
+        parameters['DELAY_TYPE'] = "\"RAM\""
+
 
     cocotb_test.simulator.run(
         module = 'r22sdf_fft_stage_test',

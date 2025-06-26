@@ -94,7 +94,7 @@ def assign_din(fd, prev_stage, curr_stage):
     else:
         #assign to the delayed signal of the previous stage
         fd.write("assign din_re_stage{:} = dout_re_stage{:}_r;\n".format(curr_stage, prev_stage))
-        fd.write("assign din_im_stage{:} = dout_re_stage{:}_r;\n".format(curr_stage, prev_stage))
+        fd.write("assign din_im_stage{:} = dout_im_stage{:}_r;\n".format(curr_stage, prev_stage))
         fd.write("assign din_valid_stage{:} = dout_valid_stage{:}_r;\n\n".format(curr_stage, prev_stage))
 
 
@@ -203,8 +203,8 @@ if __name__ == '__main__':
     filename = "r22sdf_fft"+str(fft_size)+"_tb.v"
     fd = open(os.path.join(args.build, filename), 'w')
     fd.write("`default_nettype none\n\n")
-    fd.write("`include \"includes.v\"\n")
-    fd.write("`include \"r22sdf_%i.v\"\n\n\n"%fft_size)
+    #fd.write("`include \"includes.v\"\n")
+    #fd.write("`include \"r22sdf_fft%i.v\"\n\n\n"%fft_size)
     add_top(fd, fft_size, args.din_width, stages, tb=True)
     fd.write("\n\n")
     fd.write("localparam FFT_SIZE = %i;\n"%fft_size)
