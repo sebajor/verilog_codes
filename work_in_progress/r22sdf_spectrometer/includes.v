@@ -1,0 +1,32 @@
+`include "../../../dsp/delay/delay.v"
+`include "../../../xlx_templates/ram/simple_single_port/single_port_ram_read_first.v"
+`include "../../../dsp/complex_mult/complex_mult.v"
+`include "../../../dsp/dsp48_mult/dsp48_mult.v"
+`include "../../../xlx_templates/rom_bin_init.v"
+`include "../../../dsp/data_cast/signed_cast/signed_cast.v"
+`include "../../fft/r22sdf/feedback_line/feedback_delay_line.v"
+`include "../../fft/r22sdf/bf1/r22sdf_bf1.v"
+`include "../../fft/r22sdf/bf2/r22sdf_bf2.v"
+`include "../../fft/r22sdf/twidd_mult/r22sdf_twiddle_mult.v"
+`include "../../fft/r22sdf/fft_stage/r22sdf_fft_stage.v"
+`include "../../spectrometer/spectrometer_lane/spectrometer_lane.v"
+`include "../../spectrometer/axil_spectrometer_lane/axil_spectrometer.v"
+
+
+`include "../../../dsp/shift/shift.v"
+`include "../../../dsp/data_cast/unsign_cast/unsign_cast.v"
+`include "../../../dsp/complex_power/complex_power.v"
+`include "../../../dsp/resize_data/resize_data.v"
+`include "../../../casper_utils/acc_control/acc_control.v" //maybe I dont need this one
+
+`include "../../../dsp/accumulators/vector/rtl/sync_simple_dual_ram.v"
+`include "../../../dsp/accumulators/vector/vector_accumulator.v"
+
+`include "../../../xlx_templates/ram/true_dual_port/async/unbalanced_bram/unbalanced_ram.v"
+`include "../../../xlx_templates/ram/true_dual_port/async/async_true_dual_ram.v"
+`include "../../../xlx_templates/ram/true_dual_port/async/async_true_dual_ram_read_first.v"
+`include "../../../xlx_templates/ram/true_dual_port/async/async_true_dual_ram_write_first.v"
+`include "../../../utils/skid_buffer/skid_buffer.v"
+`include "../../../axi/axil_bram/axil_bram_arbiter.v"
+`include "../../../axi/axil_bram/axil_bram.v"
+`include "../../../axi/axil_bram_unbalanced/axil_bram_unbalanced.v"
