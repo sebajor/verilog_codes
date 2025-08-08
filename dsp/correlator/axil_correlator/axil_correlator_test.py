@@ -2,7 +2,7 @@ import numpy as np
 import cocotb, sys
 from cocotb.triggers import ClockCycles, RisingEdge, Timer
 from cocotb.clock import Clock
-sys.path.append('../../cocotb_python')
+sys.path.append('../../../cocotb_python')
 from two_comp import two_comp_pack, two_comp_unpack
 from cocotbext.axi import AxiLiteBus, AxiLiteMaster, AxiLiteRam
 
